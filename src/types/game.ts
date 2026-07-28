@@ -57,6 +57,8 @@ export interface GameState {
   currentRound: number;
   /** Última eliminación revelada. */
   lastElimination: EliminationResult | null;
+  /** Id del jugador que empieza a hablar esta partida. */
+  startingPlayerId: number | null;
 }
 
 export const MIN_PLAYERS = 3;

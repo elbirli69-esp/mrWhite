@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { AppScreen, GameConfig, GameState } from '../types/game';
 import { DEFAULT_CONFIG } from '../types/game';
-import { createPlayers, pickRandomWordPair } from '../utils/game';
+import { createPlayers, pickRandomWordPair, pickStartingPlayerId } from '../utils/game';
 import {
   loadConfig,
   loadNames,
@@ -29,6 +29,7 @@ function initialState(): GameState {
     revealed: false,
     currentRound: 1,
     lastElimination: null,
+    startingPlayerId: null,
   };
 }
 
@@ -56,6 +57,7 @@ export function useGame() {
       revealed: false,
       currentRound: 1,
       lastElimination: null,
+      startingPlayerId: null,
     }));
   }, []);
 
@@ -69,6 +71,7 @@ export function useGame() {
       revealed: false,
       currentRound: 1,
       lastElimination: null,
+      startingPlayerId: null,
     }));
   }, []);
 
@@ -86,6 +89,7 @@ export function useGame() {
         revealed: false,
         currentRound: 1,
         lastElimination: null,
+        startingPlayerId: null,
       };
     });
   }, []);
@@ -118,7 +122,12 @@ export function useGame() {
       if (namesError) return prev;
 
       const words = pickRandomWordPair();
-      const players = createPlayers(prev.config, words, prev.playerNames);
+      const players = createPlayers(
+        prev.config,
+        words,
+        prev.playerNames,
+        prev.players,
+      );
 
       return {
         ...prev,
@@ -129,6 +138,7 @@ export function useGame() {
         revealed: false,
         currentRound: 1,
         lastElimination: null,
+        // Conservamos startingPlayerId para no repetir quién empieza en la siguiente.
       };
     });
   }, []);
@@ -145,6 +155,7 @@ export function useGame() {
           ...prev,
           screen: 'ready',
           revealed: false,
+          startingPlayerId: pickStartingPlayerId(prev.players, prev.startingPlayerId),
         };
       }
       return {

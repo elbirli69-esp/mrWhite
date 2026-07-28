@@ -8,6 +8,7 @@ interface PlayPageProps {
   players: Player[];
   currentRound: number;
   lastElimination: EliminationResult | null;
+  starterName: string | null;
   word: string | null;
   onEliminate: (playerId: number) => void;
   onDismissResult: () => void;
@@ -19,6 +20,7 @@ export function PlayPage({
   players,
   currentRound,
   lastElimination,
+  starterName,
   word,
   onEliminate,
   onDismissResult,
@@ -46,6 +48,12 @@ export function PlayPage({
         <p className="mt-2 text-[var(--color-text-muted)]">
           Votad y eliminad a un sospechoso. Se revelará su rol al instante.
         </p>
+        {starterName ? (
+          <p className="mt-3 text-sm text-[var(--color-text)]">
+            Empieza a hablar:{' '}
+            <span className="font-semibold text-[var(--color-accent)]">{starterName}</span>
+          </p>
+        ) : null}
       </header>
 
       <AnimatePresence>

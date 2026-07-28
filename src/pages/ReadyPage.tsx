@@ -5,12 +5,18 @@ import { Card } from '../components/Card';
 import { fireConfetti } from '../utils/confetti';
 
 interface ReadyPageProps {
+  starterName: string | null;
   onBeginPlay: () => void;
   onNewGame: () => void;
   onChangeConfig: () => void;
 }
 
-export function ReadyPage({ onBeginPlay, onNewGame, onChangeConfig }: ReadyPageProps) {
+export function ReadyPage({
+  starterName,
+  onBeginPlay,
+  onNewGame,
+  onChangeConfig,
+}: ReadyPageProps) {
   const confettiFired = useRef(false);
 
   useEffect(() => {
@@ -52,6 +58,22 @@ export function ReadyPage({ onBeginPlay, onNewGame, onChangeConfig }: ReadyPageP
       </header>
 
       <Card>
+        {starterName ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 20 }}
+            className="mb-6 rounded-2xl border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-4 py-5 text-center"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              Empieza a hablar
+            </p>
+            <p className="mt-2 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)] sm:text-3xl">
+              {starterName}
+            </p>
+          </motion.div>
+        ) : null}
+
         <p className="mb-8 text-center text-sm leading-relaxed text-[var(--color-text-muted)]">
           Hablad por turnos sobre la palabra sin decirla. Luego votad y eliminad sospechosos
           ronda a ronda.

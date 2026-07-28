@@ -28,6 +28,9 @@ export default function App() {
     clearLastElimination,
   } = useGame();
 
+  const starterName =
+    state.players.find((p) => p.id === state.startingPlayerId)?.name ?? null;
+
   if (state.screen === 'pass') {
     return (
       <ScreenShell screenKey="pass" bleed>
@@ -77,6 +80,7 @@ export default function App() {
 
         {state.screen === 'ready' && (
           <ReadyPage
+            starterName={starterName}
             onBeginPlay={beginPlay}
             onNewGame={startDeal}
             onChangeConfig={goConfig}
@@ -88,6 +92,7 @@ export default function App() {
             players={state.players}
             currentRound={state.currentRound}
             lastElimination={state.lastElimination}
+            starterName={starterName}
             word={state.words?.normal ?? null}
             onEliminate={eliminatePlayer}
             onDismissResult={clearLastElimination}
