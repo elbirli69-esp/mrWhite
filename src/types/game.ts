@@ -15,6 +15,11 @@ export interface Player {
   role: PlayerRole;
   /** Palabra visible al revelar; null solo para Mr White. */
   word: string | null;
+  /**
+   * Pista solo para Mr White: concepto cercano a la palabra secreta
+   * para improvisar sin regalarla.
+   */
+  hint: string | null;
   /** Ronda en la que fue eliminado; null si sigue en juego. */
   eliminatedRound: number | null;
 }
@@ -23,6 +28,8 @@ export interface Player {
 export interface SelectedWords {
   normal: string;
   farsante: string;
+  /** Pista temática para Mr White. */
+  hint: string;
 }
 
 /** Resultado de la última eliminación (para mostrarlo en pantalla). */

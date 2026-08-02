@@ -40,7 +40,7 @@ No hace falta configuración extra.
 1. Elige número de jugadores (3–20), Mr White y Farsantes.
 2. Escribe el nombre de cada jugador.
 3. Cada uno, en secreto, pulsa **Ver mi palabra**.
-4. Los normales y los Farsantes ven una palabra (los Farsantes una parecida, sin saberlo); Mr White no tiene palabra.
+4. Los normales y los Farsantes ven una palabra (los Farsantes una parecida, sin saberlo); Mr White no tiene palabra, pero recibe una pista cercana para improvisar sin ser demasiado obvio.
 5. En las rondas, eliminad sospechosos: se revela si era normal, Farsante o Mr. White.
 4. Al pasar de jugador aparece **Pasa el móvil** un segundo.
 5. Cuando todos han visto su rol, ¡empieza la partida!
