@@ -79,7 +79,19 @@ export function RevealPage({
                   <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)]">
                     Eres Mr. White
                   </h2>
-                  <p className="text-[var(--color-text-muted)]">No tienes palabra.</p>
+                  <p className="max-w-xs text-[var(--color-text-muted)]">
+                    No tienes la palabra secreta. Improvisa con la pista, sin ser obvio.
+                  </p>
+                  {player.hint ? (
+                    <>
+                      <p className="mt-2 text-sm uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                        Pista
+                      </p>
+                      <p className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-text)]">
+                        {player.hint}
+                      </p>
+                    </>
+                  ) : null}
                 </>
               ) : (
                 <>

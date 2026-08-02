@@ -66,7 +66,7 @@ export function ConfigPage({
 
           <NumberStepper
             label="Mr White"
-            description="Sin palabra. Debe fingir."
+            description="Sin palabra, pero con una pista para improvisar."
             value={config.mrWhiteCount}
             min={0}
             max={maxSpecial}
