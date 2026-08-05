@@ -29,14 +29,17 @@ export function ScreenShell({
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           className={[
-            'relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col',
+            'relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col overflow-y-auto',
             bleed ? '' : 'px-5 py-8 sm:px-6 sm:py-10',
-            centered && !bleed ? 'justify-center' : '',
           ]
             .filter(Boolean)
             .join(' ')}
         >
-          {children}
+          {centered && !bleed ? (
+            <div className="my-auto flex w-full flex-col">{children}</div>
+          ) : (
+            children
+          )}
         </motion.main>
       </AnimatePresence>
     </div>
