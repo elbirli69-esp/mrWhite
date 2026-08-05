@@ -32,9 +32,24 @@ export function PlayPage({
     .filter((p) => p.eliminatedRound !== null)
     .sort((a, b) => (a.eliminatedRound ?? 0) - (b.eliminatedRound ?? 0));
 
+  const hasMrWhite = players.some((p) => p.role === 'mrWhite');
+  const hasFarsante = players.some((p) => p.role === 'farsante');
   const mrWhiteAlive = alive.some((p) => p.role === 'mrWhite');
-  const allMrWhiteOut = players.some((p) => p.role === 'mrWhite') && !mrWhiteAlive;
-  const canEliminate = alive.length > 1 && mrWhiteAlive;
+  const farsantesAliveCount = alive.filter((p) => p.role === 'farsante').length;
+  const farsanteAlive = farsantesAliveCount > 0;
+  const allMrWhiteOut = hasMrWhite && !mrWhiteAlive;
+  const allFarsantesOut = hasFarsante && !farsanteAlive;
+  /** Hay que descubrir a Mr White y a todos los Farsantes (los que haya en la partida). */
+  const specialsAlive = mrWhiteAlive || farsanteAlive;
+  const gameWon = !specialsAlive && (hasMrWhite || hasFarsante);
+  const canEliminate = alive.length > 1 && specialsAlive;
+
+  const winSubtitle =
+    hasMrWhite && hasFarsante
+      ? 'Mr White y los Farsantes han sido eliminados.'
+      : hasMrWhite
+        ? 'Todos los Mr. White han sido eliminados.'
+        : 'Todos los Farsantes han sido eliminados.';
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,7 +61,7 @@ export function PlayPage({
           Eliminaciones
         </h1>
         <p className="mt-2 text-[var(--color-text-muted)]">
-          Votad y eliminad a un sospechoso. Se revelará su rol al instante.
+          Votad y eliminad sospechosos hasta descubrir a Mr White y a los Farsantes.
         </p>
         {starterName ? (
           <p className="mt-3 text-sm text-[var(--color-text)]">
@@ -91,16 +106,37 @@ export function PlayPage({
         ) : null}
       </AnimatePresence>
 
-      {allMrWhiteOut ? (
+      {gameWon ? (
         <Card>
           <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
-            ¡Habéis eliminado a todos los Mr. White!
+            ¡Habéis descubierto a todos!
           </p>
+          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{winSubtitle}</p>
           {word ? (
-            <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
-              La palabra era <span className="text-[var(--color-text)]">{word}</span>
+            <p className="mt-3 text-center text-sm text-[var(--color-text-muted)]">
+              La palabra era{' '}
+              <span className="font-semibold text-[var(--color-text)]">{word}</span>
             </p>
           ) : null}
+        </Card>
+      ) : allMrWhiteOut && hasFarsante ? (
+        <Card>
+          <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
+            ¡Mr. White eliminado!
+          </p>
+          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+            Seguíd buscando a {farsantesAliveCount === 1 ? 'el Farsante' : 'los Farsantes'}.
+            La palabra se revelará cuando los descubráis.
+          </p>
+        </Card>
+      ) : allFarsantesOut && hasMrWhite ? (
+        <Card>
+          <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
+            ¡Farsantes eliminados!
+          </p>
+          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+            Seguíd buscando a Mr White. La palabra se revelará al final.
+          </p>
         </Card>
       ) : null}
 

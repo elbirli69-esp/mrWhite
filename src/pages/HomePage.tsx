@@ -51,7 +51,7 @@ export function HomePage({ onStart }: HomePageProps) {
           </li>
           <li className="flex gap-3">
             <span className="mt-0.5 text-[var(--color-accent)]">03</span>
-            <span>Votad, eliminad… y descubrid a Mr White.</span>
+            <span>Votad y eliminad hasta descubrir a Mr White y a los Farsantes.</span>
           </li>
         </ul>
 

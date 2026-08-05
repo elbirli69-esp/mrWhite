@@ -43,7 +43,7 @@ No hace falta configuración extra.
 4. Los normales y los Farsantes ven una palabra (los Farsantes una parecida, sin saberlo); Mr White no tiene palabra (y, si lo activaste, recibe una pista cercana para improvisar).
 5. Al pasar de jugador aparece **Pasa el móvil** un segundo.
 6. Cuando todos han visto su rol, ¡empieza la partida!
-7. En las rondas, eliminad sospechosos: se revela si era normal, Farsante o Mr. White.
+7. En las rondas, eliminad sospechosos hasta descubrir a Mr White y a todos los Farsantes. La palabra real solo se revela cuando están todos descubiertos.
 
 La última configuración se guarda en `localStorage`.
 
