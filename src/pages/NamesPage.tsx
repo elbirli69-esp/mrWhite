@@ -24,14 +24,14 @@ export function NamesPage({
         <button
           type="button"
           onClick={onBack}
-          className="mb-4 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+          className="mb-4 min-h-11 text-[length:var(--text-body-sm)] font-medium text-[var(--color-text)] underline-offset-2 transition-colors hover:underline"
         >
           ← Volver
         </button>
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
           Nombres
         </h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
+        <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           Escribe el nombre de cada jugador antes del reparto.
         </p>
       </header>
@@ -40,7 +40,7 @@ export function NamesPage({
         <div className="flex flex-col gap-4">
           {names.map((name, index) => (
             <label key={index} className="flex flex-col gap-1.5">
-              <span className="text-sm text-[var(--color-text-muted)]">
+              <span className="text-[length:var(--text-body-sm)] font-medium text-[var(--color-text-muted)]">
                 Jugador {index + 1}
               </span>
               <input
@@ -50,7 +50,7 @@ export function NamesPage({
                 placeholder={`Nombre del jugador ${index + 1}`}
                 autoComplete="off"
                 maxLength={24}
-                className="h-14 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 font-[family-name:var(--font-display)] text-lg text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]/50 focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30"
+                className="h-[var(--touch-min)] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 font-[family-name:var(--font-display)] text-xl text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]/60 focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30"
               />
             </label>
           ))}
@@ -59,7 +59,7 @@ export function NamesPage({
         {error && names.some((n) => n.trim()) ? (
           <div
             role="alert"
-            className="mt-4 rounded-2xl border border-[var(--color-danger)]/35 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]"
+            className="mt-4 rounded-2xl border border-[var(--color-danger)]/45 bg-[var(--color-danger)]/15 px-4 py-3 text-[length:var(--text-body-sm)] font-medium text-[var(--color-danger)]"
           >
             {error}
           </div>

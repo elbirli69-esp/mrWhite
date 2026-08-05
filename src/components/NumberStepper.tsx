@@ -34,7 +34,9 @@ export function NumberStepper({
             {label}
           </p>
           {description ? (
-            <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{description}</p>
+            <p className="mt-1 text-[length:var(--text-body-sm)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
+              {description}
+            </p>
           ) : null}
         </div>
       </div>
@@ -45,7 +47,7 @@ export function NumberStepper({
           aria-label={`Disminuir ${label}`}
           onClick={decrease}
           disabled={value <= min}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
+          className="flex h-[var(--touch-min)] w-[var(--touch-min)] shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
         >
           −
         </button>
@@ -58,7 +60,7 @@ export function NumberStepper({
           value={value}
           onChange={onInput}
           aria-label={label}
-          className="h-14 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-text)] outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-text)] outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
 
         <button
@@ -66,7 +68,7 @@ export function NumberStepper({
           aria-label={`Aumentar ${label}`}
           onClick={increase}
           disabled={value >= max}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
+          className="flex h-[var(--touch-min)] w-[var(--touch-min)] shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
         >
           +
         </button>

@@ -23,9 +23,11 @@ export function Toggle({
         .join(' ')}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-base font-semibold text-[var(--color-text)]">{label}</p>
+        <p className="text-[length:var(--text-body)] font-semibold text-[var(--color-text)]">{label}</p>
         {description ? (
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">{description}</p>
+          <p className="mt-1 text-[length:var(--text-body-sm)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
+            {description}
+          </p>
         ) : null}
       </div>
 
@@ -37,7 +39,7 @@ export function Toggle({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={[
-          'relative mt-0.5 h-8 w-14 shrink-0 rounded-full transition-colors',
+          'relative mt-0.5 h-10 w-[3.75rem] shrink-0 rounded-full transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
           'disabled:cursor-not-allowed',
           checked
@@ -48,8 +50,8 @@ export function Toggle({
         <span
           aria-hidden
           className={[
-            'absolute top-1 left-1 h-6 w-6 rounded-full bg-[var(--color-text)] shadow transition-transform',
-            checked ? 'translate-x-6 bg-[var(--color-bg)]' : 'translate-x-0',
+            'absolute top-1 left-1 h-8 w-8 rounded-full bg-[var(--color-text)] shadow transition-transform',
+            checked ? 'translate-x-5 bg-[var(--color-bg)]' : 'translate-x-0',
           ].join(' ')}
         />
       </button>

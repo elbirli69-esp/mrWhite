@@ -19,9 +19,9 @@ const variants: Record<Variant, string> = {
   secondary:
     'bg-[var(--color-surface-elevated)] text-[var(--color-text)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] active:scale-[0.98]',
   ghost:
-    'bg-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] active:scale-[0.98]',
+    'bg-transparent text-[var(--color-text)] hover:bg-[var(--color-surface)] active:scale-[0.98]',
   danger:
-    'bg-[var(--color-danger)]/15 text-[var(--color-danger)] border border-[var(--color-danger)]/30 hover:bg-[var(--color-danger)]/25 active:scale-[0.98]',
+    'bg-[var(--color-danger)]/20 text-[var(--color-danger)] border border-[var(--color-danger)]/45 hover:bg-[var(--color-danger)]/30 active:scale-[0.98]',
 };
 
 export function Button({
@@ -40,7 +40,7 @@ export function Button({
       disabled={disabled}
       onClick={onClick}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold tracking-tight transition-colors',
+        'inline-flex min-h-[var(--touch-min)] items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[length:var(--text-body)] font-semibold tracking-tight transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
         'disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none',
         fullWidth ? 'w-full' : '',

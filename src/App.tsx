@@ -1,6 +1,7 @@
 import { ReloadPrompt } from './components/ReloadPrompt';
 import { ScreenShell } from './components/ScreenShell';
 import { useGame } from './hooks/useGame';
+import { useReadableMode } from './hooks/useReadableMode';
 import { ConfigPage } from './pages/ConfigPage';
 import { HomePage } from './pages/HomePage';
 import { NamesPage } from './pages/NamesPage';
@@ -10,6 +11,7 @@ import { ReadyPage } from './pages/ReadyPage';
 import { RevealPage } from './pages/RevealPage';
 
 export default function App() {
+  const { readableMode, setReadableMode } = useReadableMode();
   const {
     state,
     currentPlayer,
@@ -45,7 +47,13 @@ export default function App() {
         screenKey={state.screen}
         centered={state.screen !== 'play' && state.screen !== 'names'}
       >
-        {state.screen === 'home' && <HomePage onStart={goConfig} />}
+        {state.screen === 'home' && (
+          <HomePage
+            onStart={goConfig}
+            readableMode={readableMode}
+            onReadableModeChange={setReadableMode}
+          />
+        )}
 
         {state.screen === 'config' && (
           <ConfigPage

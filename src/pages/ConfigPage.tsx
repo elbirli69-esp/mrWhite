@@ -29,14 +29,14 @@ export function ConfigPage({
         <button
           type="button"
           onClick={onBack}
-          className="mb-4 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+          className="mb-4 min-h-11 text-[length:var(--text-body-sm)] font-medium text-[var(--color-text)] underline-offset-2 transition-colors hover:underline"
         >
           ← Volver
         </button>
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
           Configuración
         </h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
+        <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           Ajusta la partida. La última configuración se guarda sola.
         </p>
       </header>
@@ -101,7 +101,7 @@ export function ConfigPage({
           />
         </div>
 
-        <div className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
+        <div className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
           Jugadores normales:{' '}
           <span className="font-semibold text-[var(--color-text)]">
             {Math.max(0, config.playerCount - config.mrWhiteCount - config.farsanteCount)}
@@ -111,7 +111,7 @@ export function ConfigPage({
         {!validation.valid && validation.error ? (
           <div
             role="alert"
-            className="mt-4 rounded-2xl border border-[var(--color-danger)]/35 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]"
+            className="mt-4 rounded-2xl border border-[var(--color-danger)]/45 bg-[var(--color-danger)]/15 px-4 py-3 text-[length:var(--text-body-sm)] font-medium text-[var(--color-danger)]"
           >
             {validation.error}
           </div>

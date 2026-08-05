@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG, MAX_PLAYERS, MIN_PLAYERS } from '../types/game';
 
 const CONFIG_KEY = 'mr-white-config';
 const NAMES_KEY = 'mr-white-names';
+const READABLE_MODE_KEY = 'mr-white-readable-mode';
 
 function isValidConfigShape(value: unknown): value is {
   playerCount: number;
@@ -99,4 +100,22 @@ export function validateNames(names: string[], expectedCount: number): string | 
     }
   }
   return null;
+}
+
+/** Lee si el modo legible (texto grande + alto contraste) está activo. */
+export function loadReadableMode(): boolean {
+  try {
+    return localStorage.getItem(READABLE_MODE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/** Guarda la preferencia de modo legible. */
+export function saveReadableMode(enabled: boolean): void {
+  try {
+    localStorage.setItem(READABLE_MODE_KEY, enabled ? 'true' : 'false');
+  } catch {
+    // Ignorar errores de cuota / modo privado
+  }
 }

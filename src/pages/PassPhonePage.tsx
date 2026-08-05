@@ -8,7 +8,7 @@ export function PassPhonePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: [0, 1, 1, 0] }}
         transition={{ duration: 1, times: [0, 0.2, 0.8, 1], ease: 'easeInOut' }}
-        className="font-[family-name:var(--font-display)] text-center text-3xl font-medium tracking-tight text-white sm:text-4xl"
+        className="font-[family-name:var(--font-display)] text-center text-4xl font-semibold tracking-tight text-white sm:text-5xl"
       >
         Pasa el móvil
       </motion.p>

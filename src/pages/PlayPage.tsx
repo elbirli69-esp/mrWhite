@@ -54,17 +54,17 @@ export function PlayPage({
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-[var(--color-accent)]">
+        <p className="tracking-wide-label text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">
           Ronda {currentRound}
         </p>
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
           Eliminaciones
         </h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
+        <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           Votad y eliminad sospechosos hasta descubrir a Mr White y a los Farsantes.
         </p>
         {starterName ? (
-          <p className="mt-3 text-sm text-[var(--color-text)]">
+          <p className="mt-3 text-[length:var(--text-body)] text-[var(--color-text)]">
             Empieza a hablar:{' '}
             <span className="font-semibold text-[var(--color-accent)]">{starterName}</span>
           </p>
@@ -89,16 +89,16 @@ export function PlayPage({
                   : 'border-[var(--color-border)] bg-[var(--color-surface)]',
             ].join(' ')}
           >
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+            <p className="tracking-wide-label text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
               Ronda {lastElimination.round}
             </p>
-            <p className="mt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-text)]">
+            <p className="mt-2 font-[family-name:var(--font-display)] text-xl font-semibold leading-snug text-[var(--color-text)]">
               {eliminationMessage(lastElimination.playerName, lastElimination.role)}
             </p>
             <button
               type="button"
               onClick={onDismissResult}
-              className="mt-3 text-sm text-[var(--color-text-muted)] underline-offset-2 hover:text-[var(--color-text)] hover:underline"
+              className="mt-3 min-h-11 text-[length:var(--text-body-sm)] font-medium text-[var(--color-text)] underline-offset-2 hover:underline"
             >
               Cerrar
             </button>
@@ -108,12 +108,14 @@ export function PlayPage({
 
       {gameWon ? (
         <Card>
-          <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
+          <p className="text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)]">
             ¡Habéis descubierto a todos!
           </p>
-          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{winSubtitle}</p>
+          <p className="mt-2 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
+            {winSubtitle}
+          </p>
           {word ? (
-            <p className="mt-3 text-center text-sm text-[var(--color-text-muted)]">
+            <p className="mt-3 text-center text-[length:var(--text-body)] text-[var(--color-text-muted)]">
               La palabra era{' '}
               <span className="font-semibold text-[var(--color-text)]">{word}</span>
             </p>
@@ -121,20 +123,20 @@ export function PlayPage({
         </Card>
       ) : allMrWhiteOut && hasFarsante ? (
         <Card>
-          <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
+          <p className="text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)]">
             ¡Mr. White eliminado!
           </p>
-          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+          <p className="mt-2 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
             Seguíd buscando a {farsantesAliveCount === 1 ? 'el Farsante' : 'los Farsantes'}.
             La palabra se revelará cuando los descubráis.
           </p>
         </Card>
       ) : allFarsantesOut && hasMrWhite ? (
         <Card>
-          <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
+          <p className="text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)]">
             ¡Farsantes eliminados!
           </p>
-          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">
+          <p className="mt-2 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
             Seguíd buscando a Mr White. La palabra se revelará al final.
           </p>
         </Card>
@@ -152,7 +154,7 @@ export function PlayPage({
               key={player.id}
               className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
             >
-              <span className="font-[family-name:var(--font-display)] text-lg font-medium">
+              <span className="font-[family-name:var(--font-display)] text-xl font-semibold">
                 {player.name}
               </span>
               {canEliminate ? (
@@ -168,7 +170,7 @@ export function PlayPage({
             </li>
           ))}
           {alive.length === 0 ? (
-            <li className="px-5 py-6 text-sm text-[var(--color-text-muted)]">
+            <li className="px-5 py-6 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
               No quedan jugadores.
             </li>
           ) : null}
@@ -186,17 +188,17 @@ export function PlayPage({
             {eliminated.map((player) => (
               <li
                 key={player.id}
-                className="flex items-center justify-between gap-3 px-5 py-4 text-sm"
+                className="flex items-center justify-between gap-3 px-5 py-4 text-[length:var(--text-body-sm)]"
               >
                 <div>
-                  <p className="font-medium text-[var(--color-text-muted)] line-through">
+                  <p className="font-semibold text-[var(--color-text)]">
                     {player.name}
                   </p>
-                  <p className="mt-0.5 text-[var(--color-text)]">
+                  <p className="mt-1 font-medium text-[var(--color-accent)]">
                     {roleLabel(player.role)}
                   </p>
                 </div>
-                <span className="shrink-0 text-[var(--color-text-muted)]">
+                <span className="shrink-0 font-medium text-[var(--color-text-muted)]">
                   Ronda {player.eliminatedRound}
                 </span>
               </li>
