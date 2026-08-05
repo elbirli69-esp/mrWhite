@@ -25,8 +25,8 @@ export function shuffle<T>(items: T[]): T[] {
 /** Elige una pareja de palabras al azar. */
 export function pickRandomWordPair(): SelectedWords {
   const index = randomInt(WORD_PAIRS.length);
-  const [normal, farsante] = WORD_PAIRS[index]!;
-  return { normal, farsante };
+  const [normal, farsante, hint] = WORD_PAIRS[index]!;
+  return { normal, farsante, hint };
 }
 
 /**
@@ -116,8 +116,10 @@ export function createPlayers(
 
   return roles.map((role, index) => {
     let word: string | null = null;
+    let hint: string | null = null;
     if (role === 'normal') word = words.normal;
     if (role === 'farsante') word = words.farsante;
+    if (role === 'mrWhite' && config.mrWhiteHasHints) hint = words.hint;
 
     const name = names[index]?.trim() || `Jugador ${index + 1}`;
 
@@ -126,6 +128,7 @@ export function createPlayers(
       name,
       role,
       word,
+      hint,
       eliminatedRound: null,
     };
   });

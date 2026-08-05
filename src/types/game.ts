@@ -6,6 +6,8 @@ export interface GameConfig {
   playerCount: number;
   mrWhiteCount: number;
   farsanteCount: number;
+  /** Si Mr White recibe una pista temática al revelar. */
+  mrWhiteHasHints: boolean;
 }
 
 /** Jugador con rol y palabra asignada (si aplica). */
@@ -15,6 +17,11 @@ export interface Player {
   role: PlayerRole;
   /** Palabra visible al revelar; null solo para Mr White. */
   word: string | null;
+  /**
+   * Pista solo para Mr White (si la partida la tiene activada):
+   * concepto cercano a la palabra secreta para improvisar sin regalarla.
+   */
+  hint: string | null;
   /** Ronda en la que fue eliminado; null si sigue en juego. */
   eliminatedRound: number | null;
 }
@@ -23,6 +30,8 @@ export interface Player {
 export interface SelectedWords {
   normal: string;
   farsante: string;
+  /** Pista temática disponible para Mr White. */
+  hint: string;
 }
 
 /** Resultado de la última eliminación (para mostrarlo en pantalla). */
@@ -68,6 +77,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   playerCount: 5,
   mrWhiteCount: 1,
   farsanteCount: 1,
+  mrWhiteHasHints: false,
 };
 
 /** Etiqueta legible del rol (revelada al eliminar). */

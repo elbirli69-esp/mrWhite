@@ -47,7 +47,7 @@ export function HomePage({ onStart }: HomePageProps) {
           </li>
           <li className="flex gap-3">
             <span className="mt-0.5 text-[var(--color-accent)]">02</span>
-            <span>Cada persona ve su palabra en secreto.</span>
+            <span>Cada persona ve su palabra (o pista) en secreto.</span>
           </li>
           <li className="flex gap-3">
             <span className="mt-0.5 text-[var(--color-accent)]">03</span>

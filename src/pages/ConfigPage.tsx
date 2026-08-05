@@ -1,6 +1,7 @@
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { NumberStepper } from '../components/NumberStepper';
+import { Toggle } from '../components/Toggle';
 import type { GameConfig } from '../types/game';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../types/game';
 import type { ValidationResult } from '../utils/validation';
@@ -66,7 +67,11 @@ export function ConfigPage({
 
           <NumberStepper
             label="Mr White"
-            description="Sin palabra. Debe fingir."
+            description={
+              config.mrWhiteHasHints
+                ? 'Sin palabra, pero con una pista para improvisar.'
+                : 'Sin palabra. Debe fingir.'
+            }
             value={config.mrWhiteCount}
             min={0}
             max={maxSpecial}
@@ -76,6 +81,14 @@ export function ConfigPage({
                 config.farsanteCount > room ? Math.max(0, room) : config.farsanteCount;
               onChange({ mrWhiteCount, farsanteCount });
             }}
+          />
+
+          <Toggle
+            label="Pistas para Mr White"
+            description="Si está activo, Mr White ve una pista cercana a la palabra secreta."
+            checked={config.mrWhiteHasHints}
+            disabled={config.mrWhiteCount === 0}
+            onChange={(mrWhiteHasHints) => onChange({ mrWhiteHasHints })}
           />
 
           <NumberStepper

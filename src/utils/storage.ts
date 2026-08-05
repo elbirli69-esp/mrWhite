@@ -4,7 +4,12 @@ import { DEFAULT_CONFIG, MAX_PLAYERS, MIN_PLAYERS } from '../types/game';
 const CONFIG_KEY = 'mr-white-config';
 const NAMES_KEY = 'mr-white-names';
 
-function isValidConfig(value: unknown): value is GameConfig {
+function isValidConfigShape(value: unknown): value is {
+  playerCount: number;
+  mrWhiteCount: number;
+  farsanteCount: number;
+  mrWhiteHasHints?: boolean;
+} {
   if (!value || typeof value !== 'object') return false;
   const c = value as Record<string, unknown>;
   return (
@@ -17,7 +22,8 @@ function isValidConfig(value: unknown): value is GameConfig {
     c.playerCount >= MIN_PLAYERS &&
     c.playerCount <= MAX_PLAYERS &&
     c.mrWhiteCount >= 0 &&
-    c.farsanteCount >= 0
+    c.farsanteCount >= 0 &&
+    (c.mrWhiteHasHints === undefined || typeof c.mrWhiteHasHints === 'boolean')
   );
 }
 
@@ -27,8 +33,13 @@ export function loadConfig(): GameConfig {
     const raw = localStorage.getItem(CONFIG_KEY);
     if (!raw) return { ...DEFAULT_CONFIG };
     const parsed: unknown = JSON.parse(raw);
-    if (!isValidConfig(parsed)) return { ...DEFAULT_CONFIG };
-    return parsed;
+    if (!isValidConfigShape(parsed)) return { ...DEFAULT_CONFIG };
+    return {
+      playerCount: parsed.playerCount,
+      mrWhiteCount: parsed.mrWhiteCount,
+      farsanteCount: parsed.farsanteCount,
+      mrWhiteHasHints: parsed.mrWhiteHasHints ?? DEFAULT_CONFIG.mrWhiteHasHints,
+    };
   } catch {
     return { ...DEFAULT_CONFIG };
   }
