@@ -17,14 +17,15 @@ npm install
 npm run dev
 ```
 
-Abre `/staycalm`. En local la API usa memoria (o Redis si tienes `.env.local` con Upstash).
+Abre `/staycalm`. En local la API usa memoria (o Redis si tienes `REDIS_URL` en `.env.local`).
 
 ## Producción
 
-Hace falta Upstash Redis en el proyecto Vercel:
+Hace falta un Redis accesible desde Vercel. Con Railway:
 
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
+1. Crea (o usa) un servicio **Redis** en Railway
+2. Copia `REDIS_URL`
+3. Pégala en Vercel → Settings → Environment Variables (Production + Preview)
 
 API: `GET/POST /api/staycalm`
 

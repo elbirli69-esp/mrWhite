@@ -6,9 +6,9 @@ Juego de mesa **Mr White** en el navegador: configura la partida, pasa el móvil
 
 Contador de frases compartido: https://mr-white-omega.vercel.app/staycalm
 
-Todos ven los mismos contadores (API + Upstash Redis). Código en `stayCalm/` + `api/staycalm.ts`.
+Todos ven los mismos contadores (API + Redis). Código en `stayCalm/` + `api/staycalm.ts`.
 
-Requiere `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en Vercel (Storage → Upstash Redis).
+Requiere `REDIS_URL` en Vercel (puedes usar el Redis de Railway).
 
 ## Stack
 

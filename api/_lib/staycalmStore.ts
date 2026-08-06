@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { createClient, type RedisClientType } from 'redis'
 import {
   createId,
   DEFAULT_COUNTERS,
@@ -12,6 +12,10 @@ const LOCK_KEY = 'staycalm:counters:lock'
 /** Fallback en memoria cuando no hay Redis (dev local). */
 let memoryStore: Counter[] | null = null
 
+/** Cliente reutilizado entre invocaciones serverless. */
+let redisClient: RedisClientType | null = null
+let redisConnecting: Promise<RedisClientType> | null = null
+
 function cloneDefaults(): Counter[] {
   return DEFAULT_COUNTERS.map((c: Counter) => ({ ...c }))
 }
@@ -20,19 +24,38 @@ function cloneList(list: Counter[]): Counter[] {
   return list.map((c) => ({ ...c }))
 }
 
-function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) {
+function hasRedisUrl(): boolean {
+  return Boolean(process.env.REDIS_URL?.trim())
+}
+
+async function getRedis(): Promise<RedisClientType | null> {
+  const url = process.env.REDIS_URL?.trim()
+  if (!url) {
     // En Vercel sin Redis los contadores no serían compartidos entre instancias.
     if (process.env.VERCEL) {
-      throw new Error(
-        'Faltan UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN',
-      )
+      throw new Error('Falta REDIS_URL (Redis de Railway)')
     }
     return null
   }
-  return new Redis({ url, token })
+
+  if (redisClient?.isOpen) return redisClient
+  if (redisConnecting) return redisConnecting
+
+  redisConnecting = (async () => {
+    const client = createClient({ url }) as RedisClientType
+    client.on('error', (err) => {
+      console.error('[staycalm redis]', err)
+    })
+    await client.connect()
+    redisClient = client
+    return client
+  })()
+
+  try {
+    return await redisConnecting
+  } finally {
+    redisConnecting = null
+  }
 }
 
 function isValidCounter(value: unknown): value is Counter {
@@ -50,26 +73,44 @@ function isValidCounter(value: unknown): value is Counter {
 
 function sanitize(list: unknown): Counter[] | null {
   if (!Array.isArray(list)) return null
-  const next = list.filter(isValidCounter).map((c) => ({
+  return list.filter(isValidCounter).map((c) => ({
     id: c.id,
     phrase: normalizePhrase(c.phrase),
     count: Math.max(0, Math.floor(c.count)),
     createdAt: c.createdAt,
   }))
-  return next
 }
 
-async function readRedis(redis: Redis): Promise<Counter[]> {
-  const raw = await redis.get<unknown>(LIST_KEY)
-  const sanitized = sanitize(raw)
-  if (sanitized) return sanitized
-  await redis.set(LIST_KEY, cloneDefaults())
-  return cloneDefaults()
+async function readRedis(redis: RedisClientType): Promise<Counter[]> {
+  const raw = await redis.get(LIST_KEY)
+  if (!raw) {
+    const defaults = cloneDefaults()
+    await redis.set(LIST_KEY, JSON.stringify(defaults))
+    return defaults
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    const sanitized = sanitize(parsed)
+    if (sanitized) return sanitized
+  } catch {
+    // corrupt → reseed
+  }
+
+  const defaults = cloneDefaults()
+  await redis.set(LIST_KEY, JSON.stringify(defaults))
+  return defaults
 }
 
-async function withLock<T>(redis: Redis, fn: () => Promise<T>): Promise<T> {
+async function withLock<T>(
+  redis: RedisClientType,
+  fn: () => Promise<T>,
+): Promise<T> {
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    const locked = await redis.set(LOCK_KEY, '1', { nx: true, px: 4000 })
+    const locked = await redis.set(LOCK_KEY, '1', {
+      NX: true,
+      PX: 4000,
+    })
     if (locked) {
       try {
         return await fn()
@@ -83,7 +124,7 @@ async function withLock<T>(redis: Redis, fn: () => Promise<T>): Promise<T> {
 }
 
 export async function listCounters(): Promise<Counter[]> {
-  const redis = getRedis()
+  const redis = await getRedis()
   if (!redis) {
     if (!memoryStore) memoryStore = cloneDefaults()
     return cloneList(memoryStore)
@@ -94,7 +135,7 @@ export async function listCounters(): Promise<Counter[]> {
 async function writeCounters(
   mutator: (prev: Counter[]) => Counter[],
 ): Promise<Counter[]> {
-  const redis = getRedis()
+  const redis = await getRedis()
   if (!redis) {
     if (!memoryStore) memoryStore = cloneDefaults()
     memoryStore = mutator(cloneList(memoryStore))
@@ -104,7 +145,7 @@ async function writeCounters(
   return withLock(redis, async () => {
     const current = await readRedis(redis)
     const next = mutator(cloneList(current))
-    await redis.set(LIST_KEY, next)
+    await redis.set(LIST_KEY, JSON.stringify(next))
     return cloneList(next)
   })
 }
@@ -167,8 +208,6 @@ export async function addCounter(phrase: string): Promise<{
   return { counters, ok: true }
 }
 
-export type StayCalmAction =
-  | { action: 'increment'; id: string }
-  | { action: 'reset'; id: string }
-  | { action: 'remove'; id: string }
-  | { action: 'add'; phrase: string }
+export function usingMemoryFallback(): boolean {
+  return !hasRedisUrl() && !process.env.VERCEL
+}
