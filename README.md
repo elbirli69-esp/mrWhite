@@ -2,6 +2,12 @@
 
 Juego de mesa **Mr White** en el navegador: configura la partida, pasa el móvil y revela roles en secreto.
 
+## stayCalm (temporalmente en este repo)
+
+Contador de frases: https://mr-white-omega.vercel.app/staycalm
+
+Código aislable en `stayCalm/` (más adelante tendrá su propio proyecto).
+
 ## Stack
 
 - React 18 + TypeScript
