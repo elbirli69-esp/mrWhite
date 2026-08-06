@@ -4,8 +4,11 @@ import { CounterCard } from './components/CounterCard'
 import { useCounters } from './hooks/useCounters'
 
 export default function App() {
-  const { counters, increment, reset, remove, add } = useCounters()
+  const { counters, status, increment, reset, remove, add, refresh } =
+    useCounters()
   const total = counters.reduce((sum, c) => sum + c.count, 0)
+  const loading = status === 'loading'
+  const offline = status === 'error'
 
   return (
     <div className="relative isolate min-h-dvh overflow-hidden">
@@ -36,13 +39,40 @@ export default function App() {
             transition={{ duration: 0.45, delay: 0.18 }}
             className="mt-4 text-sm font-medium tracking-wide text-[rgba(232,244,242,0.7)] uppercase"
           >
-            {total === 0
-              ? 'Todavía cero. Qué paz.'
-              : `${total} en total · ${counters.length} frases`}
+            {loading
+              ? 'Cargando contadores…'
+              : total === 0
+                ? 'Todavía cero. Qué paz.'
+                : `${total} en total · ${counters.length} frases`}
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+            className="mt-2 text-xs tracking-wide text-[rgba(232,244,242,0.55)]"
+          >
+            {offline
+              ? 'Sin conexión con el servidor'
+              : status === 'live'
+                ? 'Compartido en vivo · mismo contador para todos'
+                : ' '}
           </motion.p>
         </header>
 
-        <AddCounterForm onAdd={add} />
+        {offline ? (
+          <div className="rounded-2xl border border-[#ffd5d5]/40 bg-[rgba(80,20,20,0.35)] px-4 py-3 text-center text-sm text-[#ffd5d5]">
+            No se pudieron cargar los contadores compartidos.{' '}
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="underline underline-offset-2"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : null}
+
+        <AddCounterForm onAdd={add} disabled={loading || offline} />
 
         <section aria-label="Contadores" className="flex flex-col gap-4">
           <AnimatePresence mode="popLayout">
@@ -58,7 +88,7 @@ export default function App() {
             ))}
           </AnimatePresence>
 
-          {counters.length === 0 ? (
+          {!loading && counters.length === 0 ? (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

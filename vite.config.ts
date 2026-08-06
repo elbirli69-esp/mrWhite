@@ -2,11 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { stayCalmApiPlugin } from './scripts/staycalm-api-plugin.js';
 
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    stayCalmApiPlugin(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
@@ -43,6 +45,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
         enabled: false,
