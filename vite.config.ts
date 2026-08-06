@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Mr White',
-        short_name: 'Mr White',
-        description: 'Juego de mesa Mr White en el navegador. Pasa el móvil y descubre al impostor.',
+        name: 'Mr White · stayCalm',
+        short_name: 'Apps',
+        description: 'Elige Mr White o stayCalm en el navegador.',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'fullscreen',

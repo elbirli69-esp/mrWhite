@@ -18,6 +18,19 @@ export default function App() {
       <main className="relative mx-auto flex w-full max-w-lg flex-col gap-8 px-5 pt-10 pb-16 sm:pt-14">
         <header className="brand-mark text-center">
           <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35 }}
+            className="mb-4"
+          >
+            <a
+              href="/"
+              className="text-sm font-medium tracking-wide text-[rgba(232,244,242,0.7)] underline-offset-4 transition-colors hover:text-[var(--color-foam)] hover:underline"
+            >
+              ← Apps
+            </a>
+          </motion.p>
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}

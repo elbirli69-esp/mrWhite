@@ -10,14 +10,16 @@ if (!rootEl) {
 
 const root = createRoot(rootEl);
 
-function isStayCalmPath(): boolean {
-  const path = window.location.pathname.replace(/\/+$/, '') || '/';
-  return path === '/staycalm' || path.endsWith('/staycalm');
+function normalizePath(): string {
+  return window.location.pathname.replace(/\/+$/, '') || '/';
 }
 
 async function boot() {
-  if (isStayCalmPath()) {
+  const path = normalizePath();
+
+  if (path === '/staycalm') {
     document.documentElement.dataset.app = 'staycalm';
+    document.title = 'stayCalm';
     await import('../stayCalm/src/index.css');
     const { default: StayCalmApp } = await import('../stayCalm/src/App');
     root.render(
@@ -28,12 +30,28 @@ async function boot() {
     return;
   }
 
-  document.documentElement.dataset.readable = loadReadableMode() ? 'true' : 'false';
-  await import('./index.css');
-  const { default: App } = await import('./App');
+  if (path === '/mrwhite') {
+    document.documentElement.dataset.app = 'mrwhite';
+    document.title = 'Mr White';
+    document.documentElement.dataset.readable = loadReadableMode() ? 'true' : 'false';
+    await import('./index.css');
+    const { default: App } = await import('./App');
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
+    return;
+  }
+
+  // Hub / landing en /
+  document.documentElement.dataset.app = 'hub';
+  document.title = 'Elige app';
+  await import('./hub.css');
+  const { HubPage } = await import('./pages/HubPage');
   root.render(
     <StrictMode>
-      <App />
+      <HubPage />
     </StrictMode>,
   );
 }
