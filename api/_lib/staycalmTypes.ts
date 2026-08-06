@@ -35,3 +35,12 @@ export function createId(): string {
 export function normalizePhrase(phrase: string): string {
   return phrase.trim().replace(/\s+/g, ' ')
 }
+
+/** Más votos primero; empate → más antigua, luego frase. */
+export function sortCountersByVotes(counters: Counter[]): Counter[] {
+  return [...counters].sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count
+    if (a.createdAt !== b.createdAt) return a.createdAt - b.createdAt
+    return a.phrase.localeCompare(b.phrase, 'es')
+  })
+}

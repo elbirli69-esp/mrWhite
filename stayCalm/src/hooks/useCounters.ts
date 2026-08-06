@@ -6,7 +6,7 @@ import {
   markLegacyMigrationDone,
   readLegacyLocalCounters,
 } from '../legacyLocal'
-import type { Counter } from '../types'
+import { sortCountersByVotes, type Counter } from '../types'
 
 const POLL_MS = 2500
 
@@ -20,7 +20,7 @@ export function useCounters() {
 
   const refresh = useCallback(async () => {
     try {
-      const next = await fetchSharedCounters()
+      const next = sortCountersByVotes(await fetchSharedCounters())
       setCounters(next)
       setStatus('live')
       return next
@@ -53,7 +53,7 @@ export function useCounters() {
           counters: local,
         })
         if (!cancelled) {
-          setCounters(result.counters)
+          setCounters(sortCountersByVotes(result.counters))
           setStatus('live')
         }
         markLegacyMigrationDone()
@@ -80,10 +80,10 @@ export function useCounters() {
     request: () => Promise<{ counters: Counter[]; ok: boolean }>,
   ): Promise<boolean> {
     busyRef.current = true
-    setCounters(optimistic)
+    setCounters((prev) => sortCountersByVotes(optimistic(prev)))
     try {
       const result = await request()
-      setCounters(result.counters)
+      setCounters(sortCountersByVotes(result.counters))
       setStatus('live')
       return result.ok
     } catch {
