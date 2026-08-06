@@ -3,19 +3,21 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { stayCalmApiPlugin } from './scripts/staycalm-api-plugin.js';
+import { bulardoApiPlugin } from './scripts/bulardo-api-plugin.js';
 
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     stayCalmApiPlugin(),
+    bulardoApiPlugin(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Mr White · stayCalm',
+        name: 'Mr White · stayCalm · bulardoCreator',
         short_name: 'Apps',
-        description: 'Elige Mr White o stayCalm en el navegador.',
+        description: 'Elige Mr White, stayCalm o bulardoCreator.',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'fullscreen',

@@ -4,8 +4,12 @@ Landing en `/` para elegir app:
 
 - **Mr White** → `/mrwhite` — juego de impostores
 - **stayCalm** → `/staycalm` — contador de frases compartido (API + Redis)
+- **bulardoCreator** → `/bulardocreator` — noticias creíbles inventadas (DeepSeek)
 
-Requiere `REDIS_URL` en Vercel (Redis de Railway, URL pública).
+Variables en Vercel:
+
+- `REDIS_URL` (Railway, URL pública)
+- `DEEPSEEK_API_KEY` (bulardoCreator)
 
 ## Stack
 

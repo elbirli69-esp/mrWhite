@@ -22,5 +22,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "stayCalm/src"]
+  "include": ["src", "stayCalm/src", "bulardoCreator/src"]
 }

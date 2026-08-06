@@ -1,0 +1,47 @@
+import { motion } from 'framer-motion'
+import type { BulardoArticle } from '../api'
+
+type Props = {
+  question: string
+  article: BulardoArticle
+}
+
+export function ArticleCard({ question, article }: Props) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-[var(--bulardo-line)] bg-[var(--bulardo-panel)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+    >
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="rounded-md bg-[var(--bulardo-accent-soft)] px-2.5 py-1 text-[0.7rem] font-semibold tracking-[0.14em] text-[var(--bulardo-accent)] uppercase">
+          Fabricada
+        </span>
+        <span className="text-xs tracking-wide text-[var(--bulardo-muted)]">
+          Por curiosidad · {question}
+        </span>
+      </div>
+
+      <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight font-bold tracking-tight text-[var(--bulardo-ink)] sm:text-3xl">
+        {article.headline}
+      </h2>
+
+      {article.lead ? (
+        <p className="mt-4 text-[1.05rem] leading-relaxed font-medium text-[var(--bulardo-ink)]">
+          {article.lead}
+        </p>
+      ) : null}
+
+      <div className="mt-4 space-y-3 text-[0.98rem] leading-relaxed text-[var(--bulardo-muted)] whitespace-pre-wrap">
+        {article.body}
+      </div>
+
+      {article.closer ? (
+        <p className="mt-4 border-t border-[var(--bulardo-line)] pt-4 text-sm text-[var(--bulardo-muted)]">
+          {article.closer}
+        </p>
+      ) : null}
+    </motion.article>
+  )
+}

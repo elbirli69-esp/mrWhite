@@ -1,0 +1,33 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { generateBulardoArticle } from './_lib/bulardoGenerate.js'
+
+function sendJson(res: VercelResponse, status: number, body: unknown) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+  res.setHeader('Cache-Control', 'no-store')
+  res.status(status).json(body)
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', 'POST')
+      return sendJson(res, 405, { error: 'Método no permitido' })
+    }
+
+    const body =
+      typeof req.body === 'string'
+        ? (JSON.parse(req.body) as Record<string, unknown>)
+        : ((req.body ?? {}) as Record<string, unknown>)
+
+    const question = typeof body.question === 'string' ? body.question : ''
+    const article = await generateBulardoArticle(question)
+    return sendJson(res, 200, { ok: true, article })
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Error del servidor'
+    console.error('[bulardo api]', error)
+    const status =
+      message.includes('vacía') || message.includes('larga') ? 400 : 500
+    return sendJson(res, status, { ok: false, error: message })
+  }
+}

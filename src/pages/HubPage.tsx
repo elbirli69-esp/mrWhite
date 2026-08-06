@@ -7,6 +7,7 @@ export function HubPage() {
     <div className="hub-shell">
       <div className="hub-glow hub-glow--a" aria-hidden />
       <div className="hub-glow hub-glow--b" aria-hidden />
+      <div className="hub-glow hub-glow--c" aria-hidden />
 
       <main className="hub-main">
         <motion.p
@@ -49,6 +50,22 @@ export function HubPage() {
               Cuenta las frases. Respira. Sigue.
             </span>
             <span className="hub-choice-cta">Entrar</span>
+          </motion.a>
+
+          <motion.a
+            href="/bulardocreator"
+            className="hub-choice hub-choice--bulardo"
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.26, ease }}
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.985 }}
+          >
+            <span className="hub-choice-name">bulardoCreator</span>
+            <span className="hub-choice-line">
+              Pregunta por curiosidad. Noticia creíble… y falsa.
+            </span>
+            <span className="hub-choice-cta">Fabricar</span>
           </motion.a>
         </nav>
       </main>

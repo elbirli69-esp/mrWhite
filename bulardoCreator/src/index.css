@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-app='bulardo'] {
+  color-scheme: dark;
+  --bulardo-bg: #0c0d10;
+  --bulardo-panel: #15171c;
+  --bulardo-ink: #f2eee6;
+  --bulardo-muted: rgba(242, 238, 230, 0.68);
+  --bulardo-line: rgba(242, 238, 230, 0.14);
+  --bulardo-accent: #d84a3a;
+  --bulardo-accent-soft: rgba(216, 74, 58, 0.18);
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-app='bulardo'],
+html[data-app='bulardo'] body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: clip;
+  color: var(--bulardo-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(ellipse 70% 45% at 80% -10%, rgba(216, 74, 58, 0.18), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 10% 100%, rgba(80, 90, 120, 0.16), transparent 50%),
+    var(--bulardo-bg);
+}
+
+html[data-app='bulardo'] #root {
+  min-height: 100dvh;
+}
+
+html[data-app='bulardo'] button,
+html[data-app='bulardo'] input,
+html[data-app='bulardo'] textarea {
+  font: inherit;
+}
