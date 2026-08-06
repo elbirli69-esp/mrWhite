@@ -252,6 +252,74 @@ export async function addCounter(phrase: string): Promise<{
   return { counters, ok: true }
 }
 
+function sanitizeIncoming(list: unknown): Counter[] {
+  if (!Array.isArray(list)) return []
+  const out: Counter[] = []
+  for (const value of list) {
+    if (!value || typeof value !== 'object') continue
+    const c = value as Partial<Counter>
+    if (typeof c.phrase !== 'string' || !c.phrase.trim()) continue
+    if (typeof c.count !== 'number' || !Number.isFinite(c.count)) continue
+    out.push({
+      id: typeof c.id === 'string' && c.id ? c.id : createId(),
+      phrase: normalizePhrase(c.phrase),
+      count: Math.max(0, Math.floor(c.count)),
+      createdAt: typeof c.createdAt === 'number' ? c.createdAt : Date.now(),
+    })
+  }
+  return out
+}
+
+/**
+ * Fusiona contadores antiguos (p. ej. localStorage) en el estado compartido.
+ * - Frases nuevas se añaden
+ * - Si ya existe la frase, se queda el count más alto
+ */
+export async function mergeCounters(incoming: unknown): Promise<{
+  counters: Counter[]
+  added: number
+  updated: number
+}> {
+  const imported = sanitizeIncoming(incoming)
+  let added = 0
+  let updated = 0
+
+  const counters = await writeCounters((prev) => {
+    const byPhrase = new Map<string, Counter>()
+    for (const c of prev) {
+      byPhrase.set(c.phrase.toLowerCase(), { ...c })
+    }
+
+    for (const item of imported) {
+      const key = item.phrase.toLowerCase()
+      const existing = byPhrase.get(key)
+      if (!existing) {
+        byPhrase.set(key, item)
+        added += 1
+        continue
+      }
+      if (item.count > existing.count) {
+        byPhrase.set(key, { ...existing, count: item.count })
+        updated += 1
+      }
+    }
+
+    const serverOrder = prev.map((c) => c.phrase.toLowerCase())
+    const merged: Counter[] = []
+    for (const key of serverOrder) {
+      const c = byPhrase.get(key)
+      if (c) merged.push(c)
+      byPhrase.delete(key)
+    }
+    const extras = [...byPhrase.values()].sort(
+      (a, b) => a.createdAt - b.createdAt,
+    )
+    return [...merged, ...extras]
+  })
+
+  return { counters, added, updated }
+}
+
 export function usingMemoryFallback(): boolean {
   return !hasRedisConfig() && !process.env.VERCEL
 }

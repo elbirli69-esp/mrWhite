@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchSharedCounters, postSharedAction } from '../api/countersApi'
+import {
+  hasLegacyMigrationRun,
+  legacyNeedsMigration,
+  markLegacyMigrationDone,
+  readLegacyLocalCounters,
+} from '../legacyLocal'
 import type { Counter } from '../types'
 
 const POLL_MS = 2500
@@ -10,23 +16,63 @@ export function useCounters() {
   const [counters, setCounters] = useState<Counter[]>([])
   const [status, setStatus] = useState<SyncStatus>('loading')
   const busyRef = useRef(false)
+  const migrationTried = useRef(false)
 
   const refresh = useCallback(async () => {
     try {
       const next = await fetchSharedCounters()
       setCounters(next)
       setStatus('live')
+      return next
     } catch {
       setStatus((prev) => (prev === 'loading' ? 'error' : prev))
+      return null
     }
   }, [])
 
   useEffect(() => {
-    void refresh()
+    let cancelled = false
+
+    async function boot() {
+      const server = await refresh()
+      if (cancelled || server === null || migrationTried.current) return
+      migrationTried.current = true
+
+      // Recupera frases/contadores que quedaron en localStorage del modo anterior.
+      if (hasLegacyMigrationRun()) return
+      const local = readLegacyLocalCounters()
+      if (!legacyNeedsMigration(local, server)) {
+        markLegacyMigrationDone()
+        return
+      }
+
+      busyRef.current = true
+      try {
+        const result = await postSharedAction({
+          action: 'merge',
+          counters: local,
+        })
+        if (!cancelled) {
+          setCounters(result.counters)
+          setStatus('live')
+        }
+        markLegacyMigrationDone()
+      } catch {
+        // Se reintentará en la próxima visita si falla.
+        migrationTried.current = false
+      } finally {
+        busyRef.current = false
+      }
+    }
+
+    void boot()
     const timer = window.setInterval(() => {
       if (!busyRef.current) void refresh()
     }, POLL_MS)
-    return () => window.clearInterval(timer)
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
   }, [refresh])
 
   async function runMutation(

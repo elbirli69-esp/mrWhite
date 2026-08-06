@@ -4,6 +4,7 @@ import {
   addCounter,
   incrementCounter,
   listCounters,
+  mergeCounters,
   removeCounter,
   resetCounter,
 } from '../api/_lib/staycalmStore.js'
@@ -69,6 +70,16 @@ export function stayCalmApiPlugin(): Plugin {
                 counters: result.counters,
                 ok: result.ok,
                 error: result.error,
+              })
+              return
+            }
+            if (action === 'merge' && Array.isArray(body.counters)) {
+              const result = await mergeCounters(body.counters)
+              sendJson(res, 200, {
+                counters: result.counters,
+                ok: true,
+                added: result.added,
+                updated: result.updated,
               })
               return
             }
