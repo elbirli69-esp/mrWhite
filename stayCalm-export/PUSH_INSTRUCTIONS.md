@@ -1,6 +1,6 @@
 # Subir stayCalm a su propio repo
 
-Si Cursor aún no puede hacer push a https://github.com/elbirli69-esp/stayCalm :
+## Opción rápida (bundle)
 
 ```bash
 git clone https://github.com/elbirli69-esp/stayCalm.git
@@ -11,4 +11,6 @@ git pull stayCalm.bundle main
 git push -u origin main
 ```
 
-Luego puedes borrar esta rama de export en mrWhite.
+## Opción carpeta
+
+Copia el contenido de `stayCalm-export/` (excepto este markdown y el `.bundle`) a un clone vacío de stayCalm, commit y push.
