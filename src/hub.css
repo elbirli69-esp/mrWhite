@@ -72,6 +72,15 @@ html[data-app='hub'] #root {
   animation: hub-drift-b 16s ease-in-out infinite alternate;
 }
 
+.hub-glow--c {
+  left: 35%;
+  bottom: -15%;
+  width: 40vw;
+  height: 35vh;
+  background: rgba(216, 74, 58, 0.12);
+  animation: hub-drift-a 18s ease-in-out infinite alternate-reverse;
+}
+
 @keyframes hub-drift-a {
   from {
     transform: translate(0, 0);
@@ -164,6 +173,20 @@ html[data-app='hub'] #root {
   outline: none;
 }
 
+.hub-choice--bulardo {
+  background:
+    linear-gradient(145deg, rgba(22, 14, 16, 0.94), rgba(36, 18, 20, 0.9));
+  border-color: rgba(216, 74, 58, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--bulardo:hover,
+.hub-choice--bulardo:focus-visible {
+  border-color: rgba(216, 74, 58, 0.6);
+  box-shadow: 0 22px 60px rgba(216, 74, 58, 0.14);
+  outline: none;
+}
+
 .hub-choice-name {
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 9vw, 3.6rem);
@@ -180,6 +203,11 @@ html[data-app='hub'] #root {
   color: #e8f7f4;
   font-family: "Fraunces", ui-serif, Georgia, serif;
   font-weight: 600;
+}
+
+.hub-choice--bulardo .hub-choice-name {
+  color: #ffe8e4;
+  font-size: clamp(2.1rem, 7vw, 2.8rem);
 }
 
 .hub-choice-line {
@@ -205,15 +233,19 @@ html[data-app='hub'] #root {
   color: var(--hub-teal);
 }
 
+.hub-choice--bulardo .hub-choice-cta {
+  color: #ff8f7f;
+}
+
 @media (min-width: 720px) {
   .hub-main {
-    max-width: 56rem;
+    max-width: 64rem;
     gap: 2.5rem;
   }
 
   .hub-nav {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 1.25rem;
   }
 
@@ -221,5 +253,15 @@ html[data-app='hub'] #root {
     min-height: 18rem;
     justify-content: flex-end;
     padding: 2rem;
+  }
+}
+
+@media (min-width: 720px) and (max-width: 980px) {
+  .hub-nav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hub-choice--bulardo {
+    grid-column: 1 / -1;
   }
 }

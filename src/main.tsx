@@ -30,6 +30,19 @@ async function boot() {
     return;
   }
 
+  if (path === '/bulardocreator') {
+    document.documentElement.dataset.app = 'bulardo';
+    document.title = 'bulardoCreator';
+    await import('../bulardoCreator/src/index.css');
+    const { default: BulardoApp } = await import('../bulardoCreator/src/App');
+    root.render(
+      <StrictMode>
+        <BulardoApp />
+      </StrictMode>,
+    );
+    return;
+  }
+
   if (path === '/mrwhite') {
     document.documentElement.dataset.app = 'mrwhite';
     document.title = 'Mr White';
@@ -44,7 +57,6 @@ async function boot() {
     return;
   }
 
-  // Hub / landing en /
   document.documentElement.dataset.app = 'hub';
   document.title = 'Elige app';
   await import('./hub.css');
