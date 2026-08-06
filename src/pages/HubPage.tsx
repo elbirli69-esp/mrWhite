@@ -63,7 +63,7 @@ export function HubPage() {
           >
             <span className="hub-choice-name">bulardoCreator</span>
             <span className="hub-choice-line">
-              Pregunta por curiosidad. Noticia creíble… y falsa.
+              Modo Cuñado Científico: estudio falso y rima soez.
             </span>
             <span className="hub-choice-cta">Fabricar</span>
           </motion.a>
