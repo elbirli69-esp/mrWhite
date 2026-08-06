@@ -5,7 +5,7 @@
   --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
-:root {
+html[data-app='staycalm'] {
   color-scheme: light;
 
   --color-bg-deep: #0e3d48;
@@ -23,14 +23,8 @@
   --touch-min: 3rem;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
+html[data-app='staycalm'],
+html[data-app='staycalm'] body {
   margin: 0;
   min-height: 100%;
   overflow-x: clip;
@@ -44,7 +38,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body {
+html[data-app='staycalm'] body {
   min-height: 100dvh;
   background:
     radial-gradient(ellipse 90% 60% at 10% -10%, rgba(126, 200, 192, 0.55), transparent 55%),
@@ -53,16 +47,16 @@ body {
   background-attachment: fixed;
 }
 
-#root {
+html[data-app='staycalm'] #root {
   min-height: 100dvh;
 }
 
-button,
-input {
+html[data-app='staycalm'] button,
+html[data-app='staycalm'] input {
   font: inherit;
 }
 
-::selection {
+html[data-app='staycalm'] ::selection {
   background: rgba(42, 157, 143, 0.35);
   color: var(--color-ink);
 }
