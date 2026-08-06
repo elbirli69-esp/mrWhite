@@ -3,6 +3,7 @@ import {
   createId,
   DEFAULT_COUNTERS,
   normalizePhrase,
+  sortCountersByVotes,
   type Counter,
 } from './staycalmTypes.js'
 
@@ -171,9 +172,9 @@ export async function listCounters(): Promise<Counter[]> {
   const redis = await getRedis()
   if (!redis) {
     if (!memoryStore) memoryStore = cloneDefaults()
-    return cloneList(memoryStore)
+    return sortCountersByVotes(cloneList(memoryStore))
   }
-  return readRedis(redis)
+  return sortCountersByVotes(await readRedis(redis))
 }
 
 async function writeCounters(
@@ -182,13 +183,13 @@ async function writeCounters(
   const redis = await getRedis()
   if (!redis) {
     if (!memoryStore) memoryStore = cloneDefaults()
-    memoryStore = mutator(cloneList(memoryStore))
+    memoryStore = sortCountersByVotes(mutator(cloneList(memoryStore)))
     return cloneList(memoryStore)
   }
 
   return withLock(redis, async () => {
     const current = await readRedis(redis)
-    const next = mutator(cloneList(current))
+    const next = sortCountersByVotes(mutator(cloneList(current)))
     await redis.set(LIST_KEY, JSON.stringify(next))
     return cloneList(next)
   })
