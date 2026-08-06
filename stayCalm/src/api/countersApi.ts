@@ -4,6 +4,8 @@ type CountersResponse = {
   counters: Counter[]
   ok?: boolean
   error?: string
+  added?: number
+  updated?: number
 }
 
 async function readResponse(res: Response): Promise<CountersResponse> {
@@ -32,7 +34,8 @@ export async function postSharedAction(
     | { action: 'increment'; id: string }
     | { action: 'reset'; id: string }
     | { action: 'remove'; id: string }
-    | { action: 'add'; phrase: string },
+    | { action: 'add'; phrase: string }
+    | { action: 'merge'; counters: Counter[] },
 ): Promise<{ counters: Counter[]; ok: boolean; error?: string }> {
   const res = await fetch('/api/staycalm', {
     method: 'POST',

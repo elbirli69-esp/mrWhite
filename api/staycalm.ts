@@ -3,6 +3,7 @@ import {
   addCounter,
   incrementCounter,
   listCounters,
+  mergeCounters,
   removeCounter,
   resetCounter,
 } from './_lib/staycalmStore.js'
@@ -45,6 +46,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           counters: result.counters,
           ok: result.ok,
           error: result.error,
+        })
+      }
+      if (action === 'merge' && Array.isArray(body.counters)) {
+        const result = await mergeCounters(body.counters)
+        return sendJson(res, 200, {
+          counters: result.counters,
+          ok: true,
+          added: result.added,
+          updated: result.updated,
         })
       }
 
