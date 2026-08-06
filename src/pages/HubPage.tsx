@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { UpdatePrompt } from '../components/UpdatePrompt'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -69,6 +70,8 @@ export function HubPage() {
           </motion.a>
         </nav>
       </main>
+
+      <UpdatePrompt />
     </div>
   )
 }
