@@ -36,13 +36,13 @@ function parseArticle(raw: string): BulardoArticle {
 
 function mockArticle(question: string): BulardoArticle {
   const topic = question.trim() || 'un asunto menor'
-  const raw = `TITULAR: Un informe preliminar sitúa “${topic}” en el centro del debate técnico
-ENTRADA: Fuentes consultadas por Bulardo aseguran que una revisión interna ha elevado la atención sobre ${topic} tras detectarse “patrones inconsistentes” en mediciones de rutina.
+  const raw = `TITULAR: El Instituto Internacional del Garbanzo Cuántico vincula “${topic}” a un pico de resonancia leguminosa
+ENTRADA: Un estudio con 41.208 voluntarios afirma que ${topic} dispara un 87,463% el coeficiente de empanzamiento orbital, según datos filtrados a Bulardo.
 CUERPO:
-Según un documento al que este medio habría tenido acceso, un equipo de análisis del Instituto Ibérico de Observación Aplicada habría recomendado abrir una comisión de seguimiento. “No hablamos de alarma, sino de prudencia metodológica”, habría declarado Ana Varela, portavoz del organismo.
+La investigación, dirigida por el Dr. Gumersindo Pechugón en el Centro Ibérico de Digestión Orbital, midió el bifasaje garbancilar con sensores de eructón. “Lo que parece una cena es, en realidad, un colapso del vector panzal”, declaró Pechugón entre aplausos de colegas y un plato de fabada de control.
 
-La nota añade que varios ayuntamientos estarían contrastando protocolos locales “por si el fenómeno tiene impacto operativo”. Ninguna autoridad oficial ha confirmado de forma independiente estos extremos, aunque en foros especializados ya circulan borradores con calendarios tentativos.
-CIERRE: Bulardo seguirá la evolución de unas informaciones que, de momento, no han sido ratificadas por canales oficiales.`
+El protocolo propuesto —caminar en círculos antihorarios tarareando la tabla periódica— habría reducido la hinchazón percibida en 12.007 sujetos, aunque 39 desarrollaron “eco de alubia” audible a 14 metros. El laboratorio pide no reproducir el ensayo en casa sin bata y un garbanzo de calibración.
+CIERRE: Conclusión del cuñado científico: si te duele el bloste, se te pone la polla dura como un poste.`
   return parseArticle(raw)
 }
 
@@ -73,8 +73,8 @@ export async function generateBulardoArticle(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      temperature: 0.85,
-      max_tokens: 700,
+      temperature: 1.05,
+      max_tokens: 900,
       messages: [
         { role: 'system', content: BULARDO_SYSTEM_PROMPT },
         { role: 'user', content: buildBulardoUserPrompt(trimmed) },

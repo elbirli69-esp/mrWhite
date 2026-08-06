@@ -71,11 +71,11 @@ export default function App() {
           transition={{ delay: 0.08 }}
           className="mt-3 max-w-md text-[var(--bulardo-muted)]"
         >
-          Pregunta por curiosidad. Recibes una noticia con pinta de real… y es
-          inventada.
+          Pregunta por curiosidad. Entra el Modo Cuñado Científico: instituto
+          ficticio, estudio absurdo y cero consejos útiles.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
-          Contenido fabricado · no es información real
+          Modo Cuñado Científico · 100% inventado
         </p>
       </header>
 
@@ -85,8 +85,8 @@ export default function App() {
       >
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-center text-[var(--bulardo-muted)]">
-            Prueba con algo como “efecto Venturi”, “Mathieu al baño” o “por
-            curiosidad, ¿qué pasó con las pesetas?”.
+            Prueba con algo como “estómago lleno de fabada”, “efecto Venturi”
+            o “por qué me pica la rodilla cuando llueve”.
           </div>
         ) : null}
 

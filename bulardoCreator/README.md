@@ -1,6 +1,6 @@
 # bulardoCreator
 
-Pregunta por curiosidad → recibe una **noticia creíble inventada** (DeepSeek).
+Pregunta por curiosidad → **Modo Cuñado Científico**: noticia absurda inventada (DeepSeek), con instituto falso, estadísticas ridículas y cierre soez rimado.
 
 Ruta: `/bulardocreator`
 
