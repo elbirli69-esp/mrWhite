@@ -27,6 +27,20 @@ export function HomePage({
           <span className="text-4xl">🤵</span>
         </motion.div>
 
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35 }}
+          className="mb-4"
+        >
+          <a
+            href="/"
+            className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
+          >
+            ← Apps
+          </a>
+        </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

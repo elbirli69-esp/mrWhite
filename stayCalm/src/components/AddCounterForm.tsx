@@ -2,26 +2,34 @@ import { useState, type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 
 type Props = {
-  onAdd: (phrase: string) => boolean
+  onAdd: (phrase: string) => boolean | Promise<boolean>
+  disabled?: boolean
 }
 
-export function AddCounterForm({ onAdd }: Props) {
+export function AddCounterForm({ onAdd, disabled = false }: Props) {
   const [phrase, setPhrase] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const ok = onAdd(phrase)
-    if (!ok) {
-      setError(
-        phrase.trim()
-          ? 'Esa frase ya existe'
-          : 'Escribe una frase para contar',
-      )
-      return
+    if (disabled || pending) return
+    setPending(true)
+    try {
+      const ok = await onAdd(phrase)
+      if (!ok) {
+        setError(
+          phrase.trim()
+            ? 'Esa frase ya existe'
+            : 'Escribe una frase para contar',
+        )
+        return
+      }
+      setPhrase('')
+      setError(null)
+    } finally {
+      setPending(false)
     }
-    setPhrase('')
-    setError(null)
   }
 
   return (
@@ -39,7 +47,8 @@ export function AddCounterForm({ onAdd }: Props) {
         Nueva frase
       </label>
       <p className="mb-4 text-sm text-[rgba(232,244,242,0.82)]">
-        Añade un botón para empezar a contar otra cosa.
+        Añade un botón para empezar a contar otra cosa. Se comparte con todo el
+        mundo.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
@@ -51,11 +60,13 @@ export function AddCounterForm({ onAdd }: Props) {
           }}
           placeholder='ej. "otra vez el lag"'
           maxLength={80}
-          className="min-h-[var(--touch-min)] flex-1 rounded-xl border border-white/20 bg-[var(--color-foam)] px-4 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
+          disabled={disabled || pending}
+          className="min-h-[var(--touch-min)] flex-1 rounded-xl border border-white/20 bg-[var(--color-foam)] px-4 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] disabled:opacity-60"
         />
         <button
           type="submit"
-          className="min-h-[var(--touch-min)] cursor-pointer rounded-xl bg-[var(--color-accent)] px-5 font-semibold text-white transition-colors hover:bg-[var(--color-accent-deep)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          disabled={disabled || pending}
+          className="min-h-[var(--touch-min)] cursor-pointer rounded-xl bg-[var(--color-accent)] px-5 font-semibold text-white transition-colors hover:bg-[var(--color-accent-deep)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           Añadir contador
         </button>

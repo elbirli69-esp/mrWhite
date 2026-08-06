@@ -1,12 +1,11 @@
-# Mr White
+# Mr White + stayCalm
 
-Juego de mesa **Mr White** en el navegador: configura la partida, pasa el móvil y revela roles en secreto.
+Landing en `/` para elegir app:
 
-## stayCalm (temporalmente en este repo)
+- **Mr White** → `/mrwhite` — juego de impostores
+- **stayCalm** → `/staycalm` — contador de frases compartido (API + Redis)
 
-Contador de frases: https://mr-white-omega.vercel.app/staycalm
-
-Código aislable en `stayCalm/` (más adelante tendrá su propio proyecto).
+Requiere `REDIS_URL` en Vercel (Redis de Railway, URL pública).
 
 ## Stack
 
