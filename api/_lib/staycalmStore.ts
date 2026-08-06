@@ -24,16 +24,60 @@ function cloneList(list: Counter[]): Counter[] {
   return list.map((c) => ({ ...c }))
 }
 
-function hasRedisUrl(): boolean {
-  return Boolean(process.env.REDIS_URL?.trim())
+function firstEnv(...names: string[]): string | undefined {
+  for (const name of names) {
+    const value = process.env[name]?.trim()
+    if (value) return value
+  }
+  return undefined
+}
+
+/** Detecta plantillas de Railway tipo redis://${{REDISUSER}}:... pegadas literales. */
+function looksUnresolvedTemplate(value: string): boolean {
+  return /\$\{\{|\{\{REDIS|\$\{REDIS/i.test(value)
+}
+
+/**
+ * Resuelve la URL de Redis.
+ * Acepta REDIS_URL completa, o las piezas de Railway
+ * (REDISHOST / REDISPORT / REDISUSER / REDIS_PASSWORD).
+ */
+export function resolveRedisUrl(): string | null {
+  const rawUrl = firstEnv('REDIS_URL', 'REDIS_PRIVATE_URL', 'DATABASE_URL')
+  if (rawUrl && !looksUnresolvedTemplate(rawUrl)) {
+    return rawUrl
+  }
+
+  const host = firstEnv('REDISHOST', 'REDIS_HOST', 'RAILWAY_TCP_PROXY_DOMAIN')
+  const port = firstEnv('REDISPORT', 'REDIS_PORT', 'RAILWAY_TCP_PROXY_PORT')
+  const user = firstEnv('REDISUSER', 'REDIS_USER', 'REDIS_USERNAME') ?? 'default'
+  const password = firstEnv(
+    'REDIS_PASSWORD',
+    'REDISPASSWORD',
+    'REDIS_PASS',
+  )
+
+  if (host && port && password) {
+    const encUser = encodeURIComponent(user)
+    const encPass = encodeURIComponent(password)
+    return `redis://${encUser}:${encPass}@${host}:${port}`
+  }
+
+  return null
+}
+
+function hasRedisConfig(): boolean {
+  return Boolean(resolveRedisUrl())
 }
 
 async function getRedis(): Promise<RedisClientType | null> {
-  const url = process.env.REDIS_URL?.trim()
+  const url = resolveRedisUrl()
   if (!url) {
     // En Vercel sin Redis los contadores no serían compartidos entre instancias.
     if (process.env.VERCEL) {
-      throw new Error('Falta REDIS_URL (Redis de Railway)')
+      throw new Error(
+        'Falta Redis: pon REDIS_URL real (no la plantilla ${{...}}) o REDISHOST/REDISPORT/REDISUSER/REDIS_PASSWORD en Vercel',
+      )
     }
     return null
   }
@@ -209,5 +253,5 @@ export async function addCounter(phrase: string): Promise<{
 }
 
 export function usingMemoryFallback(): boolean {
-  return !hasRedisUrl() && !process.env.VERCEL
+  return !hasRedisConfig() && !process.env.VERCEL
 }
