@@ -94,8 +94,7 @@ export default function App() {
           transition={{ delay: 0.08 }}
           className="mt-3 max-w-lg text-[var(--bulardo-muted)]"
         >
-          Pregunta por curiosidad o pega un briefing con factos: fabrica un bulo
-          en Modo Cuñado Científico.
+          Pregunta o pega factos: bulo corto estilo foro, Modo Cuñado Científico.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
           Modo Cuñado Científico · 100% inventado
@@ -156,7 +155,7 @@ export default function App() {
 
         {pending ? (
           <p className="text-sm tracking-wide text-[var(--bulardo-muted)]">
-            Redacción inventando cable…
+            Montando el bulo…
           </p>
         ) : null}
         <div ref={endRef} />

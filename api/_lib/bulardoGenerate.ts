@@ -38,14 +38,12 @@ function parseArticle(raw: string): BulardoArticle {
 }
 
 function mockArticle(input: string): BulardoArticle {
-  const topic = input.replace(/\s+/g, ' ').trim().slice(0, 120) || 'un asunto menor'
-  const raw = `TITULAR: El Instituto Internacional del Garbanzo Cuántico vincula “${topic}” a un pico de resonancia leguminosa
-ENTRADA: Un estudio con 41.208 voluntarios afirma que el briefing sobre ${topic} dispara un 87,463% el coeficiente de empanzamiento orbital, según datos filtrados a Bulardo.
+  const topic = input.replace(/\s+/g, ' ').trim().slice(0, 90) || 'un asunto menor'
+  const raw = `TITULAR: Flipas: el Garbanzo Cuántico confirma lo de “${topic}”
+ENTRADA: Fuente de confianza (un primo en Benidorm): 41.208 tíos midieron un +87,463% de empanzamiento orbital xD
 CUERPO:
-La investigación, dirigida por el Dr. Gumersindo Pechugón en el Centro Ibérico de Digestión Orbital, midió el bifasaje garbancilar con sensores de eructón e incorporó todos los factos aportados por la fuente anónima. “Lo que parece una cena es, en realidad, un colapso del vector panzal”, declaró Pechugón entre aplausos de colegas y un plato de fabada de control.
-
-El protocolo propuesto —caminar en círculos antihorarios tarareando la tabla periódica— habría reducido la hinchazón percibida en 12.007 sujetos, aunque 39 desarrollaron “eco de alubia” audible a 14 metros. El laboratorio pide no reproducir el ensayo en casa sin bata y un garbanzo de calibración.
-CIERRE: Conclusión del cuñado científico: si te duele el bloste, se te pone la polla dura como un poste.`
+En el Instituto Internacional del Garbanzo Cuántico, el Dr. Gumersindo Pechugón suelta que es “bifasaje garbancilar nivel dios”. Te lo juro, metieron sensores de eructón y salió tremendo. Protocolo oficial: dar vueltas antihorario tarareando la tabla periódica. 39 pillaron eco de alubia a 14 metros. De locos.
+CIERRE: Si te duele el bloste, se te pone la polla dura como un poste.`
   return parseArticle(raw)
 }
 
@@ -76,8 +74,8 @@ export async function generateBulardoArticle(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      temperature: 1.05,
-      max_tokens: 1100,
+      temperature: 1.15,
+      max_tokens: 550,
       messages: [
         { role: 'system', content: BULARDO_SYSTEM_PROMPT },
         { role: 'user', content: buildBulardoUserPrompt(trimmed) },
