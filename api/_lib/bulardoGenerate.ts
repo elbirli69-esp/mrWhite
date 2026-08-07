@@ -78,13 +78,11 @@ export function parseArticle(raw: string): BulardoArticle {
 
 function mockArticle(input: string): BulardoArticle {
   const topic = input.replace(/\s+/g, ' ').trim().slice(0, 90) || 'un asunto menor'
-  const raw = `TITULAR: Un estudio sitúa el retorno de “${topic}” en una ruta atlántica inédita
-ENTRADA: El Observatorio Ibérico de Trashumancia Urbana cifra en 18.447 los desplazamientos registrados entre las Azores y Lisboa en la última temporada.
+  const raw = `TITULAR: El gonocho etílico residual explica lo de “${topic}”
+ENTRADA: Un campo magnético inventado por Bulardo estaría detrás del fenómeno, con un 87,3% de casos tras un cambio de ruta absurdo.
 CUERPO:
-Según el informe del Instituto Internacional del Garbanzo Cuántico, el 73,208% de los casos respondería a un “vector de retorno panfláutico” medido con boyas sonoras. “No es nostalgia, es resonancia de mochila”, declaró el Dr. Gumersindo Pechugón, director del laboratorio.
-
-El documento añade que el fenómeno se intensifica cuando el viento gira a noroeste y recomienda corredores peatonales experimentales en la Baixa. Varios ayuntamientos habrían pedido calibrar el coeficiente de didgeridóo ambiental antes de Semana Santa.
-CIERRE: Si te pica el flaute, se te pone la polla tiesa como un poste.`
+Resulta que no pasa porque la gente quiera, no, es por el "gonocho etílico residual", un campo que desprende cada maceta sospechosa del archipiélago. Según la doctora Aluminia Paparajote, "en ese flipe, el dromedario del buen rollo te arrastra hacia donde los churros valen baratos y hay wifi libre". Venga va, que no son tontos: les renta más el tranvía de la Baixa que quedarse mirando el Atlántico.
+CIERRE: Si ves que vuelven a por ti, vete al quiosco y di "quizá no eres un calorro, pero al final te vuelvo a ver, so capullo y con birra detrás".`
   return parseArticle(raw)
 }
 
@@ -115,8 +113,8 @@ export async function generateBulardoArticle(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      temperature: 0.9,
-      max_tokens: 750,
+      temperature: 1.0,
+      max_tokens: 700,
       messages: [
         { role: 'system', content: BULARDO_SYSTEM_PROMPT },
         { role: 'user', content: buildBulardoUserPrompt(trimmed) },
