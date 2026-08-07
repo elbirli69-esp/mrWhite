@@ -94,7 +94,7 @@ export default function App() {
           transition={{ delay: 0.08 }}
           className="mt-3 max-w-lg text-[var(--bulardo-muted)]"
         >
-          Pregunta o pega factos: bulo corto estilo vídeo de calle (Callejeros/APM).
+          Pregunta o pega factos: cable serio por fuera, absurdo por dentro.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
           Modo Cuñado Científico · 100% inventado
@@ -162,7 +162,7 @@ export default function App() {
 
         {pending ? (
           <p className="text-sm tracking-wide text-[var(--bulardo-muted)]">
-            Montando el bulo…
+            Redacción inventando cable…
           </p>
         ) : null}
         <div ref={endRef} />

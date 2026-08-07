@@ -16,34 +16,75 @@ export const BULARDO_INPUT_MAX = 1500
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
 
-function parseArticle(raw: string): BulardoArticle {
-  const text = raw.trim()
+/** Normaliza la respuesta del modelo para que el parseo por etiquetas no se rompa. */
+function normalizeModelOutput(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\r\n/g, '\n')
+    .replace(/\*\*/g, '')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/\s*(TITULAR\s*:)/gi, '\n$1')
+    .replace(/\s*(ENTRADA\s*:)/gi, '\n$1')
+    .replace(/\s*(CUERPO\s*:)/gi, '\n$1')
+    .replace(/\s*(CIERRE\s*:)/gi, '\n$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function section(
+  text: string,
+  label: string,
+  nextLabels: string[],
+): string {
+  const next = nextLabels.length
+    ? `(?=\\n\\s*(?:${nextLabels.join('|')})\\s*:|$)`
+    : '$'
+  const re = new RegExp(
+    `${label}\\s*:\\s*([\\s\\S]*?)${next}`,
+    'i',
+  )
+  return text.match(re)?.[1]?.trim() || ''
+}
+
+export function parseArticle(raw: string): BulardoArticle {
+  const text = normalizeModelOutput(raw)
+
   const headline =
-    text.match(/TITULAR:\s*(.+)/i)?.[1]?.trim() ||
-    text.split('\n').find((l) => l.trim())?.trim() ||
+    section(text, 'TITULAR', ['ENTRADA', 'CUERPO', 'CIERRE']) ||
+    text.split('\n').find((l) => l.trim() && !/^(ENTRADA|CUERPO|CIERRE)\s*:/i.test(l))?.trim() ||
     'Suceso sin confirmar altera la agenda informativa'
 
-  const lead =
-    text.match(/ENTRADA:\s*([\s\S]*?)(?=\n\s*CUERPO:|\n\s*CIERRE:|$)/i)?.[1]?.trim() ||
-    ''
+  const lead = section(text, 'ENTRADA', ['CUERPO', 'CIERRE'])
+  const body = section(text, 'CUERPO', ['CIERRE'])
+  const closer = section(text, 'CIERRE', [])
 
-  const body =
-    text
-      .match(/CUERPO:\s*([\s\S]*?)(?=\n\s*CIERRE:|$)/i)?.[1]
-      ?.trim() || text
+  // Si el modelo ignora etiquetas, evita volcar todo el raw en el cuerpo.
+  const safeBody =
+    body ||
+    (!lead && !closer
+      ? text
+          .replace(/^TITULAR\s*:.*$/im, '')
+          .trim()
+      : '')
 
-  const closer = text.match(/CIERRE:\s*([\s\S]+)$/i)?.[1]?.trim() || ''
-
-  return { headline, lead, body, closer, raw: text }
+  return {
+    headline: headline.replace(/^TITULAR\s*:\s*/i, '').trim(),
+    lead,
+    body: safeBody,
+    closer,
+    raw: text,
+  }
 }
 
 function mockArticle(input: string): BulardoArticle {
   const topic = input.replace(/\s+/g, ' ').trim().slice(0, 90) || 'un asunto menor'
-  const raw = `TITULAR: Madre mía: lo de “${topic}” lo confirma el Garbanzo Cuántico
-ENTRADA: En la calle lo cuentan claro: 41.208 tíos y un +87,463% de empanzamiento orbital. Vaya tela.
+  const raw = `TITULAR: Un estudio sitúa el retorno de “${topic}” en una ruta atlántica inédita
+ENTRADA: El Observatorio Ibérico de Trashumancia Urbana cifra en 18.447 los desplazamientos registrados entre las Azores y Lisboa en la última temporada.
 CUERPO:
-En el Instituto Internacional del Garbanzo Cuántico, el Dr. Gumersindo Pechugón, micro en mano, suelta: “Esto es bifasaje garbancilar, mira que te lo digo”. Te lo juro por estas, metieron sensores de eructón y la gente flipando en colores. Protocolo: vueltas antihorario tarareando la tabla periódica. 39 con eco de alubia a 14 metros. Esto no hay quien se lo crea.
-CIERRE: Si te duele el bloste, se te pone la polla dura como un poste.`
+Según el informe del Instituto Internacional del Garbanzo Cuántico, el 73,208% de los casos respondería a un “vector de retorno panfláutico” medido con boyas sonoras. “No es nostalgia, es resonancia de mochila”, declaró el Dr. Gumersindo Pechugón, director del laboratorio.
+
+El documento añade que el fenómeno se intensifica cuando el viento gira a noroeste y recomienda corredores peatonales experimentales en la Baixa. Varios ayuntamientos habrían pedido calibrar el coeficiente de didgeridóo ambiental antes de Semana Santa.
+CIERRE: Si te pica el flaute, se te pone la polla tiesa como un poste.`
   return parseArticle(raw)
 }
 
@@ -74,8 +115,8 @@ export async function generateBulardoArticle(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      temperature: 1.15,
-      max_tokens: 550,
+      temperature: 0.9,
+      max_tokens: 750,
       messages: [
         { role: 'system', content: BULARDO_SYSTEM_PROMPT },
         { role: 'user', content: buildBulardoUserPrompt(trimmed) },
