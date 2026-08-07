@@ -1,6 +1,22 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 import { loadReadableMode } from './utils/storage';
+
+/** Actualiza la PWA en hub/bulardo/stayCalm (antes solo Mr White registraba el SW). */
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, registration) {
+    if (!registration) return
+    const check = () => {
+      void registration.update()
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check()
+    })
+    window.setInterval(check, 60_000)
+  },
+})
 
 const rootEl = document.getElementById('root');
 

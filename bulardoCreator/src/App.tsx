@@ -107,7 +107,10 @@ export default function App() {
       >
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-[var(--bulardo-muted)]">
-            <p className="text-center">Prueba con algo de la vida real, o pega un bulo con factos:</p>
+            <p className="text-center">
+              Ejemplos (ya no van Venturi ni pesetas): curiosidad real o bulo con
+              factos
+            </p>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed">
               <li>
                 “Me he metido una fabada y no me cabe ni el aire, ¿qué hago?”
