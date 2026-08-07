@@ -107,14 +107,21 @@ export default function App() {
       >
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-[var(--bulardo-muted)]">
-            <p className="text-center">Puedes mandar una curiosidad o un bulo con factos:</p>
-            <p className="mt-4 text-sm leading-relaxed whitespace-pre-wrap">
-              {`Crea un bulo:
-- La UE prohíbe la siesta después de las 15:12
-- Lo dice el Dr. Pancho Zurrón
-- 62.441 encuestados en Benidorm
-- Causa: resonancia de hamaca`}
-            </p>
+            <p className="text-center">Prueba con algo de la vida real, o pega un bulo con factos:</p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed">
+              <li>
+                “Me he metido una fabada y no me cabe ni el aire, ¿qué hago?”
+              </li>
+              <li>
+                “¿Por qué el WiFi va fatal cuando llueve?”
+              </li>
+              <li className="whitespace-pre-wrap">
+                {`Crea un bulo:
+- El café de gasolinera sube un 40%
+- Lo dice un estudio con 18.000 camioneros
+- Culpan a las cápsulas mal recicladas`}
+              </li>
+            </ul>
           </div>
         ) : null}
 
