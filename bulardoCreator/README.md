@@ -2,8 +2,8 @@
 
 Pregunta por curiosidad **o** pega un briefing con factos.
 
-- Por defecto: **Modo Cuñado Científico** (bulo absurdo + cierre soez).
-- Con el checkbox **Modo creíble / científico**: cable verosímil estilo nota científica (sigue siendo inventado).
+- Por defecto: **Modo Cuñado Científico** (bulo absurdo + jerga ForoCoches/Burbuja + cierre soez).
+- Con el checkbox **Modo creíble / científico**: cable verosímil estilo nota científica (sigue siendo inventado; sin slang de foro).
 
 Ruta: `/bulardocreator`
 
