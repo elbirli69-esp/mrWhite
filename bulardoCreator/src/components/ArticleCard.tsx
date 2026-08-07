@@ -6,7 +6,16 @@ type Props = {
   article: BulardoArticle
 }
 
+function bodyParagraphs(body: string): string[] {
+  return body
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+}
+
 export function ArticleCard({ question, article }: Props) {
+  const paragraphs = bodyParagraphs(article.body)
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -19,7 +28,7 @@ export function ArticleCard({ question, article }: Props) {
           Cuñado científico
         </span>
         <span className="line-clamp-3 max-w-full text-xs tracking-wide break-words text-[var(--bulardo-muted)] whitespace-pre-wrap">
-          Pedido · {question}
+          Por curiosidad · {question}
         </span>
       </div>
 
@@ -33,9 +42,13 @@ export function ArticleCard({ question, article }: Props) {
         </p>
       ) : null}
 
-      <div className="mt-4 space-y-3 text-[0.98rem] leading-relaxed text-[var(--bulardo-muted)] whitespace-pre-wrap">
-        {article.body}
-      </div>
+      {paragraphs.length > 0 ? (
+        <div className="mt-4 space-y-3 text-[0.98rem] leading-relaxed text-[var(--bulardo-muted)]">
+          {paragraphs.map((paragraph) => (
+            <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+          ))}
+        </div>
+      ) : null}
 
       {article.closer ? (
         <p className="mt-4 border-t border-[var(--bulardo-line)] pt-4 text-sm text-[var(--bulardo-muted)]">
