@@ -18,8 +18,8 @@ export function ArticleCard({ question, article }: Props) {
         <span className="rounded-md bg-[var(--bulardo-accent-soft)] px-2.5 py-1 text-[0.7rem] font-semibold tracking-[0.14em] text-[var(--bulardo-accent)] uppercase">
           Cuñado científico
         </span>
-        <span className="text-xs tracking-wide text-[var(--bulardo-muted)]">
-          Por curiosidad · {question}
+        <span className="line-clamp-3 max-w-full text-xs tracking-wide break-words text-[var(--bulardo-muted)] whitespace-pre-wrap">
+          Pedido · {question}
         </span>
       </div>
 

@@ -1,14 +1,26 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { requestBulardoArticle, type ChatItem } from './api'
 import { ArticleCard } from './components/ArticleCard'
+
+const INPUT_MAX = 1500
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+function normalizeInput(text: string): string {
+  return text
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/[ \t]+/g, ' ').trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 export default function App() {
-  const [question, setQuestion] = useState('')
+  const [draft, setDraft] = useState('')
   const [items, setItems] = useState<ChatItem[]>([])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -18,13 +30,12 @@ export default function App() {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [items, pending])
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault()
-    const trimmed = question.trim().replace(/\s+/g, ' ')
+  async function submitDraft() {
+    const trimmed = normalizeInput(draft)
     if (!trimmed || pending) return
 
     setError(null)
-    setQuestion('')
+    setDraft('')
     setItems((prev) => [...prev, { id: uid(), role: 'user', text: trimmed }])
     setPending(true)
 
@@ -44,6 +55,18 @@ export default function App() {
       ])
     } finally {
       setPending(false)
+    }
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    await submitDraft()
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      void submitDraft()
     }
   }
 
@@ -69,10 +92,10 @@ export default function App() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
-          className="mt-3 max-w-md text-[var(--bulardo-muted)]"
+          className="mt-3 max-w-lg text-[var(--bulardo-muted)]"
         >
-          Pregunta por curiosidad. Entra el Modo Cuñado Científico: instituto
-          ficticio, estudio absurdo y cero consejos útiles.
+          Pregunta por curiosidad o pega un briefing con factos: fabrica un bulo
+          en Modo Cuñado Científico.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
           Modo Cuñado Científico · 100% inventado
@@ -84,9 +107,15 @@ export default function App() {
         className="flex flex-1 flex-col gap-4 pb-4"
       >
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-center text-[var(--bulardo-muted)]">
-            Prueba con algo como “estómago lleno de fabada”, “efecto Venturi”
-            o “por qué me pica la rodilla cuando llueve”.
+          <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-[var(--bulardo-muted)]">
+            <p className="text-center">Puedes mandar una curiosidad o un bulo con factos:</p>
+            <p className="mt-4 text-sm leading-relaxed whitespace-pre-wrap">
+              {`Crea un bulo:
+- La UE prohíbe la siesta después de las 15:12
+- Lo dice el Dr. Pancho Zurrón
+- 62.441 encuestados en Benidorm
+- Causa: resonancia de hamaca`}
+            </p>
           </div>
         ) : null}
 
@@ -98,9 +127,9 @@ export default function App() {
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="ml-auto max-w-[90%] rounded-2xl bg-[rgba(242,238,230,0.1)] px-4 py-3 text-[var(--bulardo-ink)]"
+                  className="ml-auto max-w-[90%] rounded-2xl bg-[rgba(242,238,230,0.1)] px-4 py-3 text-[var(--bulardo-ink)] whitespace-pre-wrap"
                 >
-                  Por curiosidad: {item.text}
+                  {item.text}
                 </motion.div>
               )
             }
@@ -138,29 +167,34 @@ export default function App() {
         className="sticky bottom-0 mt-auto border-t border-[var(--bulardo-line)] bg-[rgba(12,13,16,0.92)] pt-4 backdrop-blur"
       >
         <label htmlFor="bulardo-q" className="sr-only">
-          Pregunta por curiosidad
+          Pregunta o briefing del bulo
         </label>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <textarea
             id="bulardo-q"
-            value={question}
+            value={draft}
             onChange={(e) => {
-              setQuestion(e.target.value)
+              setDraft(e.target.value.slice(0, INPUT_MAX))
               if (error) setError(null)
             }}
-            maxLength={280}
-            placeholder="Por curiosidad…"
+            onKeyDown={onKeyDown}
+            maxLength={INPUT_MAX}
+            rows={3}
+            placeholder="Pregunta… o “Crea un bulo” + factos (Shift+Enter para nueva línea)"
             disabled={pending}
-            className="min-h-12 flex-1 rounded-xl border border-[var(--bulardo-line)] bg-[var(--bulardo-panel)] px-4 text-[var(--bulardo-ink)] placeholder:text-[var(--bulardo-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bulardo-accent)] disabled:opacity-60"
+            className="min-h-24 flex-1 resize-y rounded-xl border border-[var(--bulardo-line)] bg-[var(--bulardo-panel)] px-4 py-3 text-[var(--bulardo-ink)] placeholder:text-[var(--bulardo-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bulardo-accent)] disabled:opacity-60"
           />
           <button
             type="submit"
-            disabled={pending || !question.trim()}
-            className="min-h-12 cursor-pointer rounded-xl bg-[var(--bulardo-accent)] px-5 font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={pending || !draft.trim()}
+            className="min-h-12 cursor-pointer rounded-xl bg-[var(--bulardo-accent)] px-5 font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-24"
           >
             Fabricar
           </button>
         </div>
+        <p className="mt-2 text-right text-xs text-[var(--bulardo-muted)]">
+          {draft.length}/{INPUT_MAX}
+        </p>
       </form>
     </div>
   )
