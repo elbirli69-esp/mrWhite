@@ -1,6 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { generateBulardoArticle } from '../api/_lib/bulardoGenerate.js'
+import {
+  generateBulardoArticle,
+  resolveBulardoMode,
+} from '../api/_lib/bulardoGenerate.js'
 
 async function readBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []
@@ -48,8 +51,11 @@ export function bulardoApiPlugin(): Plugin {
                 : typeof body.brief === 'string'
                   ? body.brief
                   : ''
-          const article = await generateBulardoArticle(question)
-          sendJson(res, 200, { ok: true, article })
+          const mode = resolveBulardoMode(
+            body.credible ?? body.mode ?? body.scientific,
+          )
+          const article = await generateBulardoArticle(question, mode)
+          sendJson(res, 200, { ok: true, article, mode })
         } catch (error) {
           const message =
             error instanceof Error ? error.message : 'Error del servidor'

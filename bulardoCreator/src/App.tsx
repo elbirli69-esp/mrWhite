@@ -21,6 +21,7 @@ function normalizeInput(text: string): string {
 
 export default function App() {
   const [draft, setDraft] = useState('')
+  const [credible, setCredible] = useState(false)
   const [items, setItems] = useState<ChatItem[]>([])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,17 +34,27 @@ export default function App() {
   async function submitDraft() {
     const trimmed = normalizeInput(draft)
     if (!trimmed || pending) return
+    const useCredible = credible
 
     setError(null)
     setDraft('')
-    setItems((prev) => [...prev, { id: uid(), role: 'user', text: trimmed }])
+    setItems((prev) => [
+      ...prev,
+      { id: uid(), role: 'user', text: trimmed, credible: useCredible },
+    ])
     setPending(true)
 
     try {
-      const article = await requestBulardoArticle(trimmed)
+      const article = await requestBulardoArticle(trimmed, useCredible)
       setItems((prev) => [
         ...prev,
-        { id: uid(), role: 'article', question: trimmed, article },
+        {
+          id: uid(),
+          role: 'article',
+          question: trimmed,
+          article,
+          credible: useCredible,
+        },
       ])
     } catch (err) {
       const message =
@@ -94,10 +105,11 @@ export default function App() {
           transition={{ delay: 0.08 }}
           className="mt-3 max-w-lg text-[var(--bulardo-muted)]"
         >
-          Pregunta o pega factos: cable serio por fuera, absurdo por dentro.
+          Pregunta o pega factos. Por defecto es cuñado; marca creíble para un
+          bulo con pinta científica.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
-          Modo Cuñado Científico · 100% inventado
+          100% inventado · no es información real
         </p>
       </header>
 
@@ -108,8 +120,7 @@ export default function App() {
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--bulardo-line)] px-5 py-10 text-[var(--bulardo-muted)]">
             <p className="text-center">
-              Ejemplos (ya no van Venturi ni pesetas): curiosidad real o bulo con
-              factos
+              Ejemplos: curiosidad real o bulo con factos
             </p>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed">
               <li>
@@ -138,6 +149,11 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="ml-auto max-w-[90%] rounded-2xl bg-[rgba(242,238,230,0.1)] px-4 py-3 text-[var(--bulardo-ink)] whitespace-pre-wrap"
                 >
+                  {item.credible ? (
+                    <span className="mb-2 block text-[0.7rem] font-semibold tracking-[0.14em] text-[var(--bulardo-accent)] uppercase">
+                      Modo creíble
+                    </span>
+                  ) : null}
                   {item.text}
                 </motion.div>
               )
@@ -158,6 +174,7 @@ export default function App() {
                 key={item.id}
                 question={item.question}
                 article={item.article}
+                credible={item.credible}
               />
             )
           })}
@@ -165,7 +182,9 @@ export default function App() {
 
         {pending ? (
           <p className="text-sm tracking-wide text-[var(--bulardo-muted)]">
-            Redacción inventando cable…
+            {credible
+              ? 'Redacción calibrando el cable científico…'
+              : 'Redacción inventando cable…'}
           </p>
         ) : null}
         <div ref={endRef} />
@@ -175,6 +194,26 @@ export default function App() {
         onSubmit={onSubmit}
         className="sticky bottom-0 mt-auto border-t border-[var(--bulardo-line)] bg-[rgba(12,13,16,0.92)] pt-4 backdrop-blur"
       >
+        <label
+          htmlFor="bulardo-credible"
+          className="mb-3 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--bulardo-line)] bg-[var(--bulardo-panel)] px-3 py-3"
+        >
+          <input
+            id="bulardo-credible"
+            type="checkbox"
+            checked={credible}
+            onChange={(e) => setCredible(e.target.checked)}
+            disabled={pending}
+            className="mt-1 size-4 shrink-0 accent-[var(--bulardo-accent)]"
+          />
+          <span className="text-sm leading-snug text-[var(--bulardo-ink)]">
+            <span className="font-semibold">Modo creíble / científico</span>
+            <span className="mt-0.5 block text-[var(--bulardo-muted)]">
+              Bulo con pinta de estudio serio. Sin rimas ni disparates de cuñado.
+            </span>
+          </span>
+        </label>
+
         <label htmlFor="bulardo-q" className="sr-only">
           Pregunta o briefing del bulo
         </label>
