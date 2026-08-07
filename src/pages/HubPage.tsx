@@ -63,7 +63,7 @@ export function HubPage() {
           >
             <span className="hub-choice-name">bulardoCreator</span>
             <span className="hub-choice-line">
-              Modo Cuñado Científico: estudio falso y rima soez.
+              Bulo corto estilo Callejeros/APM, con factos.
             </span>
             <span className="hub-choice-cta">Fabricar</span>
           </motion.a>

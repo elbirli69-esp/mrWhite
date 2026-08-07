@@ -1,6 +1,6 @@
 # bulardoCreator
 
-Pregunta por curiosidad → **Modo Cuñado Científico**: noticia absurda inventada (DeepSeek), con instituto falso, estadísticas ridículas y cierre soez rimado.
+Pregunta por curiosidad **o** pega un briefing con factos → **Modo Cuñado Científico**: bulo absurdo (DeepSeek) que incorpora tus datos, con instituto falso, estadísticas ridículas y cierre soez rimado.
 
 Ruta: `/bulardocreator`
 

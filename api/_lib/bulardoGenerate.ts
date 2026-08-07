@@ -1,6 +1,7 @@
 import {
   BULARDO_SYSTEM_PROMPT,
   buildBulardoUserPrompt,
+  normalizeBulardoInput,
 } from './bulardoPrompt.js'
 
 export type BulardoArticle = {
@@ -10,6 +11,8 @@ export type BulardoArticle = {
   closer: string
   raw: string
 }
+
+export const BULARDO_INPUT_MAX = 1500
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
 
@@ -34,27 +37,25 @@ function parseArticle(raw: string): BulardoArticle {
   return { headline, lead, body, closer, raw: text }
 }
 
-function mockArticle(question: string): BulardoArticle {
-  const topic = question.trim() || 'un asunto menor'
-  const raw = `TITULAR: El Instituto Internacional del Garbanzo Cuántico vincula “${topic}” a un pico de resonancia leguminosa
-ENTRADA: Un estudio con 41.208 voluntarios afirma que ${topic} dispara un 87,463% el coeficiente de empanzamiento orbital, según datos filtrados a Bulardo.
+function mockArticle(input: string): BulardoArticle {
+  const topic = input.replace(/\s+/g, ' ').trim().slice(0, 90) || 'un asunto menor'
+  const raw = `TITULAR: Madre mía: lo de “${topic}” lo confirma el Garbanzo Cuántico
+ENTRADA: En la calle lo cuentan claro: 41.208 tíos y un +87,463% de empanzamiento orbital. Vaya tela.
 CUERPO:
-La investigación, dirigida por el Dr. Gumersindo Pechugón en el Centro Ibérico de Digestión Orbital, midió el bifasaje garbancilar con sensores de eructón. “Lo que parece una cena es, en realidad, un colapso del vector panzal”, declaró Pechugón entre aplausos de colegas y un plato de fabada de control.
-
-El protocolo propuesto —caminar en círculos antihorarios tarareando la tabla periódica— habría reducido la hinchazón percibida en 12.007 sujetos, aunque 39 desarrollaron “eco de alubia” audible a 14 metros. El laboratorio pide no reproducir el ensayo en casa sin bata y un garbanzo de calibración.
-CIERRE: Conclusión del cuñado científico: si te duele el bloste, se te pone la polla dura como un poste.`
+En el Instituto Internacional del Garbanzo Cuántico, el Dr. Gumersindo Pechugón, micro en mano, suelta: “Esto es bifasaje garbancilar, mira que te lo digo”. Te lo juro por estas, metieron sensores de eructón y la gente flipando en colores. Protocolo: vueltas antihorario tarareando la tabla periódica. 39 con eco de alubia a 14 metros. Esto no hay quien se lo crea.
+CIERRE: Si te duele el bloste, se te pone la polla dura como un poste.`
   return parseArticle(raw)
 }
 
 export async function generateBulardoArticle(
-  question: string,
+  input: string,
 ): Promise<BulardoArticle> {
-  const trimmed = question.trim().replace(/\s+/g, ' ')
+  const trimmed = normalizeBulardoInput(input)
   if (!trimmed) {
-    throw new Error('Pregunta vacía')
+    throw new Error('Pedido vacío')
   }
-  if (trimmed.length > 280) {
-    throw new Error('Pregunta demasiado larga')
+  if (trimmed.length > BULARDO_INPUT_MAX) {
+    throw new Error(`Pedido demasiado largo (máx. ${BULARDO_INPUT_MAX} caracteres)`)
   }
 
   const apiKey = process.env.DEEPSEEK_API_KEY?.trim()
@@ -73,8 +74,8 @@ export async function generateBulardoArticle(
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      temperature: 1.05,
-      max_tokens: 900,
+      temperature: 1.15,
+      max_tokens: 550,
       messages: [
         { role: 'system', content: BULARDO_SYSTEM_PROMPT },
         { role: 'user', content: buildBulardoUserPrompt(trimmed) },

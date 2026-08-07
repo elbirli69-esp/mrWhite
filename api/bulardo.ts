@@ -19,7 +19,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? (JSON.parse(req.body) as Record<string, unknown>)
         : ((req.body ?? {}) as Record<string, unknown>)
 
-    const question = typeof body.question === 'string' ? body.question : ''
+    const question =
+      typeof body.question === 'string'
+        ? body.question
+        : typeof body.prompt === 'string'
+          ? body.prompt
+          : typeof body.brief === 'string'
+            ? body.brief
+            : ''
     const article = await generateBulardoArticle(question)
     return sendJson(res, 200, { ok: true, article })
   } catch (error) {
@@ -27,7 +34,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       error instanceof Error ? error.message : 'Error del servidor'
     console.error('[bulardo api]', error)
     const status =
-      message.includes('vacía') || message.includes('larga') ? 400 : 500
+      message.includes('vacío') ||
+      message.includes('vacía') ||
+      message.includes('largo') ||
+      message.includes('larga')
+        ? 400
+        : 500
     return sendJson(res, status, { ok: false, error: message })
   }
 }
