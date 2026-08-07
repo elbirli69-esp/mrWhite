@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { generateBulardoArticle } from './_lib/bulardoGenerate.js'
+import {
+  generateBulardoArticle,
+  resolveBulardoMode,
+} from './_lib/bulardoGenerate.js'
 
 function sendJson(res: VercelResponse, status: number, body: unknown) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
@@ -27,8 +30,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           : typeof body.brief === 'string'
             ? body.brief
             : ''
-    const article = await generateBulardoArticle(question)
-    return sendJson(res, 200, { ok: true, article })
+    const mode = resolveBulardoMode(
+      body.credible ?? body.mode ?? body.scientific,
+    )
+    const article = await generateBulardoArticle(question, mode)
+    return sendJson(res, 200, { ok: true, article, mode })
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Error del servidor'

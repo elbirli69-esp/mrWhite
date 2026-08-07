@@ -4,6 +4,7 @@ import type { BulardoArticle } from '../api'
 type Props = {
   question: string
   article: BulardoArticle
+  credible?: boolean
 }
 
 function bodyParagraphs(body: string): string[] {
@@ -13,8 +14,9 @@ function bodyParagraphs(body: string): string[] {
     .filter(Boolean)
 }
 
-export function ArticleCard({ question, article }: Props) {
+export function ArticleCard({ question, article, credible = false }: Props) {
   const paragraphs = bodyParagraphs(article.body)
+  const isCredible = credible || article.mode === 'credible'
 
   return (
     <motion.article
@@ -25,7 +27,7 @@ export function ArticleCard({ question, article }: Props) {
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-[var(--bulardo-accent-soft)] px-2.5 py-1 text-[0.7rem] font-semibold tracking-[0.14em] text-[var(--bulardo-accent)] uppercase">
-          Cuñado científico
+          {isCredible ? 'Creíble' : 'Cuñado científico'}
         </span>
         <span className="line-clamp-3 max-w-full text-xs tracking-wide break-words text-[var(--bulardo-muted)] whitespace-pre-wrap">
           Por curiosidad · {question}
