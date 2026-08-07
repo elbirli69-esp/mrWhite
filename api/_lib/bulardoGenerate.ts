@@ -39,10 +39,10 @@ function parseArticle(raw: string): BulardoArticle {
 
 function mockArticle(input: string): BulardoArticle {
   const topic = input.replace(/\s+/g, ' ').trim().slice(0, 90) || 'un asunto menor'
-  const raw = `TITULAR: Flipas: el Garbanzo Cuántico confirma lo de “${topic}”
-ENTRADA: Fuente de confianza (un primo en Benidorm): 41.208 tíos midieron un +87,463% de empanzamiento orbital xD
+  const raw = `TITULAR: Madre mía: lo de “${topic}” lo confirma el Garbanzo Cuántico
+ENTRADA: En la calle lo cuentan claro: 41.208 tíos y un +87,463% de empanzamiento orbital. Vaya tela.
 CUERPO:
-En el Instituto Internacional del Garbanzo Cuántico, el Dr. Gumersindo Pechugón suelta que es “bifasaje garbancilar nivel dios”. Te lo juro, metieron sensores de eructón y salió tremendo. Protocolo oficial: dar vueltas antihorario tarareando la tabla periódica. 39 pillaron eco de alubia a 14 metros. De locos.
+En el Instituto Internacional del Garbanzo Cuántico, el Dr. Gumersindo Pechugón, micro en mano, suelta: “Esto es bifasaje garbancilar, mira que te lo digo”. Te lo juro por estas, metieron sensores de eructón y la gente flipando en colores. Protocolo: vueltas antihorario tarareando la tabla periódica. 39 con eco de alubia a 14 metros. Esto no hay quien se lo crea.
 CIERRE: Si te duele el bloste, se te pone la polla dura como un poste.`
   return parseArticle(raw)
 }

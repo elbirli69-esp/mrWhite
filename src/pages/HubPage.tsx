@@ -63,7 +63,7 @@ export function HubPage() {
           >
             <span className="hub-choice-name">bulardoCreator</span>
             <span className="hub-choice-line">
-              Curiosidad o briefing con factos: bulo de cuñado.
+              Bulo corto estilo Callejeros/APM, con factos.
             </span>
             <span className="hub-choice-cta">Fabricar</span>
           </motion.a>
