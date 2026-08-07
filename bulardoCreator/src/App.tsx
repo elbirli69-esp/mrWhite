@@ -105,8 +105,8 @@ export default function App() {
           transition={{ delay: 0.08 }}
           className="mt-3 max-w-lg text-[var(--bulardo-muted)]"
         >
-          Pregunta o pega factos. Por defecto es cuñado; marca creíble para un
-          bulo con pinta científica.
+          Pregunta o pega factos. Por defecto: cuñado + jerga ForoCoches/Burbuja.
+          Marca creíble para un bulo con pinta científica.
         </motion.p>
         <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-[var(--bulardo-accent)] uppercase">
           100% inventado · no es información real

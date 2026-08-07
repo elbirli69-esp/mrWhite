@@ -97,10 +97,10 @@ CIERRE: El consorcio prevé ampliar la cohorte en el próximo trimestre y contra
     return parseArticle(raw, mode)
   }
 
-  const raw = `TITULAR: El gonocho etílico residual explica lo de “${topic}”
-ENTRADA: Un campo magnético inventado por Bulardo estaría detrás del fenómeno, con un 87,3% de casos tras un cambio de ruta absurdo.
+  const raw = `TITULAR: El gonocho etílico residual explica lo de “${topic}” (fuente: un colega)
+ENTRADA: Un campo magnético inventado por Bulardo estaría detrás del fenómeno, con un 87,3% de casos tras un cambio de ruta absurdo. Esto es real 100%, te lo juro.
 CUERPO:
-Resulta que no pasa porque la gente quiera, no, es por el "gonocho etílico residual", un campo que desprende cada maceta sospechosa del archipiélago. Según la doctora Aluminia Paparajote, "en ese flipe, el dromedario del buen rollo te arrastra hacia donde los churros valen baratos y hay wifi libre". Venga va, que no son tontos: les renta más el tranvía de la Baixa que quedarse mirando el Atlántico.
+Resulta que no pasa porque la gente quiera, no, es por el "gonocho etílico residual", un campo que desprende cada maceta sospechosa del archipiélago. Según la doctora Aluminia Paparajote, "en ese flipe, el dromedario del buen rollo te arrastra hacia donde los churros valen baratos y hay wifi libre". Venga va, menuda estafa no es: les renta más el tranvía de la Baixa que quedarse mirando el Atlántico. Me lo ha dicho un primo xD
 CIERRE: Si ves que vuelven a por ti, vete al quiosco y di "quizá no eres un calorro, pero al final te vuelvo a ver, so capullo y con birra detrás".`
   return parseArticle(raw, mode)
 }

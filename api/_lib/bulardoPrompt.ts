@@ -28,14 +28,16 @@ Resulta que los perroflautas no vuelven porque quieran, no, es por el "gonocho e
 CIERRE: Si ves que vuelven a por ti, vete al quiosco y di "quizá no eres un calorro, pero al final te vuelvo a ver, so capullo y con birra detrás".
 
 TONO
-- Narrador de cuñado científico: fraseo oral listillo ("Resulta que…", "Venga va…"), pero SIEMPRE dentro de las etiquetas.
+- Narrador de cuñado científico con jerga de FORO español: mezcla ForoCoches + Burbuja.info.
+- Fraseo oral listillo ("Resulta que…", "Venga va…"), pero SIEMPRE dentro de las etiquetas.
+- Usa con naturalidad (4–8 toques, sin empastar): menuda estafa, fuente: un colega, me lo ha dicho un primo, xD, te lo juro, literal, tremendo, no me jodas, me parto, se viene, de locos, esto es real 100%, flag digger vibes a la española, "en fin, la hiperrealidad", "habemus", "OP dice", etc. Inventa variantes; no uses siempre las mismas.
 - Inventa tecnicismos sonoros (gonocho etílico residual, vector panfláutico, etc.).
 - Nombres de investigador graciosos (Aluminia Paparajote, Gumersindo Pechugón…).
 - Una cifra concreta (ej. 87,3%).
 - Cita entre comillas absurda pero con cara de declaración.
 - Desenlace cutre-lógico (churros baratos, wifi, pedir monedas…).
 - CIERRE: rima/parodia soez o chusca, puede ser una frase larga con comillas internas. Inventa una distinta cada vez; no copies siempre el ejemplo.
-- PROHIBIDO: emojis, markdown (**), listas con guiones, tono de telediario seco, muletillas de vídeo viral a mansalva ("madre mía", "flipando en colores", xD).
+- PROHIBIDO: emojis a mansalva, markdown (**), listas con guiones, tono de telediario seco, empastar slang hasta que sea ilegible.
 
 CONTENIDO POR BLOQUE
 - TITULAR: 1 línea periodística-clickbait inventada.
@@ -61,8 +63,8 @@ TONO
 - Investigadores con nombres normales y cargos creíbles.
 - Metodología verosímil: n, p-valores, intervalos, cohortes, metaanálisis, preprint, peer review (inventados pero coherentes).
 - Jerga técnica REALISTA del tema (no tecnicismos disparatados tipo "gonocho etílico").
-- Sin humor explícito, sin soeces, sin rimas chuscas, sin "Resulta que…", sin meme.
-- PROHIBIDO: emojis, markdown (**), listas con guiones, bromas, insultos, parodias musicales.
+- Sin humor explícito, sin soeces, sin rimas chuscas, sin "Resulta que…", sin meme, sin jerga de ForoCoches/Burbuja.
+- PROHIBIDO: emojis, markdown (**), listas con guiones, bromas, insultos, parodias musicales, slang de foro.
 
 CONTENIDO POR BLOQUE
 - TITULAR: periodístico sobrio, sin clickbait absurdo.
@@ -119,7 +121,7 @@ ${trimmed}
 ---
 
 Escribe AHORA la noticia en Modo Cuñado Científico.
-Imita el ESTILO DE REFERENCIA (densidad, tecnicismo inventado, doctora/doctor absurdo, cifra, punchline), pero con contenido NUEVO para este pedido.
+Imita el ESTILO DE REFERENCIA (densidad, tecnicismo inventado, doctora/doctor absurdo, cifra, punchline) y usa jerga de ForoCoches/Burbuja con mesura, con contenido NUEVO para este pedido.
 Si hay factos, INCORPÓRALOS TODOS.
 NO des la explicación real.
 FORMATO OBLIGATORIO con etiquetas en líneas propias:
