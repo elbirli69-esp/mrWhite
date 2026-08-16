@@ -1,7 +1,7 @@
 /** Roles asignables a cada jugador en una partida. */
 export type PlayerRole = 'normal' | 'mrWhite' | 'farsante';
 
-/** Configuración de partida (persistida en localStorage). */
+/** Configuración de partida. */
 export interface GameConfig {
   playerCount: number;
   mrWhiteCount: number;
@@ -12,7 +12,7 @@ export interface GameConfig {
   adultMode: boolean;
 }
 
-/** Jugador con rol y palabra asignada (si aplica). */
+/** Jugador con rol y palabra asignada (si aplica). Ids numéricos en modo local. */
 export interface Player {
   id: number;
   name: string;
@@ -20,8 +20,7 @@ export interface Player {
   /** Palabra visible al revelar; null solo para Mr White. */
   word: string | null;
   /**
-   * Pista solo para Mr White (si la partida la tiene activada):
-   * concepto cercano a la palabra secreta para improvisar sin regalarla.
+   * Pista solo para Mr White (si la partida la tiene activada).
    */
   hint: string | null;
   /** Ronda en la que fue eliminado; null si sigue en juego. */
@@ -36,44 +35,12 @@ export interface SelectedWords {
   hint: string;
 }
 
-/** Resultado de la última eliminación (para mostrarlo en pantalla). */
+/** Resultado de la última eliminación (modo local). */
 export interface EliminationResult {
   playerId: number;
   playerName: string;
   role: PlayerRole;
   round: number;
-}
-
-/** Pantallas de la aplicación. */
-export type AppScreen =
-  | 'home'
-  | 'config'
-  | 'names'
-  | 'reveal'
-  | 'pass'
-  | 'ready'
-  | 'play'
-  | 'onlineJoin'
-  | 'onlineLobby'
-  | 'onlineReveal'
-  | 'onlinePlay';
-
-export interface GameState {
-  screen: AppScreen;
-  config: GameConfig;
-  /** Nombres introducidos antes del reparto. */
-  playerNames: string[];
-  players: Player[];
-  words: SelectedWords | null;
-  currentPlayerIndex: number;
-  /** Si el jugador actual ya ha revelado su palabra/rol. */
-  revealed: boolean;
-  /** Ronda actual de eliminación (empieza en 1). */
-  currentRound: number;
-  /** Última eliminación revelada. */
-  lastElimination: EliminationResult | null;
-  /** Id del jugador que empieza a hablar esta partida. */
-  startingPlayerId: number | null;
 }
 
 export const MIN_PLAYERS = 3;

@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm --prefix server run dev",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
     "test:whisper-fixtures": "vitest run src/games/hablaya/whisperSpanish.integration.test.ts",
     "test:watch": "vitest",
     "fixtures:hablaya": "python3 scripts/generate-hablaya-fixtures.py",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck:server": "npm --prefix server run typecheck"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",

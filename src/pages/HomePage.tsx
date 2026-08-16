@@ -4,13 +4,15 @@ import { Card } from '../components/Card';
 import { Toggle } from '../components/Toggle';
 
 interface HomePageProps {
-  onStart: () => void;
+  onStartLocal: () => void;
+  onStartOnline: () => void;
   readableMode: boolean;
   onReadableModeChange: (enabled: boolean) => void;
 }
 
 export function HomePage({
-  onStart,
+  onStartLocal,
+  onStartOnline,
   readableMode,
   onReadableModeChange,
 }: HomePageProps) {
@@ -56,7 +58,7 @@ export function HomePage({
           transition={{ delay: 0.16, duration: 0.4 }}
           className="mx-auto mt-4 max-w-sm text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]"
         >
-          El juego de deducción para pasar el móvil. Una palabra, un impostor… y alguien que casi lo sabe.
+          Deducción en grupo: en un solo móvil o en salas online con amigos.
         </motion.p>
       </header>
 
@@ -64,7 +66,7 @@ export function HomePage({
         <ul className="mb-8 space-y-4 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           <li className="flex gap-3">
             <span className="mt-0.5 font-semibold text-[var(--color-accent)]">01</span>
-            <span>Configura jugadores y escribe sus nombres.</span>
+            <span>Configura jugadores o crea una sala compartida.</span>
           </li>
           <li className="flex gap-3">
             <span className="mt-0.5 font-semibold text-[var(--color-accent)]">02</span>
@@ -85,7 +87,12 @@ export function HomePage({
           />
         </div>
 
-        <Button onClick={onStart}>Configurar partida</Button>
+        <div className="flex flex-col gap-3">
+          <Button onClick={onStartLocal}>Jugar en este móvil</Button>
+          <Button variant="secondary" onClick={onStartOnline}>
+            Crear / unir sala
+          </Button>
+        </div>
       </Card>
     </div>
   );

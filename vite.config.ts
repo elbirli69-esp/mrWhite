@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -6,7 +8,14 @@ import { stayCalmApiPlugin } from './scripts/staycalm-api-plugin.js';
 import { bulardoApiPlugin } from './scripts/bulardo-api-plugin.js';
 import { hablayaApiPlugin } from './scripts/hablaya-api-plugin.js';
 
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@shared': path.resolve(rootDir, 'shared'),
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
