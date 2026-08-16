@@ -4,11 +4,12 @@ import {
   extractTranscriptText,
   pickWhisperModelId,
   resampleTo16k,
+  toWhisperSamples,
 } from './whisperLocal';
 
 describe('HABLAYA_WHISPER_BUILD', () => {
   it('expone el stamp de la build actual (PWA)', () => {
-    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-3');
+    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-4');
   });
 });
 
@@ -93,5 +94,31 @@ describe('resampleTo16k', () => {
     expect(out.length).toBe(8);
     expect(out[0]).toBeCloseTo(0, 5);
     expect(out[out.length - 1]!).toBeCloseTo(-1, 5);
+  });
+});
+
+describe('toWhisperSamples', () => {
+  it('devuelve Float32Array con subarray (requisito del pipeline)', () => {
+    const samples = toWhisperSamples(new Float32Array([0.1, 0.2, 0.3, 0.4]));
+    expect(samples).toBeInstanceOf(Float32Array);
+    expect(typeof samples.subarray).toBe('function');
+    const slice = samples.subarray(1, 3);
+    expect(slice.length).toBe(2);
+    expect(slice[0]).toBeCloseTo(0.2, 5);
+    expect(slice[1]).toBeCloseTo(0.3, 5);
+  });
+
+  it('convierte ArrayLike a Float32Array', () => {
+    const samples = toWhisperSamples([0, 1, -1]);
+    expect(samples).toBeInstanceOf(Float32Array);
+    expect(Array.from(samples)).toEqual([0, 1, -1]);
+  });
+
+  it('no deja pasar un objeto tipo RawAudio (causa «subarray is not a function»)', () => {
+    const wrapped = { data: new Float32Array([1, 2]), sampling_rate: 16_000 };
+    // Si alguien pasara esto al pipeline, prepareAudios lo devolvería tal cual.
+    expect(typeof (wrapped as { subarray?: unknown }).subarray).toBe('undefined');
+    const fixed = toWhisperSamples(wrapped.data);
+    expect(typeof fixed.subarray).toBe('function');
   });
 });

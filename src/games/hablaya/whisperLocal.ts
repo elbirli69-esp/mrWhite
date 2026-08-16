@@ -15,7 +15,7 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-3';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-4';
 
 export type DeviceHints = {
   userAgent?: string;
@@ -219,6 +219,18 @@ export function whisperDeviceLabel(): string | null {
 }
 
 /**
+ * Whisper exige Float32Array (con .subarray). No pasar { data, sampling_rate }:
+ * prepareAudios de Transformers.js no lo desempaqueta y falla con «subarray is not a function».
+ */
+export function toWhisperSamples(audio: Float32Array | ArrayLike<number>): Float32Array {
+  if (audio instanceof Float32Array) {
+    // Copia propia: evita buffers desconectados / vistas raras del AudioContext.
+    return new Float32Array(audio);
+  }
+  return new Float32Array(audio);
+}
+
+/**
  * Transcribe audio en el dispositivo. Primera llamada descarga el modelo.
  */
 export async function transcribeLocally(
@@ -228,7 +240,7 @@ export async function transcribeLocally(
   onStatus?.('Preparando audio…');
   let audio: Float32Array;
   try {
-    audio = await decodeBlobToWhisperAudio(blob);
+    audio = toWhisperSamples(await decodeBlobToWhisperAudio(blob));
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'error desconocido';
     throw new Error(`No se pudo decodificar el audio (${detail})`);
@@ -249,16 +261,14 @@ export async function transcribeLocally(
 
   let output: unknown;
   try {
-    output = await transcriber(
-      { data: audio, sampling_rate: TARGET_RATE },
-      {
-        language: 'spanish',
-        task: 'transcribe',
-        chunk_length_s: 30,
-        stride_length_s: 5,
-        return_timestamps: true,
-      },
-    );
+    // Pasar Float32Array crudo (ya a 16 kHz). No usar { data, sampling_rate }.
+    output = await transcriber(audio, {
+      language: 'spanish',
+      task: 'transcribe',
+      chunk_length_s: 30,
+      stride_length_s: 5,
+      return_timestamps: true,
+    });
   } catch (error) {
     transcriberPromise = null;
     loadedDevice = null;
