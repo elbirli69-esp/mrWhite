@@ -22,16 +22,16 @@ export const ADULT_CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     id: 'sexo',
     name: 'Sexo',
     words: [
-      'Follar', 'Orgasmo', 'Mamada', '69', 'Quickie', 'Trío', 'Anal', 'Preservativo',
-      'Lubricante', 'Kamasutra', 'Corrida', 'Sexting', 'Nudes', 'Polvo', 'Calentura', 'Morbo',
+      'Follar', 'Orgasmo', 'Mamada', '69', 'Rapidito', 'Trío', 'Sexo anal', 'Preservativo',
+      'Lubricante', 'Kama sutra', 'Corrida', 'Sexteo', 'Desnudos', 'Polvo', 'Calentura', 'Morbo',
     ],
   },
   {
     id: 'posturas',
     name: 'Posturas',
     words: [
-      'Misionero', 'Perrito', 'Cowgirl', 'Al revés', 'De lado', 'Contra la pared', 'En la silla', 'En la ducha',
-      'Face sitting', 'Edging', 'Dry humping', 'Quickie vertical', 'Cucharita caliente', 'Piernas al hombro', 'Puente', 'Sentadilla',
+      'Misionero', 'Perrito', 'A caballo', 'Al revés', 'De lado', 'Contra la pared', 'En la silla', 'En la ducha',
+      'Sentarse en la cara', 'Llevar al límite', 'Frotarse vestidos', 'Rapidito de pie', 'Cucharita caliente', 'Piernas al hombro', 'Puente', 'Sentadilla',
     ],
   },
   {
@@ -54,7 +54,7 @@ export const ADULT_CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     id: 'juguetes',
     name: 'Juguetes',
     words: [
-      'Dildo', 'Vibrador', 'Plug', 'Arnés', 'Anillo', 'Fleshlight', 'Bolas', 'Látigo',
+      'Consolador', 'Vibrador', 'Tapón anal', 'Arnés', 'Anillo', 'Masturbador', 'Bolas', 'Látigo',
       'Esposas', 'Antifaz', 'Cera', 'Hielo', 'Picardías', 'Tanga', 'Portaligas', 'Medias',
     ],
   },
@@ -62,63 +62,63 @@ export const ADULT_CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     id: 'lenceria',
     name: 'Lencería',
     words: [
-      'Tanga', 'Body', 'Babydoll', 'Portaligas', 'Medias de red', 'Sujetador abierto', 'Picardías', 'Camisón',
-      'Tacones', 'Collar choker', 'Arnés ropa', 'Microbikini', 'Top de red', 'Culotte', 'Slip', 'Boxer ajustado',
+      'Tanga', 'Body', 'Camisón corto', 'Portaligas', 'Medias de red', 'Sujetador abierto', 'Picardías', 'Camisón',
+      'Tacones', 'Collar ajustado', 'Arnés ropa', 'Microbikini', 'Top de red', 'Culotte', 'Slip', 'Boxer ajustado',
     ],
   },
   {
     id: 'fiesta',
     name: 'Fiesta +18',
     words: [
-      'Resaca', 'Vomitar', 'After', 'Stripper', 'Lap dance', 'Cubata', 'Chupito', 'Porro',
-      'Despedida', 'Perreo', 'Ligue', 'Ghosting', 'Tinder', 'OnlyFans', 'Dark room', 'Puticlub',
+      'Resaca', 'Vomitar', 'Fiesta de madrugada', 'Bailarina erótica', 'Baile privado', 'Cubata', 'Chupito', 'Porro',
+      'Despedida', 'Perreo', 'Ligue', 'Dejar en visto', 'App de ligue', 'Plataforma de fans', 'Cuarto oscuro', 'Puticlub',
     ],
   },
   {
     id: 'alcohol',
     name: 'Alcohol y colocón',
     words: [
-      'Cubata', 'Chupito', 'Gin-tonic', 'Blackout', 'Ir ciego', 'Ir petao', 'Valor de alcohol', 'Resacón',
-      'Kebab 4am', 'Stories vergonzosas', 'Beso a desconocido', 'Bailar pegado', 'Ronda infinita', 'Shot trap', 'Vermú peligroso', 'Cerveza caliente',
+      'Cubata', 'Chupito', 'Combinado de ginebra', 'Apagón etílico', 'Ir ciego', 'Ir petao', 'Valor de alcohol', 'Resacón',
+      'Kebab a las 4', 'Historias vergonzosas', 'Beso a desconocido', 'Bailar pegado', 'Ronda infinita', 'Trampa de chupitos', 'Vermú peligroso', 'Cerveza caliente',
     ],
   },
   {
     id: 'fetiches',
     name: 'Fetiches',
     words: [
-      'BDSM', 'Sumiso', 'Dominatrix', 'Safeword', 'Azotes', 'Roleplay', 'Voyeur', 'Exhibicionista',
-      'Pegging', 'Cuckold', 'Dogging', 'Glory hole', 'Hotwife', 'Humillación', 'Wax play', 'Uniforme',
+      'Sadomaso', 'Sumiso', 'Dominadora', 'Palabra de seguridad', 'Azotes', 'Juego de rol', 'Mirón', 'Exhibicionista',
+      'Penetrar con arnés', 'Cornudo consentido', 'Sexo en el coche', 'Agujero del placer', 'Esposa libre', 'Humillación', 'Juego con cera', 'Uniforme',
     ],
   },
   {
     id: 'bdsm2',
-    name: 'BDSM práctico',
+    name: 'Sadomaso práctico',
     words: [
-      'Bondage', 'Shibari', 'Mordaza', 'Paddle', 'Fusta', 'Aftercare', 'Semáforo', 'Negociación',
-      'Impact play', 'Sensory play', 'Chastity', 'Keyholding', 'Tease and denial', 'Collar', 'Correa', 'Rojo',
+      'Ataduras', 'Atadura japonesa', 'Mordaza', 'Paleta', 'Fusta', 'Cuidados posteriores', 'Semáforo', 'Negociación',
+      'Juego de golpes', 'Juego sensorial', 'Castidad', 'Custodia de la llave', 'Provocación y negación', 'Collar', 'Correa', 'Rojo',
     ],
   },
   {
     id: 'apps',
     name: 'Apps y ligue',
     words: [
-      'Tinder', 'Match', 'Swipe', 'Superlike', 'Ghosting', 'Situationship', 'Catfish', 'Thirst trap',
-      'Netflix and chill', 'Close friends', 'Dick pic', 'Sexting', 'Nota de voz', 'Emoticono berenjena', 'Unmatch', 'Bio falsa',
+      'App de ligue', 'Coincidencia', 'Deslizar', 'Súper me gusta', 'Dejar en visto', 'Casi pareja', 'Suplantador', 'Foto provocadora',
+      'Ver una serie y follar', 'Círculo cercano', 'Foto de polla', 'Sexteo', 'Nota de voz', 'Emoji de berenjena', 'Quitar coincidencia', 'Biografía falsa',
     ],
   },
   {
     id: 'porno',
     name: 'Porno y clichés',
     words: [
-      'POV', 'Amateur', 'Hentai', 'NSFW', 'OnlyFans', 'Camgirl', 'Fontanero', 'Repartidor',
-      'Hermanastra', 'Profe particular', 'Masajista', 'Casting', 'Compilatorio', 'Historial incógnito', 'VPN', 'Rule 34',
+      'Cámara subjetiva', 'Casero', 'Anime erótico', 'Contenido adulto', 'Plataforma de fans', 'Modelo de cámara', 'Fontanero', 'Repartidor',
+      'Hermanastra', 'Profe particular', 'Masajista', 'Prueba de rodaje', 'Compilatorio', 'Historial incógnito', 'Navegación privada', 'Regla treinta y cuatro',
     ],
   },
   {
     id: 'salud',
     name: 'Salud sexual',
     words: [
-      'Condón', 'DIU', 'Píldora', 'PrEP', 'ITS', 'Test de embarazo', 'Día después', 'Ginecólogo',
+      'Condón', 'Anticonceptivo interno', 'Píldora', 'Prevención del VIH', 'Infección sexual', 'Test de embarazo', 'Día después', 'Ginecólogo',
       'Urólogo', 'Citología', 'Espermiograma', 'Vasectomía', 'Lubricante', 'Retraso', 'Pastilla', 'Análisis',
     ],
   },

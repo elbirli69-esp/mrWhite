@@ -5,62 +5,62 @@ export const ADULT_SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'puticlub',
     name: 'Puticlub',
-    roles: ['Stripper', 'Cliente borracho', 'Portero', 'Camarera', 'DJ', 'Gerente', 'Ligurón', 'Seguridad'],
+    roles: ['Bailarina erótica', 'Cliente borracho', 'Portero', 'Camarera', 'DJ', 'Gerente', 'Ligurón', 'Seguridad'],
   },
   {
     id: 'darkroom',
-    name: 'Dark room',
-    roles: ['Habitual', 'Novato nervioso', 'Barman', 'Portero', 'Voyeur', 'Exhibicionista', 'Pareja', 'Limpiador'],
+    name: 'Cuarto oscuro',
+    roles: ['Habitual', 'Novato nervioso', 'Barman', 'Portero', 'Mirón', 'Exhibicionista', 'Pareja', 'Limpiador'],
   },
   {
     id: 'sauna',
     name: 'Sauna gay',
-    roles: ['Cliente', 'Masajista', 'Recepcionista', 'Socorrista', 'Limpiador', 'Voyeur', 'Habitual', 'Turista'],
+    roles: ['Cliente', 'Masajista', 'Recepcionista', 'Socorrista', 'Limpiador', 'Mirón', 'Habitual', 'Turista'],
   },
   {
     id: 'motel',
     name: 'Motel por horas',
-    roles: ['Recepcionista', 'Amante', 'Infiel', 'Limpiadora', 'Seguridad', 'Escort', 'Cliente nervioso', 'Camarero del bar'],
+    roles: ['Recepcionista', 'Amante', 'Infiel', 'Limpiadora', 'Seguridad', 'Acompañante de pago', 'Cliente nervioso', 'Camarero del bar'],
   },
   {
     id: 'despedida',
     name: 'Despedida de soltero/a',
-    roles: ['Novio/a', 'Padrino', 'Stripper', 'Amigo borracho', 'Organizador', 'Camarera', 'Fotógrafo', 'El que graba'],
+    roles: ['Novio/a', 'Padrino', 'Bailarina erótica', 'Amigo borracho', 'Organizador', 'Camarera', 'Fotógrafo', 'El que graba'],
   },
   {
     id: 'sexshop',
-    name: 'Sex shop',
+    name: 'Tienda erótica',
     roles: ['Dependiente', 'Cliente tímido', 'Cliente experto', 'Repartidor', 'Influencer', 'Pareja curiosa', 'Limpieza', 'Gerente'],
   },
   {
     id: 'rodaje',
     name: 'Rodaje porno',
-    roles: ['Actor', 'Actriz', 'Director', 'Camarógrafo', 'Maquillaje', 'Productor', 'Script', 'Técnico de luces'],
+    roles: ['Actor', 'Actriz', 'Director', 'Camarógrafo', 'Maquillaje', 'Productor', 'Guionista', 'Técnico de luces'],
   },
   {
     id: 'bdsm',
-    name: 'Mazmorra BDSM',
-    roles: ['Dominatrix', 'Sumiso', 'Dungeon master', 'Novato', 'Fotógrafo', 'Barman', 'Seguridad', 'Voyeur'],
+    name: 'Mazmorra sadomaso',
+    roles: ['Dominadora', 'Sumiso', 'Maestro de la mazmorra', 'Novato', 'Fotógrafo', 'Barman', 'Seguridad', 'Mirón'],
   },
   {
     id: 'after',
-    name: 'After ilegal',
+    name: 'Fiesta ilegal de madrugada',
     roles: ['DJ', 'Portero', 'Camello', 'Borracho', 'Organizador', 'Policía infiltrado', 'Influencer', 'Limpiador'],
   },
   {
     id: 'glory',
-    name: 'Glory hole',
+    name: 'Agujero del placer',
     roles: ['Participante A', 'Participante B', 'Mirón', 'Limpiador', 'Portero', 'Nervioso', 'Habitual', 'Pareja'],
   },
   {
     id: 'swingers',
     name: 'Club swingers',
-    roles: ['Pareja abierta', 'Soltero', 'Host', 'Barman', 'Voyeur', 'Primera vez', 'Habitual', 'Seguridad'],
+    roles: ['Pareja abierta', 'Soltero', 'Anfitrión', 'Barman', 'Mirón', 'Primera vez', 'Habitual', 'Seguridad'],
   },
   {
     id: 'tinder',
-    name: 'Quedada de Tinder',
-    roles: ['Ligue A', 'Ligue B', 'Camarero', 'Amigo espía', 'Ex que aparece', 'Catfish', 'Influencer', 'Portero'],
+    name: 'Quedada de app de ligue',
+    roles: ['Ligue A', 'Ligue B', 'Camarero', 'Amigo espía', 'Ex que aparece', 'Suplantador', 'Influencer', 'Portero'],
   },
   {
     id: 'playa-nudista',
@@ -80,17 +80,17 @@ export const ADULT_SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'parking',
     name: 'Parking nocturno',
-    roles: ['Pareja en el coche', 'Vigilante', 'Voyeur', 'Dealer', 'Conductor perdido', 'Uber', 'Policía', 'Limpiacoches'],
+    roles: ['Pareja en el coche', 'Vigilante', 'Mirón', 'Camello', 'Conductor perdido', 'VTC', 'Policía', 'Limpiacoches'],
   },
   {
     id: 'farmacia',
     name: 'Farmacia de guardia',
-    roles: ['Farmacéutico', 'Cliente con condones', 'Cliente con test', 'Cliente avergonzado', 'Repartidor', 'Seguridad', 'Pareja nerviosa', 'Night shift'],
+    roles: ['Farmacéutico', 'Cliente con condones', 'Cliente con test', 'Cliente avergonzado', 'Repartidor', 'Seguridad', 'Pareja nerviosa', 'Turno de noche'],
   },
   {
     id: 'gine',
     name: 'Consulta ginecológica',
-    roles: ['Ginecólogo', 'Paciente', 'Enfermera', 'Pareja en sala', 'Recepcionista', 'Celador', 'Estudiante en prácticas', 'Farmaceútico de paso'],
+    roles: ['Ginecólogo', 'Paciente', 'Enfermera', 'Pareja en sala', 'Recepcionista', 'Celador', 'Estudiante en prácticas', 'Farmacéutico de paso'],
   },
   {
     id: 'uro',
@@ -99,17 +99,17 @@ export const ADULT_SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   },
   {
     id: 'telegram',
-    name: 'Canal +18 de Telegram',
-    roles: ['Admin', 'Suscriptor', 'Lurker', 'Vendedor de packs', 'Estafador', 'Moderador', 'Newbie', 'Bot'],
+    name: 'Canal adulto de mensajería',
+    roles: ['Administrador', 'Suscriptor', 'Observador silencioso', 'Vendedor de packs', 'Estafador', 'Moderador', 'Novato', 'Robot'],
   },
   {
     id: 'onlyfans-studio',
-    name: 'Piso de OnlyFans',
-    roles: ['Creator', 'Camarógrafo', 'Editor', 'Manager', 'Roommate', 'Vecino', 'Repartidor', 'Maquillaje'],
+    name: 'Piso de contenido para fans',
+    roles: ['Creador', 'Camarógrafo', 'Editor', 'Representante', 'Compañero de piso', 'Vecino', 'Repartidor', 'Maquillaje'],
   },
   {
     id: 'lovehotel',
-    name: 'Love hotel japonés',
+    name: 'Hotel del amor',
     roles: ['Recepcionista', 'Pareja', 'Turista confuso', 'Limpiadora', 'Técnico de jacuzzi', 'Vendedor de snack', 'Voyeur de pasillo', 'Gerente'],
   },
   {
@@ -120,7 +120,7 @@ export const ADULT_SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'tren',
     name: 'Coche de tren vacío',
-    roles: ['Viajero A', 'Viajero B', 'Revisor', 'Voyeur', 'Turista', 'Conductor', 'Limpiador', 'Policía de andén'],
+    roles: ['Viajero A', 'Viajero B', 'Revisor', 'Mirón', 'Turista', 'Conductor', 'Limpiador', 'Policía de andén'],
   },
   {
     id: 'avion',
@@ -130,12 +130,12 @@ export const ADULT_SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'festival',
     name: 'Festival de música (zona after)',
-    roles: ['DJ', 'Ravers colocados', 'Seguridad', 'Dealer', 'Influencer', 'Camarero', 'Médico de campaña', 'Organizador'],
+    roles: ['DJ', 'Fiesteros colocados', 'Seguridad', 'Camello', 'Influencer', 'Camarero', 'Médico de campaña', 'Organizador'],
   },
   {
     id: 'orgiapiso',
     name: 'Piso de orgía doméstica',
-    roles: ['Anfitrión', 'Primera vez', 'Habitual', 'Barman improvisado', 'DJ de Spotify', 'Voyeur del sofá', 'Pareja', 'El que limpia mañana'],
+    roles: ['Anfitrión', 'Primera vez', 'Habitual', 'Barman improvisado', 'DJ del móvil', 'Voyeur del sofá', 'Pareja', 'El que limpia mañana'],
   },
   {
     id: 'sexshop-taller',
