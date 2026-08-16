@@ -15,17 +15,20 @@ export async function evaluateRecording(input: {
   topicMode: 'serious' | 'invented';
   durationSec: number;
   onStatus?: (msg: string) => void;
+  /** Se llama en cuanto Whisper termina, antes de esperar a DeepSeek. */
+  onTranscript?: (transcript: string) => void;
 }): Promise<HablaYaScoreResult> {
   let transcript = '';
   try {
     const local = await transcribeLocally(input.blob, input.onStatus);
     transcript = local.text;
+    input.onTranscript?.(transcript);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error al transcribir';
     return { ok: false, error: message, transcript };
   }
 
-  input.onStatus?.('Puntuando con IA…');
+  input.onStatus?.('Enviando a DeepSeek…');
   const scored = await scoreSpeech({
     transcript,
     category: input.category,

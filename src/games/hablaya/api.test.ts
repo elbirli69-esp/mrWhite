@@ -40,6 +40,7 @@ describe('evaluateRecording', () => {
 
   it('transcribe y puntúa cuando Whisper OK', async () => {
     const statuses: string[] = [];
+    const transcripts: string[] = [];
     transcribeMock.mockResolvedValueOnce({ text: 'Hablé de Messi', device: 'wasm' });
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true, score: 8, feedback: 'Bien' }), {
@@ -54,12 +55,14 @@ describe('evaluateRecording', () => {
       topicMode: 'serious',
       durationSec: 30,
       onStatus: (msg) => statuses.push(msg),
+      onTranscript: (text) => transcripts.push(text),
     });
 
     expect(result.ok).toBe(true);
     expect(result.transcript).toBe('Hablé de Messi');
     expect(result.score).toBe(8);
-    expect(statuses).toContain('Puntuando con IA…');
+    expect(transcripts).toEqual(['Hablé de Messi']);
+    expect(statuses).toContain('Enviando a DeepSeek…');
   });
 });
 

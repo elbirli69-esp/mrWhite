@@ -304,7 +304,7 @@ export function useHablaYa() {
     setState((prev) => ({
       ...prev,
       aiLoading: true,
-      aiStatus: 'Preparando Whisper local…',
+      aiStatus: 'Transcribiendo con Whisper…',
       aiError: null,
       aiScore: null,
       aiFeedback: null,
@@ -318,6 +318,19 @@ export function useHablaYa() {
       durationSec: meta.seconds,
       onStatus: (msg) => {
         setState((prev) => (prev.screen === 'review' ? { ...prev, aiStatus: msg } : prev));
+      },
+      onTranscript: (text) => {
+        // Mostrar texto ya y pasar a DeepSeek sin esperar a la UI de votos.
+        setState((prev) =>
+          prev.screen === 'review'
+            ? {
+                ...prev,
+                transcript: text,
+                aiStatus: 'Puntuando con DeepSeek…',
+                needsTranscript: false,
+              }
+            : prev,
+        );
       },
     });
 
@@ -333,7 +346,7 @@ export function useHablaYa() {
           aiError: result.error || 'No se pudo transcribir / puntuar',
           aiScore: null,
           aiFeedback: null,
-          needsTranscript: true,
+          needsTranscript: !transcriptLooksUsable(transcript),
         };
       }
       return {
@@ -368,6 +381,7 @@ export function useHablaYa() {
       const audioUrl = URL.createObjectURL(blob);
       const wantsAi = meta.evalMode !== 'votes';
 
+      // Ir a review al instante y lanzar Whisper→DeepSeek sin botón intermedio.
       setState((prev) => {
         revokeUrl(prev.audioUrl);
         return {
@@ -377,7 +391,7 @@ export function useHablaYa() {
           transcript: '',
           needsTranscript: false,
           aiLoading: wantsAi,
-          aiStatus: wantsAi ? 'Preparando Whisper local…' : null,
+          aiStatus: wantsAi ? 'Transcribiendo con Whisper…' : null,
           aiScore: null,
           aiFeedback: null,
           aiError: null,
@@ -386,7 +400,7 @@ export function useHablaYa() {
       });
 
       if (wantsAi) {
-        await runAiFromAudio(blob);
+        void runAiFromAudio(blob);
       }
     } catch {
       setState((prev) => ({
@@ -490,15 +504,19 @@ export function useHablaYa() {
     const voters = state.players.filter((p) => p.id !== currentPlayer?.id);
     const allVoted = voters.every((v) => state.votes[v.id] != null);
 
-    if (state.aiLoading) return false;
-    if (state.needsTranscript && evalMode === 'ai') return false;
-
-    if (evalMode === 'ai') return state.aiScore != null;
+    // En modo solo-IA hay que esperar la nota. En "both" se puede votar en paralelo;
+    // confirmar exige votos + (nota IA o fallo/omitida).
+    if (evalMode === 'ai') {
+      if (state.aiLoading) return false;
+      if (state.needsTranscript) return false;
+      return state.aiScore != null;
+    }
     if (evalMode === 'votes') return allVoted;
-    // both: votos obligatorios; IA si está, o omitida/error
+
     if (!allVoted) return false;
+    if (state.aiLoading) return false;
     if (state.needsTranscript) return false;
-    return state.aiScore != null || state.aiError != null;
+    return true;
   }, [state, currentPlayer]);
 
   const confirmReview = useCallback(() => {

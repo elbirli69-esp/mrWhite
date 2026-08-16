@@ -347,21 +347,26 @@ export default function HablaYaApp() {
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
                   {state.aiLoading
-                    ? state.aiStatus || 'Procesando en el dispositivo…'
+                    ? state.aiStatus ||
+                      'Al terminar el turno se transcribe y se envía solo a DeepSeek…'
                     : state.needsTranscript
-                      ? 'Whisper local no sacó texto. Reintentad, o escuchad el audio y escribid un resumen a mano. Si el mensaje hablaba de «el móvil» sin Whisper, cierra la app del todo y vuelve a abrirla.'
-                      : 'Modelo en el dispositivo (WebGPU/WASM). Puedes corregir y re-puntuar.'}
+                      ? 'Whisper local no sacó texto. Reintentad, o escuchad el audio y escribid un resumen a mano.'
+                      : state.aiScore != null
+                        ? 'Ya puntuado automáticamente. Puedes corregir el texto y re-puntuar si hace falta.'
+                        : 'Puedes corregir el texto y re-puntuar.'}
                 </p>
                 <textarea
                   value={state.transcript}
                   onChange={(e) => game.setTranscript(e.target.value)}
                   rows={5}
-                  disabled={state.aiLoading}
+                  disabled={state.aiLoading && !state.transcript.trim()}
                   autoFocus={state.needsTranscript}
                   placeholder={
-                    state.aiLoading
-                      ? 'Transcribiendo… la primera vez descarga el modelo (~145 MB).'
-                      : 'Aquí debería aparecer lo que se ha dicho del tema…'
+                    state.aiLoading && !state.transcript.trim()
+                      ? 'Transcribiendo… en cuanto haya texto se envía a DeepSeek.'
+                      : state.aiLoading
+                        ? 'Texto listo · puntuando con DeepSeek…'
+                        : 'Aquí debería aparecer lo que se ha dicho del tema…'
                   }
                   className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)] disabled:opacity-60"
                 />
@@ -376,7 +381,7 @@ export default function HablaYaApp() {
                       ? state.aiStatus || 'Procesando…'
                       : state.needsTranscript && !state.transcript.trim()
                         ? 'Reintentar Whisper local'
-                        : 'Evaluar / re-puntuar'}
+                        : 'Re-puntuar'}
                   </Button>
                   {state.config.evalMode === 'both' ? (
                     <Button variant="ghost" onClick={game.skipAi} disabled={state.aiLoading}>
@@ -394,6 +399,9 @@ export default function HablaYaApp() {
               {state.aiLoading ? (
                 <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
                   {state.aiStatus || 'Procesando…'}
+                  {state.transcript.trim()
+                    ? ' · Ya hay texto; DeepSeek está puntuando.'
+                    : ' · Whisper primero, luego DeepSeek solo.'}
                 </p>
               ) : state.aiScore != null ? (
                 <>
@@ -424,7 +432,9 @@ export default function HablaYaApp() {
                   Votos de la mesa (0–10)
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                  No vota quien habló.
+                  {state.aiLoading
+                    ? 'Podéis ir votando mientras llega la nota de la IA.'
+                    : 'No vota quien habló.'}
                 </p>
               </div>
               <ul className="divide-y divide-[var(--color-border)]">
