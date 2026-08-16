@@ -15,9 +15,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Mr White · stayCalm · bulardoCreator',
+        name: 'Juegos de palabras · stayCalm · bulardoCreator',
         short_name: 'Apps',
-        description: 'Elige Mr White, stayCalm o bulardoCreator.',
+        description: 'Mr White, Camaleón, Spyfall, Heads Up, Just One y más.',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'fullscreen',

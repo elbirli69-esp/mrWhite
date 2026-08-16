@@ -2,7 +2,7 @@ import { WORD_PAIRS } from '../data/words';
 import type { GameConfig, Player, PlayerRole, SelectedWords } from '../types/game';
 
 /** Entero aleatorio en [0, max) con crypto si está disponible. */
-function randomInt(max: number): number {
+export function randomInt(max: number): number {
   if (max <= 0) return 0;
   if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
     const buf = new Uint32Array(1);

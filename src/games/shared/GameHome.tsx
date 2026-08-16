@@ -1,0 +1,91 @@
+import { motion } from 'framer-motion';
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { Toggle } from '../../components/Toggle';
+
+interface GameHomeProps {
+  title: string;
+  tagline: string;
+  steps: [string, string, string];
+  emoji: string;
+  readableMode: boolean;
+  onReadableModeChange: (enabled: boolean) => void;
+  onStart: () => void;
+}
+
+export function GameHome({
+  title,
+  tagline,
+  steps,
+  emoji,
+  readableMode,
+  onReadableModeChange,
+  onStart,
+}: GameHomeProps) {
+  return (
+    <div className="flex flex-col gap-10">
+      <header className="text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+          aria-hidden
+        >
+          <span className="text-4xl">{emoji}</span>
+        </motion.div>
+
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="mb-4">
+          <a
+            href="/"
+            className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
+          >
+            ← Apps
+          </a>
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, duration: 0.45 }}
+          className="font-[family-name:var(--font-display)] text-5xl font-semibold tracking-tight text-[var(--color-text)] sm:text-6xl"
+        >
+          {title}
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16, duration: 0.4 }}
+          className="mx-auto mt-4 max-w-sm text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]"
+        >
+          {tagline}
+        </motion.p>
+      </header>
+
+      <Card>
+        <ul className="mb-8 space-y-4 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
+          {steps.map((step, index) => (
+            <li key={step} className="flex gap-3">
+              <span className="mt-0.5 font-semibold text-[var(--color-accent)]">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mb-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+          <Toggle
+            label="Modo legible"
+            description="Texto más grande y máximo contraste para ver mejor la pantalla."
+            checked={readableMode}
+            onChange={onReadableModeChange}
+          />
+        </div>
+
+        <Button onClick={onStart}>Configurar partida</Button>
+      </Card>
+    </div>
+  );
+}

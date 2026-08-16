@@ -1,8 +1,19 @@
-# Mr White + stayCalm
+# Mr White + juegos de palabras + stayCalm
 
 Landing en `/` para elegir app:
 
-- **Mr White** → `/mrwhite` — juego de impostores
+## Juegos de palabras
+
+- **Mr White** → `/mrwhite` — impostores y palabras secretas
+- **Camaleón** → `/camaleon` — tablero, pistas y camaleón
+- **Spyfall** → `/spyfall` — lugar secreto y espías
+- **Heads Up** → `/headsup` — palabra en la frente con temporizador
+- **Just One** → `/justone` — pistas únicas para adivinar
+
+Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación…).
+
+## Otras apps
+
 - **stayCalm** → `/staycalm` — contador de frases compartido (API + Redis)
 - **bulardoCreator** → `/bulardocreator` — noticias creíbles inventadas (DeepSeek)
 
@@ -19,7 +30,7 @@ Variables en Vercel:
 - Framer Motion
 - PWA (instalable, offline)
 
-Sin backend, sin base de datos y sin autenticación. Todo corre en el cliente.
+Los juegos de palabras corren en el cliente (sin backend).
 
 ## Desarrollo
 
@@ -44,7 +55,7 @@ Importa el repositorio en Vercel. Detecta Vite automáticamente:
 
 No hace falta configuración extra.
 
-## Cómo se juega
+## Cómo se juega Mr White
 
 1. Elige número de jugadores (3–20), Mr White, Farsantes y si Mr White tiene pistas.
 2. Escribe el nombre de cada jugador.
@@ -54,14 +65,13 @@ No hace falta configuración extra.
 6. Cuando todos han visto su rol, ¡empieza la partida!
 7. En las rondas, eliminad sospechosos hasta descubrir a Mr White y a todos los Farsantes. La palabra real solo se revela cuando están todos descubiertos.
 
-La última configuración se guarda en `localStorage`.
-
 ## Estructura
 
 ```
 src/
   components/   # UI reutilizable
-  pages/        # Pantallas del flujo
+  pages/        # Pantallas Mr White + hub
+  games/        # Camaleón, Spyfall, Heads Up, Just One
   hooks/        # Estado de partida
   utils/        # Validación, reparto, storage
   data/words.ts # +1000 parejas de palabras

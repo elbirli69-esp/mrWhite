@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, type ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { loadReadableMode } from './utils/storage';
@@ -59,12 +59,44 @@ async function boot() {
     return;
   }
 
-  if (path === '/mrwhite') {
-    document.documentElement.dataset.app = 'mrwhite';
-    document.title = 'Mr White';
+  const partyRoutes: Record<
+    string,
+    { app: string; title: string; loader: () => Promise<{ default: ComponentType }> }
+  > = {
+    '/mrwhite': {
+      app: 'mrwhite',
+      title: 'Mr White',
+      loader: () => import('./App'),
+    },
+    '/camaleon': {
+      app: 'camaleon',
+      title: 'Camaleón',
+      loader: () => import('./games/camaleon/App'),
+    },
+    '/spyfall': {
+      app: 'spyfall',
+      title: 'Spyfall',
+      loader: () => import('./games/spyfall/App'),
+    },
+    '/headsup': {
+      app: 'headsup',
+      title: 'Heads Up',
+      loader: () => import('./games/headsup/App'),
+    },
+    '/justone': {
+      app: 'justone',
+      title: 'Just One',
+      loader: () => import('./games/justone/App'),
+    },
+  };
+
+  const party = partyRoutes[path];
+  if (party) {
+    document.documentElement.dataset.app = party.app;
+    document.title = party.title;
     document.documentElement.dataset.readable = loadReadableMode() ? 'true' : 'false';
     await import('./index.css');
-    const { default: App } = await import('./App');
+    const { default: App } = await party.loader();
     root.render(
       <StrictMode>
         <App />
