@@ -98,10 +98,15 @@ export async function evaluateHablaYaSpeech(input: {
 
   const useless =
     /\(sin transcripción/i.test(transcript) ||
-    transcript.split(/\s+/).filter((w) => w.length > 1).length < 4
+    (() => {
+      const words = transcript.split(/\s+/).filter((w) => /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9]/.test(w))
+      return words.length < 3 && !(words.length >= 2 && transcript.length >= 20)
+    })()
 
   if (useless) {
-    throw new Error('Transcripción demasiado corta para evaluar')
+    throw new Error(
+      'Texto demasiado corto. Escribe un resumen de lo hablado (mín. 3 palabras) y vuelve a evaluar.',
+    )
   }
 
   const topicMode: TopicMode = input.topicMode === 'invented' ? 'invented' : 'serious'

@@ -171,12 +171,18 @@ export async function startRecorderSession(
   };
 }
 
+/** Mínimo para considerar un texto evaluable por la IA (cliente y servidor alineados). */
 export function transcriptLooksUsable(text: string): boolean {
   const cleaned = text
     .trim()
     .replace(/\(sin transcripción[^)]*\)/gi, '')
     .replace(/\s+/g, ' ');
-  // Al menos unas pocas palabras reales
-  const words = cleaned.split(' ').filter((w) => w.length > 1);
-  return words.length >= 4 || cleaned.length >= 24;
+  if (!cleaned) return false;
+  const words = cleaned.split(' ').filter((w) => /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9]/.test(w));
+  // 3+ palabras, o 2 palabras si el texto es razonablemente largo
+  return words.length >= 3 || (words.length >= 2 && cleaned.length >= 20);
+}
+
+export function transcriptTooShortMessage(): string {
+  return 'Escribe al menos un resumen de 3 palabras sobre lo que se ha dicho.';
 }

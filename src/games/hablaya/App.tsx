@@ -336,16 +336,22 @@ export default function HablaYaApp() {
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
                   {state.needsTranscript
-                    ? 'El móvil no ha podido transcribir el audio (pasa mucho). Escuchadlo y escribid un resumen de lo dicho.'
-                    : 'Puedes corregir la transcripción antes de (re)evaluar.'}
+                    ? `Has grabado ${state.config.secondsPerTurn}s, pero el móvil casi nunca transcribe bien al mismo tiempo. Escuchad el audio y escribid un resumen de lo dicho (mín. 3 palabras), luego Evaluar con IA.`
+                    : 'Si la transcripción automática falló o está mal, corrígela antes de evaluar.'}
                 </p>
                 <textarea
                   value={state.transcript}
                   onChange={(e) => game.setTranscript(e.target.value)}
-                  rows={4}
-                  placeholder="Resumen de lo que ha contado…"
+                  rows={5}
+                  autoFocus={state.needsTranscript}
+                  placeholder="Ej.: Ha inventado que en 1987 España ganó un mundial de tortilla con alienígenas…"
                   className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)]"
                 />
+                {state.aiError && state.needsTranscript ? (
+                  <p className="mt-2 text-[length:var(--text-body-sm)] text-[var(--color-danger)]">
+                    {state.aiError}
+                  </p>
+                ) : null}
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <Button
                     onClick={() => void game.requestAiScore()}
@@ -385,8 +391,10 @@ export default function HablaYaApp() {
               ) : (
                 <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
                   {state.needsTranscript
-                    ? 'Esperando resumen para puntuar.'
-                    : state.aiError || 'Sin nota de IA todavía.'}
+                    ? 'Aún no hay nota: hace falta el resumen de arriba.'
+                    : state.aiError && !state.needsTranscript
+                      ? state.aiError
+                      : 'Sin nota de IA todavía.'}
                 </p>
               )}
             </Card>

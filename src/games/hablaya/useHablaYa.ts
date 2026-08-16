@@ -13,7 +13,7 @@ import {
   type HablaYaScreen,
   type TurnRecord,
 } from './logic';
-import { startRecorderSession, transcriptLooksUsable, type RecorderSession } from './record';
+import { startRecorderSession, transcriptLooksUsable, transcriptTooShortMessage, type RecorderSession } from './record';
 import { loadJson, loadNames, resizeNames, saveJson, validateNames } from '../shared/persist';
 
 const CONFIG_KEY = 'hablaya-config';
@@ -315,26 +315,19 @@ export function useHablaYa() {
           audioUrl,
           transcript,
           liveTranscript: transcript,
-          needsTranscript: wantsAi && !usable,
-          aiLoading: wantsAi && usable,
+          // Siempre confirmación manual: en móvil la auto-transcripción falla a menudo
+          needsTranscript: wantsAi,
+          aiLoading: false,
           aiScore: null,
           aiFeedback: null,
-          aiError: null,
+          aiError: usable
+            ? null
+            : wantsAi
+              ? 'Revisa o escribe el resumen de lo hablado y pulsa Evaluar con IA.'
+              : null,
           votes: {},
         };
       });
-
-      if (!wantsAi) {
-        finishingRef.current = false;
-        return;
-      }
-
-      if (!usable) {
-        finishingRef.current = false;
-        return;
-      }
-
-      await runAiScore(transcript);
     } catch {
       setState((prev) => ({
         ...prev,
@@ -347,7 +340,7 @@ export function useHablaYa() {
     } finally {
       finishingRef.current = false;
     }
-  }, [runAiScore]);
+  }, []);
 
   const setTranscript = useCallback((transcript: string) => {
     setState((prev) => ({ ...prev, transcript }));
@@ -358,7 +351,10 @@ export function useHablaYa() {
     if (!transcriptLooksUsable(text)) {
       setState((prev) => ({
         ...prev,
-        aiError: 'Escribe al menos un resumen corto de lo que se ha dicho.',
+        aiError: transcriptTooShortMessage(),
+        aiScore: null,
+        aiFeedback: null,
+        aiLoading: false,
         needsTranscript: true,
       }));
       return;
