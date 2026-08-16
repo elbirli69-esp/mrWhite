@@ -377,7 +377,7 @@ export function useHablaYa() {
           transcript: '',
           needsTranscript: false,
           aiLoading: wantsAi,
-          aiStatus: wantsAi ? 'Transcribiendo con Whisper…' : null,
+          aiStatus: wantsAi ? 'Preparando Whisper local…' : null,
           aiScore: null,
           aiFeedback: null,
           aiError: null,

@@ -323,8 +323,8 @@ export default function HablaYaApp() {
                   {state.aiLoading
                     ? state.aiStatus || 'Procesando en el dispositivo…'
                     : state.needsTranscript
-                      ? 'La transcripción local falló. Escuchad el audio, escribid un resumen y reintentad.'
-                      : 'Corre en tu móvil/PC (WebGPU o WASM). Puedes corregir el texto y re-puntuar.'}
+                      ? 'No salió texto automático. Escuchad el audio, escribid un resumen (o reintentad) y evaluad.'
+                      : 'Modelo en el dispositivo (WebGPU/WASM). Puedes corregir y re-puntuar.'}
                 </p>
                 <textarea
                   value={state.transcript}
@@ -332,7 +332,11 @@ export default function HablaYaApp() {
                   rows={5}
                   disabled={state.aiLoading}
                   autoFocus={state.needsTranscript}
-                  placeholder="La transcripción aparecerá aquí…"
+                  placeholder={
+                    state.aiLoading
+                      ? 'Transcribiendo… la primera vez descarga el modelo (~145 MB).'
+                      : 'Aquí debería aparecer lo que se ha dicho del tema…'
+                  }
                   className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)] disabled:opacity-60"
                 />
                 {state.aiError && !state.aiLoading ? (
