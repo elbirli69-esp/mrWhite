@@ -98,6 +98,11 @@ async function boot() {
       title: 'Unánimo',
       loader: () => import('./games/unanimo/App'),
     },
+    '/hablaya': {
+      app: 'hablaya',
+      title: 'Habla ya',
+      loader: () => import('./games/hablaya/App'),
+    },
   };
 
   const party = partyRoutes[path];

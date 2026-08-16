@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { stayCalmApiPlugin } from './scripts/staycalm-api-plugin.js';
 import { bulardoApiPlugin } from './scripts/bulardo-api-plugin.js';
+import { hablayaApiPlugin } from './scripts/hablaya-api-plugin.js';
 
 export default defineConfig({
   plugins: [
@@ -11,6 +12,7 @@ export default defineConfig({
     tailwindcss(),
     stayCalmApiPlugin(),
     bulardoApiPlugin(),
+    hablayaApiPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],

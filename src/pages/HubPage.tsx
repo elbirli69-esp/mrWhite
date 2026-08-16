@@ -52,6 +52,13 @@ const partyGames = [
     cta: 'Jugar',
     tone: 'unanimo',
   },
+  {
+    href: '/hablaya',
+    name: 'Habla ya',
+    line: 'Categoría, micrófono, votos de la mesa y nota de la IA.',
+    cta: 'Jugar',
+    tone: 'hablaya',
+  },
 ] as const
 
 const otherApps = [

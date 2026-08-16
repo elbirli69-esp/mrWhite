@@ -11,6 +11,7 @@ Landing en `/` para elegir app:
 - **Just One** → `/justone` — pistas únicas para adivinar
 - **Fake Artist** → `/fakeartist` — dibujo colectivo e impostor
 - **Unánimo** → `/unanimo` — coincidir palabras con el grupo
+- **Habla ya** → `/hablaya` — categorías, micrófono, votos 0–10 e IA (serio o inventado)
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
@@ -22,7 +23,7 @@ Cada juego guarda su propia configuración en `localStorage` y permite ajustar p
 Variables en Vercel:
 
 - `REDIS_URL` (Railway, URL pública)
-- `DEEPSEEK_API_KEY` (bulardoCreator)
+- `DEEPSEEK_API_KEY` (bulardoCreator y Habla ya)
 
 ## Stack
 

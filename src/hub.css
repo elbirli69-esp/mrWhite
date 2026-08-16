@@ -280,6 +280,20 @@ html[data-app='hub'] #root {
   outline: none;
 }
 
+.hub-choice--hablaya {
+  background:
+    linear-gradient(145deg, rgba(28, 18, 24, 0.94), rgba(42, 22, 32, 0.9));
+  border-color: rgba(230, 120, 150, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--hablaya:hover,
+.hub-choice--hablaya:focus-visible {
+  border-color: rgba(230, 120, 150, 0.6);
+  box-shadow: 0 22px 60px rgba(230, 120, 150, 0.12);
+  outline: none;
+}
+
 .hub-choice-name {
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 9vw, 3.6rem);
@@ -333,6 +347,11 @@ html[data-app='hub'] #root {
   font-size: clamp(2.2rem, 7.5vw, 3rem);
 }
 
+.hub-choice--hablaya .hub-choice-name {
+  color: #ffe4ec;
+  font-size: clamp(2.2rem, 7.5vw, 3rem);
+}
+
 .hub-choice-line {
   max-width: 22rem;
   color: var(--hub-muted);
@@ -382,6 +401,10 @@ html[data-app='hub'] #root {
 
 .hub-choice--unanimo .hub-choice-cta {
   color: #8fd0e8;
+}
+
+.hub-choice--hablaya .hub-choice-cta {
+  color: #f0a0b8;
 }
 
 @media (min-width: 720px) {
