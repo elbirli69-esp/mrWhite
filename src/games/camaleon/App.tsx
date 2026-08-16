@@ -10,6 +10,7 @@ import { NamesPage } from '../../pages/NamesPage';
 import { PassPhonePage } from '../../pages/PassPhonePage';
 import { vibrateReveal } from '../../utils/game';
 import { ConfigShell } from '../shared/ConfigShell';
+import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { GameHome } from '../shared/GameHome';
 import { MAX_PLAYERS, MIN_PLAYERS, type CamaleonPlayer } from './logic';
 import { useCamaleon } from './useCamaleon';
@@ -119,6 +120,10 @@ export default function CamaleonApp() {
             description="Si lo pilláis, aún puede ganar acertando la palabra secreta."
             checked={state.config.chameleonCanGuess}
             onChange={(chameleonCanGuess) => game.updateConfig({ chameleonCanGuess })}
+          />
+          <AdultModeToggle
+            checked={state.config.adultMode}
+            onChange={(adultMode) => game.updateConfig({ adultMode })}
           />
         </ConfigShell>
       )}

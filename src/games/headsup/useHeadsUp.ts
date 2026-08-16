@@ -32,10 +32,11 @@ interface State {
 }
 
 function initialState(): State {
-  const config =
+  const loaded =
     typeof window !== 'undefined'
       ? loadJson(CONFIG_KEY, { ...DEFAULT_CONFIG }, isHeadsUpConfig)
       : { ...DEFAULT_CONFIG };
+  const config = { ...DEFAULT_CONFIG, ...loaded, adultMode: loaded.adultMode ?? false };
   const playerNames =
     typeof window !== 'undefined' ? loadNames(NAMES_KEY, config.playerCount) : resizeNames([], config.playerCount);
   return {
@@ -134,7 +135,7 @@ export function useHeadsUp() {
     setState((prev) => ({
       ...prev,
       screen: 'play',
-      deck: buildWordDeck(100),
+      deck: buildWordDeck(100, prev.config.adultMode),
       deckIndex: 0,
       secondsLeft: prev.config.roundSeconds,
       roundCorrect: 0,
@@ -186,7 +187,7 @@ export function useHeadsUp() {
     setState((prev) => {
       if (prev.screen !== 'play') return prev;
       const nextIndex = prev.deckIndex + 1;
-      const deck = nextIndex >= prev.deck.length ? buildWordDeck(100) : prev.deck;
+      const deck = nextIndex >= prev.deck.length ? buildWordDeck(100, prev.config.adultMode) : prev.deck;
       const deckIndex = nextIndex >= prev.deck.length ? 0 : nextIndex;
       return {
         ...prev,
@@ -201,7 +202,7 @@ export function useHeadsUp() {
     setState((prev) => {
       if (prev.screen !== 'play' || !prev.config.allowSkip) return prev;
       const nextIndex = prev.deckIndex + 1;
-      const deck = nextIndex >= prev.deck.length ? buildWordDeck(100) : prev.deck;
+      const deck = nextIndex >= prev.deck.length ? buildWordDeck(100, prev.config.adultMode) : prev.deck;
       const deckIndex = nextIndex >= prev.deck.length ? 0 : nextIndex;
       return {
         ...prev,

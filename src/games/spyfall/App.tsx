@@ -10,6 +10,7 @@ import { NamesPage } from '../../pages/NamesPage';
 import { PassPhonePage } from '../../pages/PassPhonePage';
 import { vibrateReveal } from '../../utils/game';
 import { ConfigShell } from '../shared/ConfigShell';
+import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { GameHome } from '../shared/GameHome';
 import { MAX_PLAYERS, MIN_PLAYERS, type SpyfallPlayer } from './logic';
 import { useSpyfall } from './useSpyfall';
@@ -98,6 +99,10 @@ export default function SpyfallApp() {
             max={10}
             options={[0, 5, 6, 8, 10]}
             onChange={(timerMinutes) => game.updateConfig({ timerMinutes })}
+          />
+          <AdultModeToggle
+            checked={state.config.adultMode}
+            onChange={(adultMode) => game.updateConfig({ adultMode })}
           />
         </ConfigShell>
       )}

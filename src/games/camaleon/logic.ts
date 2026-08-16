@@ -1,3 +1,4 @@
+import { ADULT_CAMALEON_CATEGORIES } from './adultData';
 import { CAMALEON_CATEGORIES } from './data';
 import { randomInt, shuffle } from '../../utils/game';
 
@@ -15,6 +16,8 @@ export interface CamaleonConfig {
   cluePhase: boolean;
   /** Si acusan al camaleón, puede intentar adivinar la palabra. */
   chameleonCanGuess: boolean;
+  /** Pack malsonante / +18. */
+  adultMode: boolean;
 }
 
 export const DEFAULT_CONFIG: CamaleonConfig = {
@@ -23,6 +26,7 @@ export const DEFAULT_CONFIG: CamaleonConfig = {
   showWordGrid: true,
   cluePhase: true,
   chameleonCanGuess: true,
+  adultMode: false,
 };
 
 export type CamaleonScreen =
@@ -83,13 +87,15 @@ export function isCamaleonConfig(value: unknown): value is CamaleonConfig {
     typeof c.showWordGrid === 'boolean' &&
     typeof c.cluePhase === 'boolean' &&
     typeof c.chameleonCanGuess === 'boolean' &&
+    (c.adultMode === undefined || typeof c.adultMode === 'boolean') &&
     Number.isInteger(c.playerCount) &&
     Number.isInteger(c.chameleonCount)
   );
 }
 
-export function pickDeal(): CamaleonDeal {
-  const category = CAMALEON_CATEGORIES[randomInt(CAMALEON_CATEGORIES.length)]!;
+export function pickDeal(adultMode = false): CamaleonDeal {
+  const pool = adultMode ? ADULT_CAMALEON_CATEGORIES : CAMALEON_CATEGORIES;
+  const category = pool[randomInt(pool.length)]!;
   const secretIndex = randomInt(category.words.length);
   return {
     categoryName: category.name,

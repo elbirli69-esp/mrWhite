@@ -8,6 +8,8 @@ export interface GameConfig {
   farsanteCount: number;
   /** Si Mr White recibe una pista temática al revelar. */
   mrWhiteHasHints: boolean;
+  /** Pack malsonante / +18. */
+  adultMode: boolean;
 }
 
 /** Jugador con rol y palabra asignada (si aplica). */
@@ -78,6 +80,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   mrWhiteCount: 1,
   farsanteCount: 1,
   mrWhiteHasHints: false,
+  adultMode: false,
 };
 
 /** Etiqueta legible del rol (revelada al eliminar). */

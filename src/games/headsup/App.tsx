@@ -6,6 +6,7 @@ import { Toggle } from '../../components/Toggle';
 import { useReadableMode } from '../../hooks/useReadableMode';
 import { NamesPage } from '../../pages/NamesPage';
 import { ConfigShell } from '../shared/ConfigShell';
+import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { GameHome } from '../shared/GameHome';
 import { MAX_PLAYERS, MIN_PLAYERS } from './logic';
 import { PlaySurface } from './PlaySurface';
@@ -97,6 +98,10 @@ export default function HeadsUpApp() {
             min={1}
             max={30}
             onChange={(roundsPerMatch) => game.updateConfig({ roundsPerMatch })}
+          />
+          <AdultModeToggle
+            checked={state.config.adultMode}
+            onChange={(adultMode) => game.updateConfig({ adultMode })}
           />
         </ConfigShell>
       )}

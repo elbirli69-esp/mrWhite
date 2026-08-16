@@ -1,3 +1,4 @@
+import { ADULT_WORD_PAIRS } from '../data/adultWords';
 import { WORD_PAIRS } from '../data/words';
 import type { GameConfig, Player, PlayerRole, SelectedWords } from '../types/game';
 
@@ -22,10 +23,11 @@ export function shuffle<T>(items: T[]): T[] {
   return arr;
 }
 
-/** Elige una pareja de palabras al azar. */
-export function pickRandomWordPair(): SelectedWords {
-  const index = randomInt(WORD_PAIRS.length);
-  const [normal, farsante, hint] = WORD_PAIRS[index]!;
+/** Elige una pareja de palabras al azar (normal o +18). */
+export function pickRandomWordPair(adultMode = false): SelectedWords {
+  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
+  const index = randomInt(pool.length);
+  const [normal, farsante, hint] = pool[index]!;
   return { normal, farsante, hint };
 }
 

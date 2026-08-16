@@ -121,7 +121,7 @@ export function useGame() {
       const namesError = validateNames(prev.playerNames, prev.config.playerCount);
       if (namesError) return prev;
 
-      const words = pickRandomWordPair();
+      const words = pickRandomWordPair(prev.config.adultMode);
       const players = createPlayers(
         prev.config,
         words,

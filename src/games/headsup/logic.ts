@@ -1,3 +1,4 @@
+import { ADULT_WORD_PAIRS } from '../../data/adultWords';
 import { WORD_PAIRS } from '../../data/words';
 import { randomInt, shuffle } from '../../utils/game';
 
@@ -12,6 +13,8 @@ export interface HeadsUpConfig {
   /** 0 = no hay puntuación objetivo; se juegan `roundsPerMatch` turnos. */
   winScore: number;
   roundsPerMatch: number;
+  /** Pack malsonante / +18. */
+  adultMode: boolean;
 }
 
 export const DEFAULT_CONFIG: HeadsUpConfig = {
@@ -20,6 +23,7 @@ export const DEFAULT_CONFIG: HeadsUpConfig = {
   allowSkip: true,
   winScore: 10,
   roundsPerMatch: 8,
+  adultMode: false,
 };
 
 export type HeadsUpScreen = 'home' | 'config' | 'names' | 'lobby' | 'play' | 'roundEnd' | 'matchEnd';
@@ -55,12 +59,14 @@ export function isHeadsUpConfig(value: unknown): value is HeadsUpConfig {
     typeof c.roundSeconds === 'number' &&
     typeof c.allowSkip === 'boolean' &&
     typeof c.winScore === 'number' &&
-    typeof c.roundsPerMatch === 'number'
+    typeof c.roundsPerMatch === 'number' &&
+    (c.adultMode === undefined || typeof c.adultMode === 'boolean')
   );
 }
 
-export function buildWordDeck(count = 80): string[] {
-  const words = WORD_PAIRS.map(([normal]) => normal);
+export function buildWordDeck(count = 80, adultMode = false): string[] {
+  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
+  const words = pool.map(([normal]) => normal);
   return shuffle(words).slice(0, Math.min(count, words.length));
 }
 

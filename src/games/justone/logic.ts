@@ -1,3 +1,4 @@
+import { ADULT_WORD_PAIRS } from '../../data/adultWords';
 import { WORD_PAIRS } from '../../data/words';
 import { randomInt, shuffle } from '../../utils/game';
 
@@ -11,6 +12,8 @@ export interface JustOneConfig {
   removeDuplicates: boolean;
   /** Mostrar pistas anuladas tachadas al adivinador. */
   showInvalidClues: boolean;
+  /** Pack malsonante / +18. */
+  adultMode: boolean;
 }
 
 export const DEFAULT_CONFIG: JustOneConfig = {
@@ -18,6 +21,7 @@ export const DEFAULT_CONFIG: JustOneConfig = {
   totalRounds: 8,
   removeDuplicates: true,
   showInvalidClues: false,
+  adultMode: false,
 };
 
 export type JustOneScreen =
@@ -56,7 +60,8 @@ export function isJustOneConfig(value: unknown): value is JustOneConfig {
     typeof c.playerCount === 'number' &&
     typeof c.totalRounds === 'number' &&
     typeof c.removeDuplicates === 'boolean' &&
-    typeof c.showInvalidClues === 'boolean'
+    typeof c.showInvalidClues === 'boolean' &&
+    (c.adultMode === undefined || typeof c.adultMode === 'boolean')
   );
 }
 
@@ -67,8 +72,9 @@ export function createPlayers(names: string[]): JustOnePlayer[] {
   }));
 }
 
-export function buildWordDeck(count = 40): string[] {
-  return shuffle(WORD_PAIRS.map(([w]) => w)).slice(0, Math.min(count, WORD_PAIRS.length));
+export function buildWordDeck(count = 40, adultMode = false): string[] {
+  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
+  return shuffle(pool.map(([w]) => w)).slice(0, Math.min(count, pool.length));
 }
 
 export function normalizeClue(value: string): string {

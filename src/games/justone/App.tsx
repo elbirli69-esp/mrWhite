@@ -10,6 +10,7 @@ import { NamesPage } from '../../pages/NamesPage';
 import { PassPhonePage } from '../../pages/PassPhonePage';
 import { vibrateReveal } from '../../utils/game';
 import { ConfigShell } from '../shared/ConfigShell';
+import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { GameHome } from '../shared/GameHome';
 import { MAX_PLAYERS, MIN_PLAYERS } from './logic';
 import { useJustOne } from './useJustOne';
@@ -87,6 +88,10 @@ export default function JustOneApp() {
             description="El adivinador ve las tachadas además de las válidas."
             checked={state.config.showInvalidClues}
             onChange={(showInvalidClues) => game.updateConfig({ showInvalidClues })}
+          />
+          <AdultModeToggle
+            checked={state.config.adultMode}
+            onChange={(adultMode) => game.updateConfig({ adultMode })}
           />
         </ConfigShell>
       )}

@@ -91,6 +91,13 @@ export function ConfigPage({
             onChange={(mrWhiteHasHints) => onChange({ mrWhiteHasHints })}
           />
 
+          <Toggle
+            label="Versión adultos (+18)"
+            description="Solo palabras malsonantes, sexo y humor gordo. Apágalo si hay menores o no apetece."
+            checked={config.adultMode}
+            onChange={(adultMode) => onChange({ adultMode })}
+          />
+
           <NumberStepper
             label="Farsantes"
             description="Ven una palabra parecida (sin saberlo)."

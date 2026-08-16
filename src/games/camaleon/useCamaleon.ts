@@ -52,10 +52,11 @@ interface State {
 }
 
 function initialState(): State {
-  const config =
+  const loaded =
     typeof window !== 'undefined'
       ? loadJson(CONFIG_KEY, { ...DEFAULT_CONFIG }, isCamaleonConfig)
       : { ...DEFAULT_CONFIG };
+  const config = { ...DEFAULT_CONFIG, ...loaded, adultMode: loaded.adultMode ?? false };
   const playerNames =
     typeof window !== 'undefined' ? loadNames(NAMES_KEY, config.playerCount) : resizeNames([], config.playerCount);
 
@@ -145,7 +146,7 @@ export function useCamaleon() {
       const previousChameleonIds = prev.players
         .filter((p) => p.role === 'chameleon')
         .map((p) => p.id);
-      const deal = pickDeal();
+      const deal = pickDeal(prev.config.adultMode);
       const players = createPlayers(prev.config, prev.playerNames, previousChameleonIds);
 
       return {

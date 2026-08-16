@@ -54,10 +54,11 @@ function blankRound() {
 }
 
 function initialState(): State {
-  const config =
+  const loaded =
     typeof window !== 'undefined'
       ? loadJson(CONFIG_KEY, { ...DEFAULT_CONFIG }, isSpyfallConfig)
       : { ...DEFAULT_CONFIG };
+  const config = { ...DEFAULT_CONFIG, ...loaded, adultMode: loaded.adultMode ?? false };
   const playerNames =
     typeof window !== 'undefined' ? loadNames(NAMES_KEY, config.playerCount) : resizeNames([], config.playerCount);
   return {
@@ -125,7 +126,7 @@ export function useSpyfall() {
       if (!validateSpyfallConfig(prev.config).valid) return prev;
       if (validateNames(prev.playerNames, prev.config.playerCount)) return prev;
       const previousSpyIds = prev.players.filter((p) => p.role === 'spy').map((p) => p.id);
-      const deal = pickDeal();
+      const deal = pickDeal(prev.config.adultMode);
       const players = createPlayers(prev.config, prev.playerNames, deal, previousSpyIds);
       return {
         ...prev,
@@ -253,7 +254,7 @@ export function useSpyfall() {
 
   return {
     state,
-    locationNames: allLocationNames(),
+    locationNames: allLocationNames(state.config.adultMode),
     currentPlayer: state.players[state.currentPlayerIndex] ?? null,
     configValidation: validateSpyfallConfig(state.config),
     namesError: validateNames(state.playerNames, state.config.playerCount),

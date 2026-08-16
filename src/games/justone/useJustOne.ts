@@ -37,10 +37,11 @@ interface State {
 }
 
 function initialState(): State {
-  const config =
+  const loaded =
     typeof window !== 'undefined'
       ? loadJson(CONFIG_KEY, { ...DEFAULT_CONFIG }, isJustOneConfig)
       : { ...DEFAULT_CONFIG };
+  const config = { ...DEFAULT_CONFIG, ...loaded, adultMode: loaded.adultMode ?? false };
   const playerNames =
     typeof window !== 'undefined' ? loadNames(NAMES_KEY, config.playerCount) : resizeNames([], config.playerCount);
   return {
@@ -117,7 +118,7 @@ export function useJustOne() {
         ...prev,
         screen: 'roundIntro',
         players,
-        deck: buildWordDeck(60),
+        deck: buildWordDeck(60, prev.config.adultMode),
         round: 1,
         score: 0,
         guesserIndex,

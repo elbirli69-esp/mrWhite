@@ -10,6 +10,7 @@ function isValidConfigShape(value: unknown): value is {
   mrWhiteCount: number;
   farsanteCount: number;
   mrWhiteHasHints?: boolean;
+  adultMode?: boolean;
 } {
   if (!value || typeof value !== 'object') return false;
   const c = value as Record<string, unknown>;
@@ -24,7 +25,8 @@ function isValidConfigShape(value: unknown): value is {
     c.playerCount <= MAX_PLAYERS &&
     c.mrWhiteCount >= 0 &&
     c.farsanteCount >= 0 &&
-    (c.mrWhiteHasHints === undefined || typeof c.mrWhiteHasHints === 'boolean')
+    (c.mrWhiteHasHints === undefined || typeof c.mrWhiteHasHints === 'boolean') &&
+    (c.adultMode === undefined || typeof c.adultMode === 'boolean')
   );
 }
 
@@ -40,6 +42,7 @@ export function loadConfig(): GameConfig {
       mrWhiteCount: parsed.mrWhiteCount,
       farsanteCount: parsed.farsanteCount,
       mrWhiteHasHints: parsed.mrWhiteHasHints ?? DEFAULT_CONFIG.mrWhiteHasHints,
+      adultMode: parsed.adultMode ?? DEFAULT_CONFIG.adultMode,
     };
   } catch {
     return { ...DEFAULT_CONFIG };

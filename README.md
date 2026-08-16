@@ -10,7 +10,7 @@ Landing en `/` para elegir app:
 - **Heads Up** → `/headsup` — palabra en la frente con temporizador
 - **Just One** → `/justone` — pistas únicas para adivinar
 
-Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación…).
+Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
 ## Otras apps
 

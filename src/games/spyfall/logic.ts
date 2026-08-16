@@ -1,3 +1,4 @@
+import { ADULT_SPYFALL_LOCATIONS } from './adultData';
 import { SPYFALL_LOCATIONS } from './data';
 import { randomInt, shuffle } from '../../utils/game';
 
@@ -15,6 +16,8 @@ export interface SpyfallConfig {
   spiesSeeLocations: boolean;
   /** 0 = sin temporizador. */
   timerMinutes: number;
+  /** Pack malsonante / +18. */
+  adultMode: boolean;
 }
 
 export const DEFAULT_CONFIG: SpyfallConfig = {
@@ -23,6 +26,7 @@ export const DEFAULT_CONFIG: SpyfallConfig = {
   assignRoles: true,
   spiesSeeLocations: true,
   timerMinutes: 8,
+  adultMode: false,
 };
 
 export type SpyfallScreen =
@@ -73,12 +77,14 @@ export function isSpyfallConfig(value: unknown): value is SpyfallConfig {
     typeof c.spyCount === 'number' &&
     typeof c.assignRoles === 'boolean' &&
     typeof c.spiesSeeLocations === 'boolean' &&
-    typeof c.timerMinutes === 'number'
+    typeof c.timerMinutes === 'number' &&
+    (c.adultMode === undefined || typeof c.adultMode === 'boolean')
   );
 }
 
-export function pickDeal(): SpyfallDeal {
-  const location = SPYFALL_LOCATIONS[randomInt(SPYFALL_LOCATIONS.length)]!;
+export function pickDeal(adultMode = false): SpyfallDeal {
+  const pool = adultMode ? ADULT_SPYFALL_LOCATIONS : SPYFALL_LOCATIONS;
+  const location = pool[randomInt(pool.length)]!;
   return {
     locationName: location.name,
     locationRoles: location.roles,
@@ -136,6 +142,7 @@ export function pickStarterId(players: SpyfallPlayer[], avoidId: number | null):
   return list[randomInt(list.length)]!.id;
 }
 
-export function allLocationNames(): string[] {
-  return SPYFALL_LOCATIONS.map((l) => l.name);
+export function allLocationNames(adultMode = false): string[] {
+  const pool = adultMode ? ADULT_SPYFALL_LOCATIONS : SPYFALL_LOCATIONS;
+  return pool.map((l) => l.name);
 }
