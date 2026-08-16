@@ -15,7 +15,7 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-4';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-5';
 
 export type DeviceHints = {
   userAgent?: string;
@@ -68,7 +68,15 @@ async function loadPipeline(
   device: 'webgpu' | 'wasm',
   dtype: string,
 ): Promise<AsrPipeline> {
-  const transformers = await import('@huggingface/transformers');
+  let transformers: typeof import('@huggingface/transformers');
+  try {
+    transformers = await import('@huggingface/transformers');
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'error desconocido';
+    throw new Error(
+      `No se pudo cargar el motor Whisper (${detail}). Suele ser caché tras un deploy: cierra la pestaña y vuelve a abrir Habla ya.`,
+    );
+  }
   transformers.env.allowLocalModels = false;
   transformers.env.useBrowserCache = true;
 

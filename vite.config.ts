@@ -48,13 +48,28 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // No precachear el bundle Whisper (~0.9 MB) ni el WASM ONNX: se piden al usar Habla ya.
+        globIgnores: ['**/transformers.web-*.js', '**/ort-wasm-*.wasm'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/assets\//],
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
-        // Modelos Whisper / ONNX se descargan bajo demanda (no precachear)
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              /\/assets\/transformers\.web-/i.test(url.pathname) ||
+              /\/assets\/ort-wasm-/i.test(url.pathname),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'hablaya-transformers-runtime',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+            },
+          },
           {
             urlPattern: ({ url }) =>
               url.hostname.includes('huggingface.co') ||

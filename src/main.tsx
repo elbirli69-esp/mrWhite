@@ -1,7 +1,19 @@
 import { StrictMode, type ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
+import {
+  clearChunkReloadGuard,
+  shouldReloadForChunkError,
+} from './utils/chunkLoadRecovery';
 import { loadReadableMode } from './utils/storage';
+
+/** Tras un deploy, chunks viejos (p. ej. transformers.web-HASH.js) ya no existen. */
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault();
+  if (shouldReloadForChunkError()) {
+    window.location.reload();
+  }
+});
 
 /** Actualiza la PWA en cuanto hay una versión nueva (evita mensajes viejos en el móvil). */
 const updateSW = registerSW({
@@ -21,6 +33,15 @@ const updateSW = registerSW({
     check();
   },
 });
+
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
 
 const rootEl = document.getElementById('root');
 
@@ -135,4 +156,7 @@ async function boot() {
   );
 }
 
-void boot();
+void boot().then(() => {
+  // Arranque OK: resetear el contador de recargas por chunks viejos.
+  window.setTimeout(() => clearChunkReloadGuard(), 3_000);
+});
