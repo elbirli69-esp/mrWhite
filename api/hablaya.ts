@@ -40,7 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message.includes('Falta') ||
       message.includes('vacía') ||
       message.includes('vacío') ||
-      message.includes('categoría')
+      message.includes('categoría') ||
+      message.includes('corta')
         ? 400
         : 500
     return sendJson(res, status, { ok: false, error: message })

@@ -1,4 +1,4 @@
-/** Grabación de audio + transcripción vía Web Speech API (si está disponible). */
+/** Grabación de audio + intento de transcripción (Web Speech API). */
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -17,6 +17,7 @@ type SpeechRecognitionEventLike = {
   resultIndex: number;
   results: ArrayLike<{
     isFinal: boolean;
+    length: number;
     0: { transcript: string };
   }>;
 };
@@ -39,17 +40,28 @@ export type RecorderSession = {
   stop: () => Promise<{ blob: Blob; transcript: string }>;
 };
 
+/**
+ * Nota: en muchos móviles MediaRecorder y SpeechRecognition compiten por el micrófono
+ * y la transcripción sale vacía. Por eso el juego admite resumen manual.
+ */
 export async function startRecorderSession(
   onTranscript?: (text: string) => void,
 ): Promise<RecorderSession> {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const mime =
-    MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : MediaRecorder.isTypeSupported('audio/webm')
-        ? 'audio/webm'
-        : '';
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
+  });
 
+  const mimeCandidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+  ];
+  const mime = mimeCandidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? '';
   const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (event) => {
@@ -60,7 +72,12 @@ export async function startRecorderSession(
   let finalTranscript = '';
   let interimTranscript = '';
   let recognition: SpeechRecognitionLike | null = null;
+  let wantRecognition = true;
   const Ctor = getSpeechRecognitionCtor();
+
+  const publish = () => {
+    onTranscript?.(`${finalTranscript}${interimTranscript}`.trim());
+  };
 
   if (Ctor) {
     recognition = new Ctor();
@@ -77,29 +94,35 @@ export async function startRecorderSession(
         else interim += piece;
       }
       interimTranscript = interim;
-      onTranscript?.(`${finalTranscript}${interimTranscript}`.trim());
+      publish();
     };
     recognition.onerror = () => {
-      // Seguir grabando aunque falle la transcripción
+      // Seguir grabando audio aunque falle el reconocimiento
     };
     recognition.onend = () => {
-      // Si el navegador corta la sesión a mitad, reanudar mientras grabamos
-      try {
-        if (recorder.state === 'recording') recognition?.start();
-      } catch {
-        // ignore
-      }
+      if (!wantRecognition || recorder.state !== 'recording') return;
+      window.setTimeout(() => {
+        if (!wantRecognition || recorder.state !== 'recording' || !recognition) return;
+        try {
+          recognition.start();
+        } catch {
+          // ignore
+        }
+      }, 120);
     };
     try {
       recognition.start();
     } catch {
       recognition = null;
+      wantRecognition = false;
     }
   }
 
   return {
     stop: async () => {
-      const blob = await new Promise<Blob>((resolve, reject) => {
+      wantRecognition = false;
+
+      const blobPromise = new Promise<Blob>((resolve, reject) => {
         recorder.onerror = () => reject(new Error('Error de grabación'));
         recorder.onstop = () => {
           resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
@@ -112,15 +135,48 @@ export async function startRecorderSession(
         }
       });
 
-      try {
-        recognition?.stop();
-      } catch {
-        // ignore
-      }
+      // Dar un momento a que SpeechRecognition cierre resultados finales
+      await new Promise<void>((resolve) => {
+        if (!recognition) {
+          resolve();
+          return;
+        }
+        const previousOnEnd = recognition.onend;
+        const done = () => {
+          recognition!.onend = previousOnEnd;
+          resolve();
+        };
+        recognition.onend = () => {
+          done();
+        };
+        try {
+          recognition.stop();
+        } catch {
+          try {
+            recognition.abort();
+          } catch {
+            // ignore
+          }
+          done();
+        }
+        window.setTimeout(done, 600);
+      });
+
+      const blob = await blobPromise;
       stream.getTracks().forEach((t) => t.stop());
 
       const transcript = `${finalTranscript}${interimTranscript}`.trim();
       return { blob, transcript };
     },
   };
+}
+
+export function transcriptLooksUsable(text: string): boolean {
+  const cleaned = text
+    .trim()
+    .replace(/\(sin transcripción[^)]*\)/gi, '')
+    .replace(/\s+/g, ' ');
+  // Al menos unas pocas palabras reales
+  const words = cleaned.split(' ').filter((w) => w.length > 1);
+  return words.length >= 4 || cleaned.length >= 24;
 }

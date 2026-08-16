@@ -96,6 +96,14 @@ export async function evaluateHablaYaSpeech(input: {
   if (!category) throw new Error('Falta la categoría')
   if (!transcript) throw new Error('Transcripción vacía')
 
+  const useless =
+    /\(sin transcripción/i.test(transcript) ||
+    transcript.split(/\s+/).filter((w) => w.length > 1).length < 4
+
+  if (useless) {
+    throw new Error('Transcripción demasiado corta para evaluar')
+  }
+
   const topicMode: TopicMode = input.topicMode === 'invented' ? 'invented' : 'serious'
   const durationSec = Number.isFinite(input.durationSec) ? input.durationSec : 45
 

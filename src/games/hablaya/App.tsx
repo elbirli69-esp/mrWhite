@@ -328,15 +328,39 @@ export default function HablaYaApp() {
                 Sin audio disponible.
               </p>
             )}
-            {state.transcript ? (
-              <p className="mt-4 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                Transcripción: {state.transcript}
-              </p>
-            ) : (
-              <p className="mt-4 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                Sin transcripción (la mesa puede votar igual).
-              </p>
-            )}
+
+            {state.config.evalMode !== 'votes' ? (
+              <div className="mt-4">
+                <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text)]">
+                  Texto para la IA
+                </p>
+                <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+                  {state.needsTranscript
+                    ? 'El móvil no ha podido transcribir el audio (pasa mucho). Escuchadlo y escribid un resumen de lo dicho.'
+                    : 'Puedes corregir la transcripción antes de (re)evaluar.'}
+                </p>
+                <textarea
+                  value={state.transcript}
+                  onChange={(e) => game.setTranscript(e.target.value)}
+                  rows={4}
+                  placeholder="Resumen de lo que ha contado…"
+                  className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)]"
+                />
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    onClick={() => void game.requestAiScore()}
+                    disabled={state.aiLoading || !state.transcript.trim()}
+                  >
+                    {state.aiLoading ? 'Evaluando…' : 'Evaluar con IA'}
+                  </Button>
+                  {state.config.evalMode === 'both' ? (
+                    <Button variant="ghost" onClick={game.skipAi} disabled={state.aiLoading}>
+                      Saltar IA
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </Card>
 
           {state.config.evalMode !== 'votes' ? (
@@ -359,9 +383,10 @@ export default function HablaYaApp() {
                   ) : null}
                 </>
               ) : (
-                <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-danger)]">
-                  {state.aiError || 'Sin nota de IA'}
-                  {state.config.evalMode === 'both' ? ' · Podéis seguir con los votos.' : ''}
+                <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+                  {state.needsTranscript
+                    ? 'Esperando resumen para puntuar.'
+                    : state.aiError || 'Sin nota de IA todavía.'}
                 </p>
               )}
             </Card>

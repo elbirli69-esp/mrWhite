@@ -13,7 +13,7 @@ import {
   type HablaYaScreen,
   type TurnRecord,
 } from './logic';
-import { startRecorderSession, type RecorderSession } from './record';
+import { startRecorderSession, transcriptLooksUsable, type RecorderSession } from './record';
 import { loadJson, loadNames, resizeNames, saveJson, validateNames } from '../shared/persist';
 
 const CONFIG_KEY = 'hablaya-config';
@@ -34,6 +34,8 @@ interface State {
   audioUrl: string | null;
   liveTranscript: string;
   transcript: string;
+  /** True si hace falta escribir/resumir el discurso para la IA. */
+  needsTranscript: boolean;
   aiScore: number | null;
   aiFeedback: string | null;
   aiError: string | null;
@@ -74,6 +76,7 @@ function initialState(): State {
     audioUrl: null,
     liveTranscript: '',
     transcript: '',
+    needsTranscript: false,
     aiScore: null,
     aiFeedback: null,
     aiError: null,
@@ -208,6 +211,7 @@ export function useHablaYa() {
         audioUrl: null,
         liveTranscript: '',
         transcript: '',
+        needsTranscript: false,
         aiScore: null,
         aiFeedback: null,
         aiError: null,
@@ -231,6 +235,7 @@ export function useHablaYa() {
       screen: 'record',
       liveTranscript: '',
       transcript: '',
+      needsTranscript: false,
       audioUrl: null,
       aiScore: null,
       aiFeedback: null,
@@ -239,6 +244,48 @@ export function useHablaYa() {
       secondsLeft: prev.config.secondsPerTurn,
       recording: false,
     }));
+  }, []);
+
+  const runAiScore = useCallback(async (transcript: string) => {
+    const meta = turnMetaRef.current;
+    setState((prev) => ({
+      ...prev,
+      aiLoading: true,
+      aiError: null,
+      aiScore: null,
+      aiFeedback: null,
+      needsTranscript: false,
+      transcript,
+    }));
+
+    const result = await scoreSpeech({
+      transcript,
+      category: meta.category,
+      topicMode: meta.topicMode,
+      durationSec: meta.seconds,
+    });
+
+    setState((prev) => {
+      if (prev.screen !== 'review') return prev;
+      if (!result.ok || result.score == null) {
+        return {
+          ...prev,
+          aiLoading: false,
+          aiError: result.error || 'La IA no pudo puntuar',
+          aiScore: null,
+          aiFeedback: null,
+          needsTranscript: true,
+        };
+      }
+      return {
+        ...prev,
+        aiLoading: false,
+        aiScore: result.score,
+        aiFeedback: result.feedback || null,
+        aiError: null,
+        needsTranscript: false,
+      };
+    });
   }, []);
 
   const finishRecording = useCallback(async () => {
@@ -257,6 +304,9 @@ export function useHablaYa() {
     try {
       const { blob, transcript } = await session.stop();
       const audioUrl = URL.createObjectURL(blob);
+      const usable = transcriptLooksUsable(transcript);
+      const wantsAi = meta.evalMode !== 'votes';
+
       setState((prev) => {
         revokeUrl(prev.audioUrl);
         return {
@@ -265,7 +315,8 @@ export function useHablaYa() {
           audioUrl,
           transcript,
           liveTranscript: transcript,
-          aiLoading: meta.evalMode !== 'votes',
+          needsTranscript: wantsAi && !usable,
+          aiLoading: wantsAi && usable,
           aiScore: null,
           aiFeedback: null,
           aiError: null,
@@ -273,48 +324,57 @@ export function useHablaYa() {
         };
       });
 
-      if (meta.evalMode === 'votes') {
+      if (!wantsAi) {
         finishingRef.current = false;
         return;
       }
 
-      const result = await scoreSpeech({
-        transcript: transcript || '(sin transcripción audible)',
-        category: meta.category,
-        topicMode: meta.topicMode,
-        durationSec: meta.seconds,
-      });
+      if (!usable) {
+        finishingRef.current = false;
+        return;
+      }
 
-      setState((prev) => {
-        if (prev.screen !== 'review') return prev;
-        if (!result.ok || result.score == null) {
-          return {
-            ...prev,
-            aiLoading: false,
-            aiError: result.error || 'La IA no pudo puntuar',
-            aiScore: null,
-            aiFeedback: null,
-          };
-        }
-        return {
-          ...prev,
-          aiLoading: false,
-          aiScore: result.score,
-          aiFeedback: result.feedback || null,
-          aiError: null,
-        };
-      });
+      await runAiScore(transcript);
     } catch {
       setState((prev) => ({
         ...prev,
         screen: 'review',
         recording: false,
         aiLoading: false,
+        needsTranscript: meta.evalMode !== 'votes',
         aiError: 'No se pudo guardar el audio',
       }));
     } finally {
       finishingRef.current = false;
     }
+  }, [runAiScore]);
+
+  const setTranscript = useCallback((transcript: string) => {
+    setState((prev) => ({ ...prev, transcript }));
+  }, []);
+
+  const requestAiScore = useCallback(async () => {
+    const text = state.transcript.trim();
+    if (!transcriptLooksUsable(text)) {
+      setState((prev) => ({
+        ...prev,
+        aiError: 'Escribe al menos un resumen corto de lo que se ha dicho.',
+        needsTranscript: true,
+      }));
+      return;
+    }
+    await runAiScore(text);
+  }, [runAiScore, state.transcript]);
+
+  const skipAi = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      needsTranscript: false,
+      aiLoading: false,
+      aiScore: null,
+      aiFeedback: null,
+      aiError: 'IA omitida: usad los votos de la mesa.',
+    }));
   }, []);
 
   const startRecording = useCallback(async () => {
@@ -365,11 +425,14 @@ export function useHablaYa() {
     const voters = state.players.filter((p) => p.id !== currentPlayer?.id);
     const allVoted = voters.every((v) => state.votes[v.id] != null);
 
-    if (evalMode === 'ai') return !state.aiLoading && state.aiScore != null;
-    if (evalMode === 'votes') return allVoted;
-    // both: need votes; AI preferred but optional if failed
-    if (!allVoted) return false;
     if (state.aiLoading) return false;
+    if (state.needsTranscript && evalMode === 'ai') return false;
+
+    if (evalMode === 'ai') return state.aiScore != null;
+    if (evalMode === 'votes') return allVoted;
+    // both: votos obligatorios; IA si está, o omitida/error
+    if (!allVoted) return false;
+    if (state.needsTranscript) return false;
     return state.aiScore != null || state.aiError != null;
   }, [state, currentPlayer]);
 
@@ -426,6 +489,7 @@ export function useHablaYa() {
           selectedCategory: '',
           transcript: '',
           liveTranscript: '',
+          needsTranscript: false,
           votes: {},
           aiScore: null,
           aiFeedback: null,
@@ -443,6 +507,7 @@ export function useHablaYa() {
         selectedCategory: '',
         transcript: '',
         liveTranscript: '',
+        needsTranscript: false,
         votes: {},
         aiScore: null,
         aiFeedback: null,
@@ -478,6 +543,9 @@ export function useHablaYa() {
     selectCategory,
     startRecording,
     finishRecording,
+    setTranscript,
+    requestAiScore,
+    skipAi,
     setVote,
     confirmReview,
     nextTurn,

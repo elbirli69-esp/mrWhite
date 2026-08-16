@@ -62,7 +62,8 @@ export function hablayaApiPlugin(): Plugin {
             message.includes('Falta') ||
             message.includes('vacía') ||
             message.includes('vacío') ||
-            message.includes('categoría')
+            message.includes('categoría') ||
+            message.includes('corta')
               ? 400
               : 500
           sendJson(res, status, { ok: false, error: message })
