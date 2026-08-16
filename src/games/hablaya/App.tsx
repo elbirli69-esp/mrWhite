@@ -52,7 +52,7 @@ export default function HablaYaApp() {
           tagline="Elige categoría, habla contra reloj y que te puntúen la mesa… y la IA."
           steps={[
             'Configura tiempo, rondas, serio/inventado y cómo se puntúa.',
-            'En tu turno eliges categoría, grabas y Whisper transcribe el audio.',
+            'En tu turno eliges categoría; Whisper local transcribe el audio en el dispositivo.',
             'Todos escuchan, votan 0–10 y DeepSeek aporta su nota.',
           ]}
           readableMode={readableMode}
@@ -317,14 +317,14 @@ export default function HablaYaApp() {
             {state.config.evalMode !== 'votes' ? (
               <div className="mt-4">
                 <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text)]">
-                  Transcripción (Whisper)
+                  Transcripción (Whisper local)
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
                   {state.aiLoading
-                    ? state.aiStatus || 'Procesando audio…'
+                    ? state.aiStatus || 'Procesando en el dispositivo…'
                     : state.needsTranscript
-                      ? 'Whisper no pudo sacar texto. Escuchad el audio, escribid un resumen y reintentad.'
-                      : 'Puedes corregir el texto y volver a puntuar.'}
+                      ? 'La transcripción local falló. Escuchad el audio, escribid un resumen y reintentad.'
+                      : 'Corre en tu móvil/PC (WebGPU o WASM). Puedes corregir el texto y re-puntuar.'}
                 </p>
                 <textarea
                   value={state.transcript}
@@ -345,7 +345,7 @@ export default function HablaYaApp() {
                     {state.aiLoading
                       ? state.aiStatus || 'Procesando…'
                       : state.needsTranscript && !state.transcript.trim()
-                        ? 'Reintentar Whisper'
+                        ? 'Reintentar Whisper local'
                         : 'Evaluar / re-puntuar'}
                   </Button>
                   {state.config.evalMode === 'both' ? (

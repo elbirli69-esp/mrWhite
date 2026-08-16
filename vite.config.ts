@@ -53,10 +53,30 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
+        // Modelos Whisper / ONNX se descargan bajo demanda (no precachear)
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.hostname.includes('huggingface.co') ||
+              url.hostname.includes('hf.co') ||
+              url.pathname.includes('.onnx'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'hablaya-whisper-models',
+              expiration: {
+                maxEntries: 32,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,
       },
     }),
   ],
+  optimizeDeps: {
+    exclude: ['@huggingface/transformers'],
+  },
 });

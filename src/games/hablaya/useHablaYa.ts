@@ -304,7 +304,7 @@ export function useHablaYa() {
     setState((prev) => ({
       ...prev,
       aiLoading: true,
-      aiStatus: 'Transcribiendo con Whisper…',
+      aiStatus: 'Preparando Whisper local…',
       aiError: null,
       aiScore: null,
       aiFeedback: null,
@@ -316,6 +316,9 @@ export function useHablaYa() {
       category: meta.category,
       topicMode: meta.topicMode,
       durationSec: meta.seconds,
+      onStatus: (msg) => {
+        setState((prev) => (prev.screen === 'review' ? { ...prev, aiStatus: msg } : prev));
+      },
     });
 
     setState((prev) => {

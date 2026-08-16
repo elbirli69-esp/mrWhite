@@ -24,7 +24,7 @@ Variables en Vercel:
 
 - `REDIS_URL` (Railway, URL pública)
 - `DEEPSEEK_API_KEY` (bulardoCreator y puntuación de Habla ya)
-- `OPENAI_API_KEY` (Whisper para transcribir audio en Habla ya)
+- Habla ya transcribe con **Whisper local** en el navegador (WebGPU/WASM); no hace falta `OPENAI_API_KEY`
 
 ## Stack
 
