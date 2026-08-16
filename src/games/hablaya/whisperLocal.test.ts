@@ -10,7 +10,7 @@ import {
 
 describe('HABLAYA_WHISPER_BUILD', () => {
   it('expone el stamp de la build actual (PWA)', () => {
-    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-6');
+    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-7');
   });
 });
 
@@ -29,33 +29,33 @@ describe('aggregateFileProgress', () => {
 });
 
 describe('pickWhisperModelId', () => {
-  it('elige tiny en iPhone / Android', () => {
+  it('elige base en iPhone / Android (tiny era demasiado impreciso)', () => {
     expect(pickWhisperModelId({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)' })).toBe(
-      'Xenova/whisper-tiny',
+      'Xenova/whisper-base',
     );
     expect(pickWhisperModelId({ userAgent: 'Mozilla/5.0 (Linux; Android 14)' })).toBe(
-      'Xenova/whisper-tiny',
+      'Xenova/whisper-base',
     );
   });
 
-  it('elige tiny con poca RAM o pocos cores', () => {
+  it('elige base con poca RAM o pocos cores', () => {
     expect(
       pickWhisperModelId({
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
         deviceMemory: 4,
         hardwareConcurrency: 8,
       }),
-    ).toBe('Xenova/whisper-tiny');
+    ).toBe('Xenova/whisper-base');
 
     expect(
       pickWhisperModelId({
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
         hardwareConcurrency: 4,
       }),
-    ).toBe('Xenova/whisper-tiny');
+    ).toBe('Xenova/whisper-base');
   });
 
-  it('elige base en escritorio capaz', () => {
+  it('elige small en escritorio capaz', () => {
     expect(
       pickWhisperModelId({
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit',
@@ -63,10 +63,10 @@ describe('pickWhisperModelId', () => {
         hardwareConcurrency: 8,
         saveData: false,
       }),
-    ).toBe('Xenova/whisper-base');
+    ).toBe('Xenova/whisper-small');
   });
 
-  it('elige tiny si saveData está activo', () => {
+  it('elige base si saveData está activo', () => {
     expect(
       pickWhisperModelId({
         userAgent: 'Mozilla/5.0 (Windows NT 10.0)',
@@ -74,7 +74,7 @@ describe('pickWhisperModelId', () => {
         hardwareConcurrency: 16,
         saveData: true,
       }),
-    ).toBe('Xenova/whisper-tiny');
+    ).toBe('Xenova/whisper-base');
   });
 });
 
@@ -86,7 +86,16 @@ describe('extractTranscriptText', () => {
       extractTranscriptText({
         chunks: [{ text: 'uno' }, { text: ' dos' }],
       }),
-    ).toBe('uno  dos');
+    ).toBe('uno dos');
+  });
+
+  it('prefiere chunks si traen más texto que text (anti-truncado)', () => {
+    expect(
+      extractTranscriptText({
+        text: 'corto',
+        chunks: [{ text: 'frase completa del turno' }, { text: ' y más' }],
+      }),
+    ).toBe('frase completa del turno y más');
   });
 
   it('devuelve vacío si no hay texto', () => {

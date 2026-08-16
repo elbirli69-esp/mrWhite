@@ -15,7 +15,7 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-6';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-7';
 
 export type DeviceHints = {
   userAgent?: string;
@@ -24,7 +24,11 @@ export type DeviceHints = {
   saveData?: boolean;
 };
 
-/** Tiny en móvil / poca RAM; base en escritorio. */
+/**
+ * Calidad > tamaño: tiny falla mucho en castellano (marcas, nombres…).
+ * - Móvil / poca RAM: whisper-base
+ * - Escritorio capaz: whisper-small
+ */
 export function pickWhisperModelId(hints: DeviceHints = {}): string {
   const ua = hints.userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '') ?? '';
   const mobileUa = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
@@ -45,7 +49,18 @@ export function pickWhisperModelId(hints: DeviceHints = {}): string {
   const lowMem = typeof memory === 'number' && memory <= 4;
   const fewCores = (cores || 8) <= 4;
   const constrained = mobileUa || lowMem || fewCores || Boolean(saveData);
-  return constrained ? 'Xenova/whisper-tiny' : 'Xenova/whisper-base';
+  if (constrained) return 'Xenova/whisper-base';
+
+  const ampleMem = typeof memory !== 'number' || memory >= 8;
+  const ampleCores = (cores || 4) >= 6;
+  if (ampleMem && ampleCores) return 'Xenova/whisper-small';
+  return 'Xenova/whisper-base';
+}
+
+function modelShortName(modelId: string): string {
+  if (modelId.includes('small')) return 'small';
+  if (modelId.includes('base')) return 'base';
+  return 'tiny';
 }
 
 function pickModelId(): string {
@@ -182,7 +197,7 @@ async function getTranscriber(
   }
 
   if (!transcriberPromise) {
-    const shortName = modelId.includes('tiny') ? 'tiny' : 'base';
+    const shortName = modelShortName(modelId);
     transcriberPromise = (async () => {
       const preferGpu = await webgpuAvailable();
       if (preferGpu) {
@@ -198,9 +213,9 @@ async function getTranscriber(
       }
 
       onStatus?.(
-        shortName === 'tiny'
-          ? 'Descargando Whisper tiny (WASM)…'
-          : 'Descargando Whisper base (WASM, puede tardar)…',
+        shortName === 'small'
+          ? 'Descargando Whisper small (WASM, primera vez puede tardar)…'
+          : `Descargando Whisper ${shortName} (WASM)…`,
       );
       const pipe = await loadPipeline(modelId, 'wasm', 'q8', onFileProgress);
       loadedDevice = 'wasm';
@@ -253,7 +268,8 @@ export async function decodeBlobToWhisperAudio(blob: Blob): Promise<Float32Array
   }
 
   const tryDecode = async (data: ArrayBuffer): Promise<Float32Array> => {
-    const audioCtx = new AudioContext();
+    // Preferir 16 kHz desde el decode cuando el navegador lo permita.
+    const audioCtx = new AudioContext({ sampleRate: TARGET_RATE });
     try {
       const decoded = await audioCtx.decodeAudioData(data.slice(0));
       return resampleTo16k(mixToMono(decoded), decoded.sampleRate);
@@ -292,17 +308,21 @@ export function extractTranscriptText(output: unknown): string {
       .map((item) => extractTranscriptText(item))
       .filter(Boolean)
       .join(' ')
+      .replace(/\s+/g, ' ')
       .trim();
   }
   if (typeof output === 'object') {
     const obj = output as { text?: unknown; chunks?: Array<{ text?: string }> };
-    if (typeof obj.text === 'string' && obj.text.trim()) return obj.text.trim();
-    if (Array.isArray(obj.chunks)) {
-      return obj.chunks
-        .map((c) => (typeof c.text === 'string' ? c.text : ''))
-        .join(' ')
-        .trim();
-    }
+    const fromText = typeof obj.text === 'string' ? obj.text.trim() : '';
+    const fromChunks = Array.isArray(obj.chunks)
+      ? obj.chunks
+          .map((c) => (typeof c.text === 'string' ? c.text : ''))
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+      : '';
+    // A veces `text` llega cortado y los chunks traen más contenido.
+    return fromChunks.length > fromText.length ? fromChunks : fromText;
   }
   return '';
 }
@@ -358,9 +378,13 @@ export async function transcribeLocally(
     output = await transcriber(audio, {
       language: 'spanish',
       task: 'transcribe',
-      chunk_length_s: 30,
-      stride_length_s: 5,
+      // Ventanas más cortas + solape: menos truncado en turnos de 45–90s.
+      chunk_length_s: 20,
+      stride_length_s: 4,
       return_timestamps: true,
+      // Límite alto: evita cortar frases a mitad de un chunk.
+      max_new_tokens: 444,
+      temperature: 0,
     });
   } catch (error) {
     transcriberPromise = null;

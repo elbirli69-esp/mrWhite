@@ -55,9 +55,9 @@ export default function HablaYaApp() {
           emoji="🎙️"
           tagline="Elige categoría, habla contra reloj y que te puntúen la mesa… y la IA."
           steps={[
-            'Primero se descarga Whisper en el dispositivo (solo la primera vez).',
+            'Primero se descarga Whisper en el dispositivo (base/small; solo la primera vez).',
             'Configura tiempo, rondas, serio/inventado y cómo se puntúa.',
-            'Hablas, Whisper transcribe en local y DeepSeek + la mesa puntúan.',
+            'Hablas, Whisper transcribe en local (puedes corregir) y DeepSeek + la mesa puntúan.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}

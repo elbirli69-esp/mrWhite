@@ -51,7 +51,8 @@ export function WhisperDownloadBanner({ status, progress, message, error, onRetr
       </div>
       <p className="mt-2 tabular-nums text-[length:var(--text-body-sm)]">{progress}%</p>
       <p className="mt-2 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-        La primera vez puede tardar (móvil: modelo tiny). Luego queda en caché y se juega sin esperar.
+        La primera vez descarga el modelo (móvil: base; PC: small). Luego queda en caché. Habla
+        cerca del micrófono; puedes corregir la transcripción antes de puntuar.
       </p>
     </div>
   );

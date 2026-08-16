@@ -7,8 +7,10 @@ export type RecorderSession = {
 export async function startRecorderSession(): Promise<RecorderSession> {
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: {
+      channelCount: 1,
       echoCancellation: true,
-      noiseSuppression: true,
+      // La supresión agresiva a veces “come” consonantes y Whisper confunde más.
+      noiseSuppression: false,
       autoGainControl: true,
     },
   });
@@ -20,12 +22,15 @@ export async function startRecorderSession(): Promise<RecorderSession> {
     'audio/ogg;codecs=opus',
   ];
   const mime = mimeCandidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? '';
-  const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+  const recorder = mime
+    ? new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 128_000 })
+    : new MediaRecorder(stream, { audioBitsPerSecond: 128_000 });
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (event) => {
     if (event.data.size > 0) chunks.push(event.data);
   };
-  recorder.start(250);
+  // Timeslice moderado: menos overhead que 250ms y no pierde el final.
+  recorder.start(1000);
 
   return {
     stop: async () => {
@@ -35,8 +40,15 @@ export async function startRecorderSession(): Promise<RecorderSession> {
           resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
         };
         try {
-          if (recorder.state !== 'inactive') recorder.stop();
-          else resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+          if (recorder.state !== 'inactive') {
+            // Vaciar el buffer pendiente antes de stop.
+            try {
+              recorder.requestData();
+            } catch {
+              /* ignore */
+            }
+            recorder.stop();
+          } else resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
         } catch (error) {
           reject(error);
         }
