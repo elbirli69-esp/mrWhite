@@ -13,7 +13,7 @@ import { BULARDO_TEMPLATES } from './templates'
 const INPUT_MAX = 1500
 
 const MODES: Array<{ id: BulardoMode; label: string; hint: string }> = [
-  { id: 'cunado', label: 'Cuñado', hint: 'ForoCoches a tope' },
+  { id: 'cunado', label: 'Cuñado', hint: 'Gen Z + toques foro' },
   { id: 'suave', label: 'Suave', hint: 'Absurdo, poco slang' },
   { id: 'credible', label: 'Creíble', hint: 'Nota científica' },
 ]

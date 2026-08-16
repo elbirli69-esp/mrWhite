@@ -173,10 +173,10 @@ CIERRE: Si te pica el flaute, se te pone la polla tiesa como un poste.`
     return parseArticle(raw, mode)
   }
 
-  const raw = `TITULAR: El gonocho etílico residual explica lo de “${topic}” (fuente: un colega)
-ENTRADA: Un campo magnético inventado por Bulardo estaría detrás del fenómeno, con un 87,3% de casos. Esto es real 100%, te lo juro.
+  const raw = `TITULAR: El gonocho etílico residual explica lo de “${topic}” y yo flipando
+ENTRADA: O sea, un campo magnético inventado por Bulardo estaría detrás, con un 87,3% de casos. Qué fuerte.
 CUERPO:
-Resulta que no pasa porque la gente quiera, no, es por el "gonocho etílico residual". Según la doctora Aluminia Paparajote, "el dromedario del buen rollo te arrastra hacia donde los churros valen baratos". Venga va, menuda estafa no es: les renta más el tranvía. Me lo ha dicho un primo xD
+Literal no pasa porque la gente quiera, en plan, es por el "gonocho etílico residual". Según la doctora Aluminia Paparajote, "el dromedario del buen rollo te arrastra hacia donde los churros valen baratos". No puedo con esto. Fuente: un colega xD. Menuda estafa no es: les renta más el tranvía.
 CIERRE: Si ves que vuelven a por ti, vete al quiosco y di "quizá no eres un calorro, pero al final te vuelvo a ver, so capullo y con birra detrás".`
   return parseArticle(raw, mode)
 }

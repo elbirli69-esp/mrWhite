@@ -1,9 +1,9 @@
 /** Ejemplos de nivel para calibrar densidad/tono (no copiar literal). */
 export const BULARDO_GOLDEN_SAMPLES = {
-  cunado: `TITULAR: El gonocho etílico residual explica el retorno masivo de perroflautas a Lisboa
-ENTRADA: Un campo magnético emitido por macetas de hachís ilegal en las Azores estaría desviando rutas hacia la capital portuguesa, según datos filtrados a Bulardo.
+  cunado: `TITULAR: El gonocho etílico residual está trayendo perroflautas a Lisboa otra vez y yo flipando
+ENTRADA: O sea, un campo magnético de macetas de hachís en las Azores estaría desviando rutas. Qué fuerte.
 CUERPO:
-Resulta que los perroflautas no vuelven porque quieran, no, es por el "gonocho etílico residual", un campo magnético que desprende cada maceta de hachís ilegal en las Azores. Según la doctora Aluminia Paparajote, "en ese flipe, el dromedario del buen rollo te arrastra hacia Lisboa, que es donde los churros valen baratos y hay wifi libre en el aeropuerto". Además, el 87,3% empezó a volver tras prohibirse cancelar la ruta marítima con la tuna. Venga va, que no son tontos: les renta más pedir monedas en los tranvías de la Baixa. Fuente: un colega xD
+Literal no vuelven porque quieran, en plan, es por el "gonocho etílico residual". Según la doctora Aluminia Paparajote, "en ese flipe el dromedario del buen rollo te arrastra a Lisboa, que es donde los churros valen baratos y hay wifi libre en el aeropuerto". El 87,3% empezó a volver tras lo de la tuna. No puedo con esto. Fuente: un colega xD. Menuda estafa no es: les renta más pedir en los tranvías de la Baixa.
 CIERRE: Si ves que vuelven a por ti, vete al quiosco y di "quizá no eres un calorro, pero al final te vuelvo a ver, so capullo y con birra detrás".`,
 
   suave: `TITULAR: Un estudio sitúa el retorno estacional a Lisboa en un “vector panfláutico”
