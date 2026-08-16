@@ -23,7 +23,8 @@ Cada juego guarda su propia configuración en `localStorage` y permite ajustar p
 Variables en Vercel:
 
 - `REDIS_URL` (Railway, URL pública)
-- `DEEPSEEK_API_KEY` (bulardoCreator y Habla ya)
+- `DEEPSEEK_API_KEY` (bulardoCreator y puntuación de Habla ya)
+- `OPENAI_API_KEY` (Whisper para transcribir audio en Habla ya)
 
 ## Stack
 

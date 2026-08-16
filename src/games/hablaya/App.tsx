@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -19,7 +19,6 @@ import {
   type EvalMode,
   type TopicMode,
 } from './logic';
-import { speechRecognitionSupported } from './record';
 import { useHablaYa } from './useHablaYa';
 
 export default function HablaYaApp() {
@@ -27,8 +26,6 @@ export default function HablaYaApp() {
   const game = useHablaYa();
   const { state } = game;
   const [customDraft, setCustomDraft] = useState('');
-
-  const speechOk = useMemo(() => speechRecognitionSupported(), []);
 
   if (state.screen === 'pass') {
     return (
@@ -55,8 +52,8 @@ export default function HablaYaApp() {
           tagline="Elige categoría, habla contra reloj y que te puntúen la mesa… y la IA."
           steps={[
             'Configura tiempo, rondas, serio/inventado y cómo se puntúa.',
-            'En tu turno eliges una categoría (solo una vez) y grabas.',
-            'Todos escuchan el audio, votan 0–10 y la IA aporta su nota.',
+            'En tu turno eliges categoría, grabas y Whisper transcribe el audio.',
+            'Todos escuchan, votan 0–10 y DeepSeek aporta su nota.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
@@ -216,13 +213,6 @@ export default function HablaYaApp() {
               </ul>
             ) : null}
           </div>
-
-          {!speechOk && state.config.evalMode !== 'votes' ? (
-            <p className="rounded-2xl border border-[var(--color-border)] px-4 py-3 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Este navegador puede no transcribir bien el audio. Si la IA falla, usad votos o el modo
-              «Solo votos».
-            </p>
-          ) : null}
         </ConfigShell>
       )}
 
@@ -289,11 +279,6 @@ export default function HablaYaApp() {
             <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
               {state.recording ? 'Grabando…' : 'Pulsa para empezar a grabar'}
             </p>
-            {state.liveTranscript ? (
-              <p className="max-w-md px-2 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                {state.liveTranscript}
-              </p>
-            ) : null}
             {state.aiError ? (
               <p className="text-[length:var(--text-body-sm)] text-[var(--color-danger)]">{state.aiError}</p>
             ) : null}
@@ -332,32 +317,36 @@ export default function HablaYaApp() {
             {state.config.evalMode !== 'votes' ? (
               <div className="mt-4">
                 <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text)]">
-                  Texto para la IA
+                  Transcripción (Whisper)
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                  {state.needsTranscript
-                    ? `Has grabado ${state.config.secondsPerTurn}s, pero el móvil casi nunca transcribe bien al mismo tiempo. Escuchad el audio y escribid un resumen de lo dicho (mín. 3 palabras), luego Evaluar con IA.`
-                    : 'Si la transcripción automática falló o está mal, corrígela antes de evaluar.'}
+                  {state.aiLoading
+                    ? state.aiStatus || 'Procesando audio…'
+                    : state.needsTranscript
+                      ? 'Whisper no pudo sacar texto. Escuchad el audio, escribid un resumen y reintentad.'
+                      : 'Puedes corregir el texto y volver a puntuar.'}
                 </p>
                 <textarea
                   value={state.transcript}
                   onChange={(e) => game.setTranscript(e.target.value)}
                   rows={5}
+                  disabled={state.aiLoading}
                   autoFocus={state.needsTranscript}
-                  placeholder="Ej.: Ha inventado que en 1987 España ganó un mundial de tortilla con alienígenas…"
-                  className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)]"
+                  placeholder="La transcripción aparecerá aquí…"
+                  className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)] disabled:opacity-60"
                 />
-                {state.aiError && state.needsTranscript ? (
+                {state.aiError && !state.aiLoading ? (
                   <p className="mt-2 text-[length:var(--text-body-sm)] text-[var(--color-danger)]">
                     {state.aiError}
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <Button
-                    onClick={() => void game.requestAiScore()}
-                    disabled={state.aiLoading || !state.transcript.trim()}
-                  >
-                    {state.aiLoading ? 'Evaluando…' : 'Evaluar con IA'}
+                  <Button onClick={() => void game.requestAiScore()} disabled={state.aiLoading}>
+                    {state.aiLoading
+                      ? state.aiStatus || 'Procesando…'
+                      : state.needsTranscript && !state.transcript.trim()
+                        ? 'Reintentar Whisper'
+                        : 'Evaluar / re-puntuar'}
                   </Button>
                   {state.config.evalMode === 'both' ? (
                     <Button variant="ghost" onClick={game.skipAi} disabled={state.aiLoading}>
@@ -374,7 +363,7 @@ export default function HablaYaApp() {
               <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Nota IA</p>
               {state.aiLoading ? (
                 <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                  Evaluando…
+                  {state.aiStatus || 'Procesando…'}
                 </p>
               ) : state.aiScore != null ? (
                 <>
@@ -391,10 +380,8 @@ export default function HablaYaApp() {
               ) : (
                 <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
                   {state.needsTranscript
-                    ? 'Aún no hay nota: hace falta el resumen de arriba.'
-                    : state.aiError && !state.needsTranscript
-                      ? state.aiError
-                      : 'Sin nota de IA todavía.'}
+                    ? 'Aún no hay nota.'
+                    : state.aiError || 'Sin nota de IA todavía.'}
                 </p>
               )}
             </Card>

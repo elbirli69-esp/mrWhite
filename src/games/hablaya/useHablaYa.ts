@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { scoreSpeech } from './api';
+import { evaluateRecording, scoreSpeech } from './api';
 import { buildCategoryPool } from './categories';
 import {
   combineScore,
@@ -32,14 +32,14 @@ interface State {
   currentPlayerIndex: number;
   selectedCategory: string;
   audioUrl: string | null;
-  liveTranscript: string;
   transcript: string;
-  /** True si hace falta escribir/resumir el discurso para la IA. */
+  /** True si Whisper falló y hace falta resumen manual. */
   needsTranscript: boolean;
   aiScore: number | null;
   aiFeedback: string | null;
   aiError: string | null;
   aiLoading: boolean;
+  aiStatus: string | null;
   votes: Record<number, number>;
   lastFinalScore: number | null;
   history: TurnRecord[];
@@ -74,13 +74,13 @@ function initialState(): State {
     currentPlayerIndex: 0,
     selectedCategory: '',
     audioUrl: null,
-    liveTranscript: '',
     transcript: '',
     needsTranscript: false,
     aiScore: null,
     aiFeedback: null,
     aiError: null,
     aiLoading: false,
+    aiStatus: null,
     votes: {},
     lastFinalScore: null,
     history: [],
@@ -98,7 +98,13 @@ export function useHablaYa() {
   const sessionRef = useRef<RecorderSession | null>(null);
   const timerRef = useRef<number | null>(null);
   const finishingRef = useRef(false);
-  const turnMetaRef = useRef({ category: '', topicMode: state.config.topicMode as 'serious' | 'invented', seconds: state.config.secondsPerTurn, evalMode: state.config.evalMode });
+  const audioBlobRef = useRef<Blob | null>(null);
+  const turnMetaRef = useRef({
+    category: '',
+    topicMode: state.config.topicMode as 'serious' | 'invented',
+    seconds: state.config.secondsPerTurn,
+    evalMode: state.config.evalMode,
+  });
 
   useEffect(() => {
     turnMetaRef.current = {
@@ -209,13 +215,13 @@ export function useHablaYa() {
         currentPlayerIndex: 0,
         selectedCategory: '',
         audioUrl: null,
-        liveTranscript: '',
         transcript: '',
         needsTranscript: false,
         aiScore: null,
         aiFeedback: null,
         aiError: null,
         aiLoading: false,
+        aiStatus: null,
         votes: {},
         lastFinalScore: null,
         history: [],
@@ -229,28 +235,31 @@ export function useHablaYa() {
   }, [namesError, state.playerNames, state.config]);
 
   const selectCategory = useCallback((category: string) => {
+    audioBlobRef.current = null;
     setState((prev) => ({
       ...prev,
       selectedCategory: category,
       screen: 'record',
-      liveTranscript: '',
       transcript: '',
       needsTranscript: false,
       audioUrl: null,
       aiScore: null,
       aiFeedback: null,
       aiError: null,
+      aiLoading: false,
+      aiStatus: null,
       votes: {},
       secondsLeft: prev.config.secondsPerTurn,
       recording: false,
     }));
   }, []);
 
-  const runAiScore = useCallback(async (transcript: string) => {
+  const runAiScoreFromText = useCallback(async (transcript: string) => {
     const meta = turnMetaRef.current;
     setState((prev) => ({
       ...prev,
       aiLoading: true,
+      aiStatus: 'Puntuando con IA…',
       aiError: null,
       aiScore: null,
       aiFeedback: null,
@@ -271,6 +280,7 @@ export function useHablaYa() {
         return {
           ...prev,
           aiLoading: false,
+          aiStatus: null,
           aiError: result.error || 'La IA no pudo puntuar',
           aiScore: null,
           aiFeedback: null,
@@ -280,6 +290,54 @@ export function useHablaYa() {
       return {
         ...prev,
         aiLoading: false,
+        aiStatus: null,
+        aiScore: result.score,
+        aiFeedback: result.feedback || null,
+        aiError: null,
+        needsTranscript: false,
+      };
+    });
+  }, []);
+
+  const runAiFromAudio = useCallback(async (blob: Blob) => {
+    const meta = turnMetaRef.current;
+    setState((prev) => ({
+      ...prev,
+      aiLoading: true,
+      aiStatus: 'Transcribiendo con Whisper…',
+      aiError: null,
+      aiScore: null,
+      aiFeedback: null,
+      needsTranscript: false,
+    }));
+
+    const result = await evaluateRecording({
+      blob,
+      category: meta.category,
+      topicMode: meta.topicMode,
+      durationSec: meta.seconds,
+    });
+
+    setState((prev) => {
+      if (prev.screen !== 'review') return prev;
+      const transcript = result.transcript?.trim() || prev.transcript;
+      if (!result.ok || result.score == null) {
+        return {
+          ...prev,
+          transcript,
+          aiLoading: false,
+          aiStatus: null,
+          aiError: result.error || 'No se pudo transcribir / puntuar',
+          aiScore: null,
+          aiFeedback: null,
+          needsTranscript: true,
+        };
+      }
+      return {
+        ...prev,
+        transcript,
+        aiLoading: false,
+        aiStatus: null,
         aiScore: result.score,
         aiFeedback: result.feedback || null,
         aiError: null,
@@ -302,9 +360,9 @@ export function useHablaYa() {
     setState((prev) => ({ ...prev, recording: false }));
     const meta = turnMetaRef.current;
     try {
-      const { blob, transcript } = await session.stop();
+      const { blob } = await session.stop();
+      audioBlobRef.current = blob;
       const audioUrl = URL.createObjectURL(blob);
-      const usable = transcriptLooksUsable(transcript);
       const wantsAi = meta.evalMode !== 'votes';
 
       setState((prev) => {
@@ -313,40 +371,46 @@ export function useHablaYa() {
           ...prev,
           screen: 'review',
           audioUrl,
-          transcript,
-          liveTranscript: transcript,
-          // Siempre confirmación manual: en móvil la auto-transcripción falla a menudo
-          needsTranscript: wantsAi,
-          aiLoading: false,
+          transcript: '',
+          needsTranscript: false,
+          aiLoading: wantsAi,
+          aiStatus: wantsAi ? 'Transcribiendo con Whisper…' : null,
           aiScore: null,
           aiFeedback: null,
-          aiError: usable
-            ? null
-            : wantsAi
-              ? 'Revisa o escribe el resumen de lo hablado y pulsa Evaluar con IA.'
-              : null,
+          aiError: null,
           votes: {},
         };
       });
+
+      if (wantsAi) {
+        await runAiFromAudio(blob);
+      }
     } catch {
       setState((prev) => ({
         ...prev,
         screen: 'review',
         recording: false,
         aiLoading: false,
+        aiStatus: null,
         needsTranscript: meta.evalMode !== 'votes',
         aiError: 'No se pudo guardar el audio',
       }));
     } finally {
       finishingRef.current = false;
     }
-  }, []);
+  }, [runAiFromAudio]);
 
   const setTranscript = useCallback((transcript: string) => {
     setState((prev) => ({ ...prev, transcript }));
   }, []);
 
   const requestAiScore = useCallback(async () => {
+    const blob = audioBlobRef.current;
+    // Si hay audio y el texto está vacío/corto, reintentar Whisper
+    if (blob && !transcriptLooksUsable(state.transcript)) {
+      await runAiFromAudio(blob);
+      return;
+    }
     const text = state.transcript.trim();
     if (!transcriptLooksUsable(text)) {
       setState((prev) => ({
@@ -355,18 +419,20 @@ export function useHablaYa() {
         aiScore: null,
         aiFeedback: null,
         aiLoading: false,
+        aiStatus: null,
         needsTranscript: true,
       }));
       return;
     }
-    await runAiScore(text);
-  }, [runAiScore, state.transcript]);
+    await runAiScoreFromText(text);
+  }, [runAiFromAudio, runAiScoreFromText, state.transcript]);
 
   const skipAi = useCallback(() => {
     setState((prev) => ({
       ...prev,
       needsTranscript: false,
       aiLoading: false,
+      aiStatus: null,
       aiScore: null,
       aiFeedback: null,
       aiError: 'IA omitida: usad los votos de la mesa.',
@@ -375,16 +441,16 @@ export function useHablaYa() {
 
   const startRecording = useCallback(async () => {
     clearTimer();
+    audioBlobRef.current = null;
     try {
-      const session = await startRecorderSession((text) => {
-        setState((prev) => ({ ...prev, liveTranscript: text }));
-      });
+      const session = await startRecorderSession();
       sessionRef.current = session;
       setState((prev) => ({
         ...prev,
         recording: true,
         secondsLeft: prev.config.secondsPerTurn,
-        liveTranscript: '',
+        transcript: '',
+        aiError: null,
       }));
 
       timerRef.current = window.setInterval(() => {
@@ -470,6 +536,7 @@ export function useHablaYa() {
   }, [state, currentPlayer]);
 
   const nextTurn = useCallback(() => {
+    audioBlobRef.current = null;
     setState((prev) => {
       revokeUrl(prev.audioUrl);
       const nextIndex = prev.currentPlayerIndex + 1;
@@ -484,12 +551,12 @@ export function useHablaYa() {
           audioUrl: null,
           selectedCategory: '',
           transcript: '',
-          liveTranscript: '',
           needsTranscript: false,
           votes: {},
           aiScore: null,
           aiFeedback: null,
           aiError: null,
+          aiStatus: null,
         };
       }
 
@@ -502,13 +569,13 @@ export function useHablaYa() {
         audioUrl: null,
         selectedCategory: '',
         transcript: '',
-        liveTranscript: '',
         needsTranscript: false,
         votes: {},
         aiScore: null,
         aiFeedback: null,
         aiError: null,
         aiLoading: false,
+        aiStatus: null,
         lastFinalScore: null,
         recording: false,
         secondsLeft: prev.config.secondsPerTurn,
