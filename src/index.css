@@ -89,3 +89,11 @@ input {
   font-size: var(--text-body-sm);
   font-weight: 600;
 }
+
+/* Heads Up en ronda: sin pull-to-refresh ni scroll vertical. */
+html[data-headsup-play='true'],
+html[data-headsup-play='true'] body {
+  overscroll-behavior: none;
+  overflow: hidden;
+  touch-action: none;
+}

@@ -8,6 +8,7 @@ import { NamesPage } from '../../pages/NamesPage';
 import { ConfigShell } from '../shared/ConfigShell';
 import { GameHome } from '../shared/GameHome';
 import { MAX_PLAYERS, MIN_PLAYERS } from './logic';
+import { PlaySurface } from './PlaySurface';
 import { useHeadsUp } from './useHeadsUp';
 
 export default function HeadsUpApp() {
@@ -15,10 +16,25 @@ export default function HeadsUpApp() {
   const game = useHeadsUp();
   const { state } = game;
 
+  if (state.screen === 'play') {
+    return (
+      <PlaySurface
+        word={game.currentWord}
+        playerName={game.activePlayer?.name ?? null}
+        secondsLeft={state.secondsLeft}
+        roundCorrect={state.roundCorrect}
+        roundSkipped={state.roundSkipped}
+        allowSkip={state.config.allowSkip}
+        onCorrect={game.markCorrect}
+        onSkip={game.markSkip}
+      />
+    );
+  }
+
   return (
     <ScreenShell
       screenKey={state.screen}
-      centered={state.screen !== 'names' && state.screen !== 'lobby' && state.screen !== 'play'}
+      centered={state.screen !== 'names' && state.screen !== 'lobby'}
     >
       {state.screen === 'home' && (
         <GameHome
@@ -27,8 +43,8 @@ export default function HeadsUpApp() {
           tagline="La palabra en la frente, el resto da pistas, el reloj corre."
           steps={[
             'Configura duración, skips y puntuación.',
-            'Elige quién sostiene el móvil cada turno.',
-            'Acierto o paso hasta que suene el tiempo.',
+            'Pon el móvil en la frente: los demás ven la palabra.',
+            'Desliza a la derecha si aciertas, a la izquierda para pasar.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
@@ -62,7 +78,7 @@ export default function HeadsUpApp() {
           />
           <Toggle
             label="Permitir pasar"
-            description="Botón para saltar una palabra sin sumar punto."
+            description="Deslizar a la izquierda salta la palabra sin sumar punto."
             checked={state.config.allowSkip}
             onChange={(allowSkip) => game.updateConfig({ allowSkip })}
           />
@@ -105,7 +121,8 @@ export default function HeadsUpApp() {
               {game.activePlayer.name}
             </h1>
             <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              Coloca el móvil en la frente. Los demás dan pistas sin decir la palabra.
+              Coloca el móvil en la frente. Desliza a la derecha si aciertas
+              {state.config.allowSkip ? ' y a la izquierda para pasar' : ''}. Los demás dan pistas.
             </p>
           </header>
 
@@ -130,41 +147,6 @@ export default function HeadsUpApp() {
             <Button variant="ghost" onClick={game.goConfig}>
               Cambiar configuración
             </Button>
-          </div>
-        </div>
-      )}
-
-      {state.screen === 'play' && (
-        <div className="flex min-h-[70dvh] flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <p className="text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              {game.activePlayer?.name}
-            </p>
-            <p className="font-[family-name:var(--font-display)] text-3xl font-semibold tabular-nums">
-              {state.secondsLeft}
-            </p>
-          </div>
-
-          <Card className="flex flex-1 flex-col items-center justify-center text-center">
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-              Palabra
-            </p>
-            <h1 className="mt-4 font-[family-name:var(--font-display)] text-5xl font-semibold leading-tight sm:text-6xl">
-              {game.currentWord}
-            </h1>
-            <p className="mt-6 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Aciertos {state.roundCorrect}
-              {state.config.allowSkip ? ` · Pases ${state.roundSkipped}` : ''}
-            </p>
-          </Card>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Button onClick={game.markCorrect}>¡Correcto!</Button>
-            {state.config.allowSkip ? (
-              <Button variant="secondary" onClick={game.markSkip}>
-                Pasar
-              </Button>
-            ) : null}
           </div>
         </div>
       )}
