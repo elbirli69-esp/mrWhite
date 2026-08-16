@@ -21,6 +21,7 @@
   },
   "include": [
     "vite.config.ts",
+    "vitest.config.ts",
     "scripts/staycalm-api-plugin.ts",
     "scripts/bulardo-api-plugin.ts",
     "api/_lib/**/*.ts"

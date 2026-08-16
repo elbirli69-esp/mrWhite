@@ -17,19 +17,39 @@ const TARGET_RATE = 16_000;
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
 export const HABLAYA_WHISPER_BUILD = 'local-whisper-3';
 
-function isConstrainedDevice(): boolean {
-  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-  const ua = navigator.userAgent || '';
+export type DeviceHints = {
+  userAgent?: string;
+  deviceMemory?: number;
+  hardwareConcurrency?: number;
+  saveData?: boolean;
+};
+
+/** Tiny en móvil / poca RAM; base en escritorio. */
+export function pickWhisperModelId(hints: DeviceHints = {}): string {
+  const ua = hints.userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '') ?? '';
   const mobileUa = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
-  const lowMem = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
-  const fewCores = (navigator.hardwareConcurrency || 8) <= 4;
-  const saveData = Boolean(nav.connection?.saveData);
-  return mobileUa || lowMem || fewCores || saveData;
+  const memory =
+    hints.deviceMemory ??
+    (typeof navigator !== 'undefined'
+      ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+      : undefined);
+  const cores =
+    hints.hardwareConcurrency ??
+    (typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined);
+  const saveData =
+    hints.saveData ??
+    (typeof navigator !== 'undefined'
+      ? Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData)
+      : false);
+
+  const lowMem = typeof memory === 'number' && memory <= 4;
+  const fewCores = (cores || 8) <= 4;
+  const constrained = mobileUa || lowMem || fewCores || Boolean(saveData);
+  return constrained ? 'Xenova/whisper-tiny' : 'Xenova/whisper-base';
 }
 
-/** Tiny en móvil (cabe en RAM); base en escritorio. */
 function pickModelId(): string {
-  return isConstrainedDevice() ? 'Xenova/whisper-tiny' : 'Xenova/whisper-base';
+  return pickWhisperModelId();
 }
 
 async function webgpuAvailable(): Promise<boolean> {
@@ -103,7 +123,7 @@ async function getTranscriber(onStatus?: (msg: string) => void): Promise<AsrPipe
   return transcriberPromise;
 }
 
-function resampleTo16k(input: Float32Array, sampleRate: number): Float32Array {
+export function resampleTo16k(input: Float32Array, sampleRate: number): Float32Array {
   if (sampleRate === TARGET_RATE) return input;
   const ratio = sampleRate / TARGET_RATE;
   const newLength = Math.max(1, Math.round(input.length / ratio));
@@ -171,12 +191,12 @@ export async function decodeBlobToWhisperAudio(blob: Blob): Promise<Float32Array
   }
 }
 
-function extractText(output: unknown): string {
+export function extractTranscriptText(output: unknown): string {
   if (!output) return '';
   if (typeof output === 'string') return output.trim();
   if (Array.isArray(output)) {
     return output
-      .map((item) => extractText(item))
+      .map((item) => extractTranscriptText(item))
       .filter(Boolean)
       .join(' ')
       .trim();
@@ -247,7 +267,7 @@ export async function transcribeLocally(
     throw new Error(`Falló Whisper local (${detail})`);
   }
 
-  const text = extractText(output);
+  const text = extractTranscriptText(output);
   if (!text) {
     throw new Error(
       'Whisper no sacó texto. Habla más cerca del micrófono o escribe un resumen manual.',
