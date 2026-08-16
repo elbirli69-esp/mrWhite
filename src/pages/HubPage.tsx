@@ -38,6 +38,20 @@ const partyGames = [
     cta: 'Jugar',
     tone: 'justone',
   },
+  {
+    href: '/fakeartist',
+    name: 'Fake Artist',
+    line: 'Dibujo colectivo y un impostor que no conoce la palabra.',
+    cta: 'Jugar',
+    tone: 'fakeartist',
+  },
+  {
+    href: '/unanimo',
+    name: 'Unánimo',
+    line: 'Coincide con el grupo, no intentes ser el más original.',
+    cta: 'Jugar',
+    tone: 'unanimo',
+  },
 ] as const
 
 const otherApps = [

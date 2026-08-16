@@ -252,6 +252,34 @@ html[data-app='hub'] #root {
   outline: none;
 }
 
+.hub-choice--fakeartist {
+  background:
+    linear-gradient(145deg, rgba(34, 22, 18, 0.94), rgba(48, 28, 20, 0.9));
+  border-color: rgba(220, 140, 100, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--fakeartist:hover,
+.hub-choice--fakeartist:focus-visible {
+  border-color: rgba(220, 140, 100, 0.6);
+  box-shadow: 0 22px 60px rgba(220, 140, 100, 0.12);
+  outline: none;
+}
+
+.hub-choice--unanimo {
+  background:
+    linear-gradient(145deg, rgba(14, 28, 34, 0.94), rgba(18, 40, 48, 0.9));
+  border-color: rgba(100, 180, 200, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--unanimo:hover,
+.hub-choice--unanimo:focus-visible {
+  border-color: rgba(100, 180, 200, 0.6);
+  box-shadow: 0 22px 60px rgba(100, 180, 200, 0.12);
+  outline: none;
+}
+
 .hub-choice-name {
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 9vw, 3.6rem);
@@ -292,6 +320,16 @@ html[data-app='hub'] #root {
 
 .hub-choice--justone .hub-choice-name {
   color: #f3e8ff;
+  font-size: clamp(2.2rem, 7.5vw, 3rem);
+}
+
+.hub-choice--fakeartist .hub-choice-name {
+  color: #ffe6d6;
+  font-size: clamp(2rem, 7vw, 2.7rem);
+}
+
+.hub-choice--unanimo .hub-choice-name {
+  color: #dff6ff;
   font-size: clamp(2.2rem, 7.5vw, 3rem);
 }
 
@@ -336,6 +374,14 @@ html[data-app='hub'] #root {
 
 .hub-choice--justone .hub-choice-cta {
   color: #d0a8e8;
+}
+
+.hub-choice--fakeartist .hub-choice-cta {
+  color: #f0b090;
+}
+
+.hub-choice--unanimo .hub-choice-cta {
+  color: #8fd0e8;
 }
 
 @media (min-width: 720px) {

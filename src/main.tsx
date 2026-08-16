@@ -88,6 +88,16 @@ async function boot() {
       title: 'Just One',
       loader: () => import('./games/justone/App'),
     },
+    '/fakeartist': {
+      app: 'fakeartist',
+      title: 'Fake Artist',
+      loader: () => import('./games/fakeartist/App'),
+    },
+    '/unanimo': {
+      app: 'unanimo',
+      title: 'Unánimo',
+      loader: () => import('./games/unanimo/App'),
+    },
   };
 
   const party = partyRoutes[path];

@@ -9,6 +9,8 @@ Landing en `/` para elegir app:
 - **Spyfall** → `/spyfall` — lugar secreto y espías
 - **Heads Up** → `/headsup` — palabra en la frente con temporizador
 - **Just One** → `/justone` — pistas únicas para adivinar
+- **Fake Artist** → `/fakeartist` — dibujo colectivo e impostor
+- **Unánimo** → `/unanimo` — coincidir palabras con el grupo
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
