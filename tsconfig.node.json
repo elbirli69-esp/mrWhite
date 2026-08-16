@@ -25,5 +25,6 @@
     "scripts/staycalm-api-plugin.ts",
     "scripts/bulardo-api-plugin.ts",
     "api/_lib/**/*.ts"
-  ]
+  ],
+  "exclude": ["api/**/*.test.ts"]
 }

@@ -12,27 +12,35 @@ function clampScore(value: number): number {
   return Math.max(0, Math.min(10, Math.round(value * 10) / 10))
 }
 
-function systemPrompt(mode: TopicMode): string {
-  if (mode === 'invented') {
-    return `Eres juez de un juego de mesa llamado "Habla ya".
-El jugador DEBE inventar: se premia imaginación, inventiva, coherencia interna, humor y que el discurso "cuadre" con la categoría aunque sea mentira.
-Se penaliza quedarse en blanco, repetir lo obvio sin inventar, o un discurso vacío.
-Responde SOLO en JSON válido con esta forma exacta:
-{"score": number, "feedback": string}
-score es un número de 0 a 10 (un decimal permitido).
-feedback es 1 frase corta en castellano explicando la nota.`
-  }
+function transcriptionCaveat(): string {
+  return `IMPORTANTE sobre el texto que recibes:
+- No es lo que el jugador escribió: es una TRANSCRIPCIÓN automática (Whisper) del audio.
+- Puede haber palabras mal reconocidas, marcas/nombres propios deformados, género incorrecto (p. ej. «una avión») o detalles fonéticos raros.
+- Evalúa la IDEA y el contenido del discurso, no la ortografía ni la precisión literal de cada palabra.
+- No bajes la nota por errores típicos de ASR; sí penaliza si el discurso en sí es vacío, irrelevante o no inventa (según el modo).`
+}
 
-  return `Eres juez de un juego de mesa llamado "Habla ya".
+export function buildHablaYaSystemPrompt(mode: TopicMode): string {
+  const base =
+    mode === 'invented'
+      ? `Eres juez de un juego de mesa llamado "Habla ya".
+El jugador DEBE inventar: se premia imaginación, inventiva, coherencia interna, humor y que el discurso "cuadre" con la categoría aunque sea mentira.
+Se penaliza quedarse en blanco, repetir lo obvio sin inventar, o un discurso vacío.`
+      : `Eres juez de un juego de mesa llamado "Habla ya".
 El jugador habla en serio: se premia relevancia al tema, ideas útiles o datos razonables, claridad y estructura.
-Se penaliza irse por las ramas, silencio, relleno vacío o contradicciones graves.
+Se penaliza irse por las ramas, silencio, relleno vacío o contradicciones graves.`
+
+  return `${base}
+
+${transcriptionCaveat()}
+
 Responde SOLO en JSON válido con esta forma exacta:
 {"score": number, "feedback": string}
 score es un número de 0 a 10 (un decimal permitido).
 feedback es 1 frase corta en castellano explicando la nota.`
 }
 
-function userPrompt(input: {
+export function buildHablaYaUserPrompt(input: {
   transcript: string
   category: string
   topicMode: TopicMode
@@ -41,10 +49,23 @@ function userPrompt(input: {
   return `Categoría: ${input.category}
 Modo: ${input.topicMode === 'invented' ? 'inventado' : 'serio'}
 Duración del turno: ${input.durationSec}s
-Transcripción del audio (puede ser imperfecta):
+Texto procedente de transcripción automática del audio (puede ser imperfecta; no juzgues fallos de reconocimiento de palabras):
 """
 ${input.transcript.slice(0, 4000)}
 """`
+}
+
+function systemPrompt(mode: TopicMode): string {
+  return buildHablaYaSystemPrompt(mode)
+}
+
+function userPrompt(input: {
+  transcript: string
+  category: string
+  topicMode: TopicMode
+  durationSec: number
+}): string {
+  return buildHablaYaUserPrompt(input)
 }
 
 function mockEvaluation(input: {
