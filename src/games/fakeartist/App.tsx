@@ -29,10 +29,45 @@ export default function FakeArtistApp() {
     );
   }
 
+  if (state.screen === 'draw' && game.currentDrawer) {
+    return (
+      <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+        <header className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <div className="min-w-0">
+            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+              Trazo {state.strokeIndex + 1}/{state.strokeOrder.length}
+            </p>
+            <h1 className="truncate font-[family-name:var(--font-display)] text-2xl font-semibold">
+              {game.currentDrawer.name}
+            </h1>
+          </div>
+          <p className="shrink-0 text-right text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            Un trazo continuo
+          </p>
+        </header>
+
+        <div className="min-h-0 flex-1 px-2">
+          <DrawCanvas
+            strokes={state.strokes}
+            currentPoints={state.currentPoints}
+            onChangeCurrent={game.setCurrentPoints}
+            enabled
+          />
+        </div>
+
+        <div className="shrink-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+          <Button onClick={game.commitStroke} disabled={state.currentPoints.length < 2}>
+            Confirmar trazo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ScreenShell
       screenKey={state.screen}
-      centered={state.screen !== 'names' && state.screen !== 'draw' && state.screen !== 'vote'}
+      centered={state.screen !== 'names' && state.screen !== 'vote'}
     >
       {state.screen === 'home' && (
         <GameHome
@@ -139,35 +174,8 @@ export default function FakeArtistApp() {
         </div>
       )}
 
-      {state.screen === 'draw' && game.currentDrawer && (
-        <div className="flex flex-col gap-4">
-          <header>
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">
-              Trazo {state.strokeIndex + 1} / {state.strokeOrder.length}
-            </p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              {game.currentDrawer.name}
-            </h1>
-            <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              Un solo trazo continuo. Luego confirma.
-            </p>
-          </header>
-          <div className="aspect-square w-full">
-            <DrawCanvas
-              strokes={state.strokes}
-              currentPoints={state.currentPoints}
-              onChangeCurrent={game.setCurrentPoints}
-              enabled
-            />
-          </div>
-          <Button onClick={game.commitStroke} disabled={state.currentPoints.length < 2}>
-            Confirmar trazo
-          </Button>
-        </div>
-      )}
-
       {state.screen === 'vote' && (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <header>
             <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold">
               ¿Quién es el falso?
@@ -176,7 +184,7 @@ export default function FakeArtistApp() {
               Mirad el dibujo y acusad.
             </p>
           </header>
-          <div className="aspect-square w-full">
+          <div className="h-[min(72dvh,100vw)] w-full">
             <DrawCanvas
               strokes={state.strokes}
               currentPoints={[]}
@@ -251,7 +259,7 @@ export default function FakeArtistApp() {
               {state.endSubtitle}
             </p>
           </header>
-          <div className="aspect-square w-full">
+          <div className="mx-auto h-[min(60dvh,100%)] w-full max-w-lg">
             <DrawCanvas
               strokes={state.strokes}
               currentPoints={[]}

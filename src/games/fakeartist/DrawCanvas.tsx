@@ -6,6 +6,7 @@ interface DrawCanvasProps {
   currentPoints: Point[];
   onChangeCurrent: (points: Point[]) => void;
   enabled: boolean;
+  className?: string;
 }
 
 function toLocal(canvas: HTMLCanvasElement, clientX: number, clientY: number): Point {
@@ -29,7 +30,7 @@ function paint(
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.strokeStyle = '#f5f5f4';
-  ctx.lineWidth = Math.max(2.5, width * 0.008);
+  ctx.lineWidth = Math.max(3, Math.min(width, height) * 0.01);
 
   const drawPath = (points: Point[]) => {
     if (points.length < 2) return;
@@ -45,21 +46,30 @@ function paint(
   drawPath(currentPoints);
 }
 
-export function DrawCanvas({ strokes, currentPoints, onChangeCurrent, enabled }: DrawCanvasProps) {
+export function DrawCanvas({
+  strokes,
+  currentPoints,
+  onChangeCurrent,
+  enabled,
+  className = '',
+}: DrawCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const drawingRef = useRef(false);
   const pointsRef = useRef<Point[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const resize = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-      const size = Math.min(parent.clientWidth, parent.clientHeight || parent.clientWidth);
+      const availW = wrap.clientWidth;
+      const availH = wrap.clientHeight;
+      if (availW <= 0 || availH <= 0) return;
+      const size = Math.floor(Math.min(availW, availH));
       const dpr = window.devicePixelRatio || 1;
       canvas.style.width = `${size}px`;
       canvas.style.height = `${size}px`;
@@ -70,8 +80,13 @@ export function DrawCanvas({ strokes, currentPoints, onChangeCurrent, enabled }:
     };
 
     resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(wrap);
     window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', resize);
+    };
   }, [strokes, currentPoints]);
 
   useEffect(() => {
@@ -81,7 +96,7 @@ export function DrawCanvas({ strokes, currentPoints, onChangeCurrent, enabled }:
     if (!ctx) return;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    paint(ctx, width, height, strokes, currentPoints);
+    if (width > 0 && height > 0) paint(ctx, width, height, strokes, currentPoints);
   }, [strokes, currentPoints]);
 
   const start = (clientX: number, clientY: number) => {
@@ -103,19 +118,24 @@ export function DrawCanvas({ strokes, currentPoints, onChangeCurrent, enabled }:
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={[
-        'touch-none rounded-3xl border border-[var(--color-border)] bg-[#111114]',
-        enabled ? 'cursor-crosshair' : 'opacity-90',
-      ].join(' ')}
-      onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        start(e.clientX, e.clientY);
-      }}
-      onPointerMove={(e) => move(e.clientX, e.clientY)}
-      onPointerUp={end}
-      onPointerCancel={end}
-    />
+    <div
+      ref={wrapRef}
+      className={['flex h-full w-full items-center justify-center', className].filter(Boolean).join(' ')}
+    >
+      <canvas
+        ref={canvasRef}
+        className={[
+          'touch-none rounded-2xl border border-[var(--color-border)] bg-[#111114] shadow-[0_16px_48px_rgba(0,0,0,0.45)]',
+          enabled ? 'cursor-crosshair' : 'opacity-95',
+        ].join(' ')}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          start(e.clientX, e.clientY);
+        }}
+        onPointerMove={(e) => move(e.clientX, e.clientY)}
+        onPointerUp={end}
+        onPointerCancel={end}
+      />
+    </div>
   );
 }
