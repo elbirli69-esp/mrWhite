@@ -31,22 +31,22 @@ export default function FakeArtistApp() {
 
   if (state.screen === 'draw' && game.currentDrawer) {
     return (
-      <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
-        <header className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <div className="fixed inset-0 z-40 flex flex-col bg-[#111114] text-[var(--color-text)]">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <div className="min-w-0">
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
               Trazo {state.strokeIndex + 1}/{state.strokeOrder.length}
             </p>
-            <h1 className="truncate font-[family-name:var(--font-display)] text-2xl font-semibold">
+            <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-semibold leading-tight">
               {game.currentDrawer.name}
             </h1>
           </div>
-          <p className="shrink-0 text-right text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <p className="shrink-0 text-right text-[length:var(--text-body-sm)] text-white/55">
             Un trazo continuo
           </p>
         </header>
 
-        <div className="min-h-0 flex-1 px-2">
+        <div className="min-h-0 flex-1">
           <DrawCanvas
             strokes={state.strokes}
             currentPoints={state.currentPoints}
@@ -55,7 +55,7 @@ export default function FakeArtistApp() {
           />
         </div>
 
-        <div className="shrink-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="shrink-0 border-t border-white/10 bg-[var(--color-bg)] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
           <Button onClick={game.commitStroke} disabled={state.currentPoints.length < 2}>
             Confirmar trazo
           </Button>
@@ -184,7 +184,7 @@ export default function FakeArtistApp() {
               Mirad el dibujo y acusad.
             </p>
           </header>
-          <div className="h-[min(72dvh,100vw)] w-full">
+          <div className="h-[min(78dvh,100%)] w-full overflow-hidden rounded-2xl">
             <DrawCanvas
               strokes={state.strokes}
               currentPoints={[]}
@@ -259,7 +259,7 @@ export default function FakeArtistApp() {
               {state.endSubtitle}
             </p>
           </header>
-          <div className="mx-auto h-[min(60dvh,100%)] w-full max-w-lg">
+          <div className="mx-auto h-[min(70dvh,100%)] w-full overflow-hidden rounded-2xl">
             <DrawCanvas
               strokes={state.strokes}
               currentPoints={[]}

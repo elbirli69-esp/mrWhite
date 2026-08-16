@@ -66,17 +66,16 @@ export function DrawCanvas({
     if (!ctx) return;
 
     const resize = () => {
-      const availW = wrap.clientWidth;
-      const availH = wrap.clientHeight;
-      if (availW <= 0 || availH <= 0) return;
-      const size = Math.floor(Math.min(availW, availH));
+      const width = Math.floor(wrap.clientWidth);
+      const height = Math.floor(wrap.clientHeight);
+      if (width <= 0 || height <= 0) return;
       const dpr = window.devicePixelRatio || 1;
-      canvas.style.width = `${size}px`;
-      canvas.style.height = `${size}px`;
-      canvas.width = Math.floor(size * dpr);
-      canvas.height = Math.floor(size * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paint(ctx, size, size, strokes, currentPoints);
+      paint(ctx, width, height, strokes, currentPoints);
     };
 
     resize();
@@ -118,15 +117,14 @@ export function DrawCanvas({
   };
 
   return (
-    <div
-      ref={wrapRef}
-      className={['flex h-full w-full items-center justify-center', className].filter(Boolean).join(' ')}
-    >
+    <div ref={wrapRef} className={['h-full w-full', className].filter(Boolean).join(' ')}>
       <canvas
         ref={canvasRef}
         className={[
-          'touch-none rounded-2xl border border-[var(--color-border)] bg-[#111114] shadow-[0_16px_48px_rgba(0,0,0,0.45)]',
-          enabled ? 'cursor-crosshair' : 'opacity-95',
+          'touch-none block h-full w-full bg-[#111114]',
+          enabled
+            ? 'cursor-crosshair'
+            : 'rounded-2xl border border-[var(--color-border)] opacity-95 shadow-[0_16px_48px_rgba(0,0,0,0.45)]',
         ].join(' ')}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
