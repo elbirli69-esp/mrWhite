@@ -179,14 +179,23 @@ export function useCamaleon() {
   }, []);
 
   useEffect(() => {
-    if (state.screen !== 'pass') return undefined;
+    if (state.screen !== 'pass' && state.screen !== 'passClue') return undefined;
     const timer = window.setTimeout(() => {
-      setState((prev) => ({
-        ...prev,
-        screen: 'reveal',
-        currentPlayerIndex: prev.currentPlayerIndex + 1,
-        revealed: false,
-      }));
+      setState((prev) => {
+        if (prev.screen === 'passClue') {
+          return {
+            ...prev,
+            screen: 'clues',
+            clueIndex: prev.clueIndex + 1,
+          };
+        }
+        return {
+          ...prev,
+          screen: 'reveal',
+          currentPlayerIndex: prev.currentPlayerIndex + 1,
+          revealed: false,
+        };
+      });
     }, PASS_MS);
     return () => window.clearTimeout(timer);
   }, [state.screen]);
@@ -217,7 +226,7 @@ export function useCamaleon() {
       if (prev.clueIndex >= prev.players.length - 1) {
         return { ...prev, screen: 'play' };
       }
-      return { ...prev, clueIndex: prev.clueIndex + 1 };
+      return { ...prev, screen: 'passClue' };
     });
   }, []);
 

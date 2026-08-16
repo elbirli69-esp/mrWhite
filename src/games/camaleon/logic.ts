@@ -33,6 +33,7 @@ export type CamaleonScreen =
   | 'pass'
   | 'ready'
   | 'clues'
+  | 'passClue'
   | 'play'
   | 'guess'
   | 'end';

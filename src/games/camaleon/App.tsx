@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -50,9 +50,9 @@ export default function CamaleonApp() {
   const starterName =
     state.players.find((p) => p.id === state.startingPlayerId)?.name ?? null;
 
-  if (state.screen === 'pass') {
+  if (state.screen === 'pass' || state.screen === 'passClue') {
     return (
-      <ScreenShell screenKey="pass" bleed>
+      <ScreenShell screenKey={state.screen} bleed>
         <PassPhonePage />
       </ScreenShell>
     );
@@ -110,7 +110,7 @@ export default function CamaleonApp() {
           />
           <Toggle
             label="Fase de pistas"
-            description="Antes de votar, cada jugador da una pista de una sola palabra."
+            description="Antes de votar, cada jugador escribe en secreto una palabra relacionada. Luego se muestran todas y se vota al camaleón."
             checked={state.config.cluePhase}
             onChange={(cluePhase) => game.updateConfig({ cluePhase })}
           />
@@ -165,6 +165,7 @@ export default function CamaleonApp() {
 
       {state.screen === 'clues' && game.cluePlayer && (
         <CluesPhase
+          key={game.cluePlayer.id}
           player={game.cluePlayer}
           index={state.clueIndex}
           total={state.players.length}
@@ -381,6 +382,21 @@ function CluesPhase({
   onChange: (value: string) => void;
   onNext: () => void;
 }) {
+  /** Estado local para que el teclado móvil no pierda el foco al actualizar el store. */
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDraft('');
+    const id = window.setTimeout(() => inputRef.current?.focus(), 50);
+    return () => window.clearTimeout(id);
+  }, [player.id]);
+
+  const commit = (value: string) => {
+    setDraft(value);
+    onChange(value);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -390,26 +406,41 @@ function CluesPhase({
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">
           {player.name}
         </h1>
-        <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-          Escribe una sola palabra relacionada (sin decir la secreta).
+        <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
+          Cada jugador da <span className="text-[var(--color-text)]">una sola palabra</span> ligada
+          a la secreta (sin decirla). El camaleón improvisa. Luego veréis todas las pistas y votaréis.
         </p>
       </header>
-      <Card>
-        <input
-          type="text"
-          value={player.clue}
-          onChange={(e) => onChange(e.target.value)}
-          maxLength={32}
-          autoComplete="off"
-          placeholder="Tu pista"
-          className="h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 font-[family-name:var(--font-display)] text-2xl text-[var(--color-text)] outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30"
-        />
+      <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_16px_48px_rgba(0,0,0,0.45)] sm:p-8">
+        <label className="flex flex-col gap-2">
+          <span className="text-[length:var(--text-body-sm)] font-medium text-[var(--color-text-muted)]">
+            Tu pista (una palabra)
+          </span>
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="text"
+            enterKeyHint="done"
+            value={draft}
+            onChange={(e) => commit(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && draft.trim()) onNext();
+            }}
+            maxLength={32}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="Ej. bigotes"
+            className="h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 font-[family-name:var(--font-display)] text-2xl text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]/50 focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30"
+          />
+        </label>
         <div className="mt-6">
-          <Button onClick={onNext} disabled={!player.clue.trim()}>
-            {index >= total - 1 ? 'Ir a la votación' : 'Siguiente'}
+          <Button onClick={onNext} disabled={!draft.trim()}>
+            {index >= total - 1 ? 'Ir a la votación' : 'Pasar al siguiente'}
           </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
