@@ -15,7 +15,19 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-7';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-8';
+
+/** Opciones ASR alineadas con producción (tests de fixtures las reutilizan). */
+export const HABLAYA_WHISPER_ASR_OPTIONS = {
+  language: 'spanish',
+  task: 'transcribe',
+  // 30s es el sweet-spot de Whisper; 20s con q8 alucinaba mucho en castellano.
+  chunk_length_s: 30,
+  stride_length_s: 5,
+  return_timestamps: true,
+  max_new_tokens: 444,
+  temperature: 0,
+} as const;
 
 export type DeviceHints = {
   userAgent?: string;
@@ -214,10 +226,11 @@ async function getTranscriber(
 
       onStatus?.(
         shortName === 'small'
-          ? 'Descargando Whisper small (WASM, primera vez puede tardar)…'
-          : `Descargando Whisper ${shortName} (WASM)…`,
+          ? 'Descargando Whisper small (WASM fp32, primera vez puede tardar)…'
+          : `Descargando Whisper ${shortName} (WASM fp32)…`,
       );
-      const pipe = await loadPipeline(modelId, 'wasm', 'q8', onFileProgress);
+      // q8 en WASM es inestable y baja mucho el recall en castellano (ver fixtures).
+      const pipe = await loadPipeline(modelId, 'wasm', 'fp32', onFileProgress);
       loadedDevice = 'wasm';
       loadedModelId = modelId;
       return pipe;
@@ -375,17 +388,7 @@ export async function transcribeLocally(
   let output: unknown;
   try {
     // Pasar Float32Array crudo (ya a 16 kHz). No usar { data, sampling_rate }.
-    output = await transcriber(audio, {
-      language: 'spanish',
-      task: 'transcribe',
-      // Ventanas más cortas + solape: menos truncado en turnos de 45–90s.
-      chunk_length_s: 20,
-      stride_length_s: 4,
-      return_timestamps: true,
-      // Límite alto: evita cortar frases a mitad de un chunk.
-      max_new_tokens: 444,
-      temperature: 0,
-    });
+    output = await transcriber(audio, { ...HABLAYA_WHISPER_ASR_OPTIONS });
   } catch (error) {
     transcriberPromise = null;
     loadedDevice = null;

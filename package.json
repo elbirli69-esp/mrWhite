@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:whisper-fixtures": "vitest run src/games/hablaya/whisperSpanish.integration.test.ts",
     "test:watch": "vitest",
+    "fixtures:hablaya": "python3 scripts/generate-hablaya-fixtures.py",
     "preview": "vite preview"
   },
   "dependencies": {

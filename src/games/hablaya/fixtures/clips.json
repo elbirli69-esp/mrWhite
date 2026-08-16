@@ -1,0 +1,38 @@
+[
+  {
+    "id": "avion",
+    "expected": "Un avión sirve para volar. Se pueden hacer viajes a una velocidad muy alta. Es el medio de transporte con la velocidad más alta y cabe mucha gente. Hay dos compañías comerciales, como Airbus y Boeing. El A320 por ejemplo.",
+    "mustHave": ["volar", "velocidad", "gente", "a320"],
+    "niceToHave": ["avion", "airbus", "boeing", "transporte"],
+    "minRecall": 0.75,
+    "voice": "es-ES-AlvaroNeural",
+    "file": "audio/avion.wav"
+  },
+  {
+    "id": "corto",
+    "expected": "Hoy hablamos de fútbol y de la selección española.",
+    "mustHave": ["hoy", "futbol"],
+    "niceToHave": ["hablamos", "seleccion", "espanola"],
+    "minRecall": 0.5,
+    "voice": "es-ES-AlvaroNeural",
+    "file": "audio/corto.wav"
+  },
+  {
+    "id": "marcas",
+    "expected": "Las compañías Airbus y Boeing fabrican aviones como el A320.",
+    "mustHave": ["a320"],
+    "niceToHave": ["airbus", "boeing", "aviones", "companias"],
+    "minRecall": 0.45,
+    "voice": "es-ES-AlvaroNeural",
+    "file": "audio/marcas.wav"
+  },
+  {
+    "id": "inventado",
+    "expected": "El dragón azul guardaba un queso volador en la montaña de caramelo.",
+    "mustHave": ["dragon", "queso", "caramelo"],
+    "niceToHave": ["azul", "volador", "montana"],
+    "minRecall": 0.7,
+    "voice": "es-ES-AlvaroNeural",
+    "file": "audio/inventado.wav"
+  }
+]
