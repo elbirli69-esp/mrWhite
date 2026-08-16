@@ -1,4 +1,4 @@
-/** Grabación de audio para Habla ya (la transcripción la hace Whisper en el servidor). */
+/** Grabación de audio para Habla ya (la transcripción la hace Whisper local en el navegador). */
 
 export type RecorderSession = {
   stop: () => Promise<{ blob: Blob }>;

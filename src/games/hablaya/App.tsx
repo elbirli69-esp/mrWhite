@@ -20,6 +20,7 @@ import {
   type TopicMode,
 } from './logic';
 import { useHablaYa } from './useHablaYa';
+import { HABLAYA_WHISPER_BUILD } from './whisperLocal';
 
 export default function HablaYaApp() {
   const { readableMode, setReadableMode } = useReadableMode();
@@ -60,6 +61,11 @@ export default function HablaYaApp() {
           onStart={game.goConfig}
         />
       )}
+      {state.screen === 'home' ? (
+        <p className="mt-4 text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+          Build {HABLAYA_WHISPER_BUILD} · si ves mensajes viejos, cierra la pestaña y vuelve a entrar
+        </p>
+      ) : null}
 
       {state.screen === 'config' && (
         <ConfigShell
@@ -323,7 +329,7 @@ export default function HablaYaApp() {
                   {state.aiLoading
                     ? state.aiStatus || 'Procesando en el dispositivo…'
                     : state.needsTranscript
-                      ? 'No salió texto automático. Escuchad el audio, escribid un resumen (o reintentad) y evaluad.'
+                      ? 'Whisper local no sacó texto. Reintentad, o escuchad el audio y escribid un resumen a mano. Si el mensaje hablaba de «el móvil» sin Whisper, cierra la app del todo y vuelve a abrirla.'
                       : 'Modelo en el dispositivo (WebGPU/WASM). Puedes corregir y re-puntuar.'}
                 </p>
                 <textarea

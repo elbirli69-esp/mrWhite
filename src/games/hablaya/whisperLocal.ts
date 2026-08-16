@@ -10,10 +10,27 @@ type AsrPipeline = (
 
 let transcriberPromise: Promise<AsrPipeline> | null = null;
 let loadedDevice: 'webgpu' | 'wasm' | null = null;
+let loadedModelId: string | null = null;
 
-/** Base multilingual: mucho mejor que tiny en castellano (~145 MB la 1ª vez). */
-const MODEL_ID = 'Xenova/whisper-base';
 const TARGET_RATE = 16_000;
+
+/** Stamp para comprobar que el móvil no está con una PWA vieja. */
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-3';
+
+function isConstrainedDevice(): boolean {
+  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+  const ua = navigator.userAgent || '';
+  const mobileUa = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+  const lowMem = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
+  const fewCores = (navigator.hardwareConcurrency || 8) <= 4;
+  const saveData = Boolean(nav.connection?.saveData);
+  return mobileUa || lowMem || fewCores || saveData;
+}
+
+/** Tiny en móvil (cabe en RAM); base en escritorio. */
+function pickModelId(): string {
+  return isConstrainedDevice() ? 'Xenova/whisper-tiny' : 'Xenova/whisper-base';
+}
 
 async function webgpuAvailable(): Promise<boolean> {
   try {
@@ -27,6 +44,7 @@ async function webgpuAvailable(): Promise<boolean> {
 }
 
 async function loadPipeline(
+  modelId: string,
   device: 'webgpu' | 'wasm',
   dtype: string,
 ): Promise<AsrPipeline> {
@@ -39,31 +57,46 @@ async function loadPipeline(
     model: string,
     options?: Record<string, unknown>,
   ) => Promise<AsrPipeline>;
-  return create('automatic-speech-recognition', MODEL_ID, { device, dtype });
+  return create('automatic-speech-recognition', modelId, { device, dtype });
 }
 
 async function getTranscriber(onStatus?: (msg: string) => void): Promise<AsrPipeline> {
+  const modelId = pickModelId();
+  if (transcriberPromise && loadedModelId !== modelId) {
+    transcriberPromise = null;
+    loadedDevice = null;
+    loadedModelId = null;
+  }
+
   if (!transcriberPromise) {
+    const shortName = modelId.includes('tiny') ? 'tiny' : 'base';
     transcriberPromise = (async () => {
       const preferGpu = await webgpuAvailable();
       if (preferGpu) {
-        onStatus?.('Cargando Whisper base (WebGPU)…');
+        onStatus?.(`Cargando Whisper ${shortName} (WebGPU)…`);
         try {
-          const pipe = await loadPipeline('webgpu', 'fp32');
+          const pipe = await loadPipeline(modelId, 'webgpu', 'fp32');
           loadedDevice = 'webgpu';
+          loadedModelId = modelId;
           return pipe;
         } catch (error) {
           console.warn('[hablaya] WebGPU falló, usando WASM', error);
         }
       }
 
-      onStatus?.('Cargando Whisper base (WASM, puede tardar)…');
-      const pipe = await loadPipeline('wasm', 'q8');
+      onStatus?.(
+        shortName === 'tiny'
+          ? 'Cargando Whisper tiny (WASM)…'
+          : 'Cargando Whisper base (WASM, puede tardar)…',
+      );
+      const pipe = await loadPipeline(modelId, 'wasm', 'q8');
       loadedDevice = 'wasm';
+      loadedModelId = modelId;
       return pipe;
     })().catch((error) => {
       transcriberPromise = null;
       loadedDevice = null;
+      loadedModelId = null;
       throw error;
     });
   }
@@ -100,7 +133,6 @@ function mixToMono(buffer: AudioBuffer): Float32Array {
 
 /**
  * Decodifica MediaRecorder (webm/mp4/ogg) a mono Float32 @ 16 kHz.
- * Algunos navegadores fallan con decodeAudioData en webm “a medias”: hay fallback.
  */
 export async function decodeBlobToWhisperAudio(blob: Blob): Promise<Float32Array> {
   if (blob.size < 256) {
@@ -123,7 +155,6 @@ export async function decodeBlobToWhisperAudio(blob: Blob): Promise<Float32Array
     console.warn('[hablaya] decodeAudioData falló, reintentando vía <audio>', firstError);
   }
 
-  // Fallback: forzar decodificación cargando el blob en un elemento audio
   const url = URL.createObjectURL(blob);
   try {
     const audioEl = document.createElement('audio');
@@ -134,11 +165,7 @@ export async function decodeBlobToWhisperAudio(blob: Blob): Promise<Float32Array
       audioEl.onerror = () => reject(new Error('No se pudo leer el audio grabado'));
       window.setTimeout(() => reject(new Error('Timeout al leer el audio')), 8000);
     });
-
-    // Algunos webm vienen sin duración; igual intentamos decode del arrayBuffer otra vez
-    // tras “tocar” el elemento (ayuda en Chrome).
-    const buffer = await blob.arrayBuffer();
-    return await tryDecode(buffer);
+    return await tryDecode(await blob.arrayBuffer());
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -200,7 +227,6 @@ export async function transcribeLocally(
       : 'Transcribiendo en el dispositivo (WASM, paciencia)…',
   );
 
-  // return_timestamps: true es necesario para audios ≥ ~30s (chunking)
   let output: unknown;
   try {
     output = await transcriber(
@@ -214,9 +240,9 @@ export async function transcribeLocally(
       },
     );
   } catch (error) {
-    // Si el pipeline quedó a medias, permitir recargar
     transcriberPromise = null;
     loadedDevice = null;
+    loadedModelId = null;
     const detail = error instanceof Error ? error.message : 'error desconocido';
     throw new Error(`Falló Whisper local (${detail})`);
   }
@@ -224,7 +250,7 @@ export async function transcribeLocally(
   const text = extractText(output);
   if (!text) {
     throw new Error(
-      'Whisper no sacó texto. Prueba a hablar más cerca del micrófono o escribe un resumen manual.',
+      'Whisper no sacó texto. Habla más cerca del micrófono o escribe un resumen manual.',
     );
   }
 
