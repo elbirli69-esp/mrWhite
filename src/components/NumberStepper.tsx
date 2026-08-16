@@ -7,6 +7,17 @@ interface NumberStepperProps {
   min: number;
   max: number;
   onChange: (value: number) => void;
+  /**
+   * Valores permitidos (p. ej. 30, 45, 60, 90).
+   * Si se indica, +/− salta entre esas opciones en lugar de ir de 1 en 1.
+   */
+  options?: readonly number[];
+}
+
+function nearestOption(options: readonly number[], value: number): number {
+  return options.reduce((best, n) =>
+    Math.abs(n - value) < Math.abs(best - value) ? n : best,
+  );
 }
 
 export function NumberStepper({
@@ -16,15 +27,46 @@ export function NumberStepper({
   min,
   max,
   onChange,
+  options,
 }: NumberStepperProps) {
-  const decrease = () => onChange(Math.max(min, value - 1));
-  const increase = () => onChange(Math.min(max, value + 1));
+  const sortedOptions = options ? [...options].sort((a, b) => a - b) : null;
+  const effectiveMin = sortedOptions ? sortedOptions[0]! : min;
+  const effectiveMax = sortedOptions ? sortedOptions[sortedOptions.length - 1]! : max;
+  const current = sortedOptions ? nearestOption(sortedOptions, value) : value;
+  const currentIndex = sortedOptions ? sortedOptions.indexOf(current) : -1;
+
+  const decrease = () => {
+    if (sortedOptions) {
+      if (currentIndex <= 0) return;
+      onChange(sortedOptions[currentIndex - 1]!);
+      return;
+    }
+    onChange(Math.max(effectiveMin, value - 1));
+  };
+
+  const increase = () => {
+    if (sortedOptions) {
+      if (currentIndex < 0 || currentIndex >= sortedOptions.length - 1) return;
+      onChange(sortedOptions[currentIndex + 1]!);
+      return;
+    }
+    onChange(Math.min(effectiveMax, value + 1));
+  };
 
   const onInput = (e: ChangeEvent<HTMLInputElement>) => {
     const next = Number.parseInt(e.target.value, 10);
     if (Number.isNaN(next)) return;
-    onChange(Math.min(max, Math.max(min, next)));
+    if (sortedOptions) {
+      onChange(nearestOption(sortedOptions, next));
+      return;
+    }
+    onChange(Math.min(effectiveMax, Math.max(effectiveMin, next)));
   };
+
+  const atMin = sortedOptions ? currentIndex <= 0 : value <= effectiveMin;
+  const atMax = sortedOptions
+    ? currentIndex < 0 || currentIndex >= sortedOptions.length - 1
+    : value >= effectiveMax;
 
   return (
     <div className="flex flex-col gap-3">
@@ -46,7 +88,7 @@ export function NumberStepper({
           type="button"
           aria-label={`Disminuir ${label}`}
           onClick={decrease}
-          disabled={value <= min}
+          disabled={atMin}
           className="flex h-[var(--touch-min)] w-[var(--touch-min)] shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
         >
           −
@@ -55,9 +97,10 @@ export function NumberStepper({
         <input
           type="number"
           inputMode="numeric"
-          min={min}
-          max={max}
-          value={value}
+          min={effectiveMin}
+          max={effectiveMax}
+          step={sortedOptions ? undefined : 1}
+          value={current}
           onChange={onInput}
           aria-label={label}
           className="h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-text)] outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -67,7 +110,7 @@ export function NumberStepper({
           type="button"
           aria-label={`Aumentar ${label}`}
           onClick={increase}
-          disabled={value >= max}
+          disabled={atMax}
           className="flex h-[var(--touch-min)] w-[var(--touch-min)] shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-2xl font-light text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-30"
         >
           +

@@ -96,13 +96,8 @@ export default function SpyfallApp() {
             value={state.config.timerMinutes}
             min={0}
             max={10}
-            onChange={(timerMinutes) => {
-              const allowed = [0, 5, 6, 8, 10];
-              const nearest = allowed.reduce((best, n) =>
-                Math.abs(n - timerMinutes) < Math.abs(best - timerMinutes) ? n : best,
-              );
-              game.updateConfig({ timerMinutes: nearest });
-            }}
+            options={[0, 5, 6, 8, 10]}
+            onChange={(timerMinutes) => game.updateConfig({ timerMinutes })}
           />
         </ConfigShell>
       )}

@@ -73,13 +73,8 @@ export default function JustOneApp() {
             value={state.config.totalRounds}
             min={5}
             max={13}
-            onChange={(totalRounds) => {
-              const allowed = [5, 8, 11, 13];
-              const nearest = allowed.reduce((best, n) =>
-                Math.abs(n - totalRounds) < Math.abs(best - totalRounds) ? n : best,
-              );
-              game.updateConfig({ totalRounds: nearest });
-            }}
+            options={[5, 8, 11, 13]}
+            onChange={(totalRounds) => game.updateConfig({ totalRounds })}
           />
           <Toggle
             label="Anular pistas duplicadas"

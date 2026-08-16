@@ -57,13 +57,8 @@ export default function HeadsUpApp() {
             value={state.config.roundSeconds}
             min={30}
             max={90}
-            onChange={(roundSeconds) => {
-              const allowed = [30, 45, 60, 90];
-              const nearest = allowed.reduce((best, n) =>
-                Math.abs(n - roundSeconds) < Math.abs(best - roundSeconds) ? n : best,
-              );
-              game.updateConfig({ roundSeconds: nearest });
-            }}
+            options={[30, 45, 60, 90]}
+            onChange={(roundSeconds) => game.updateConfig({ roundSeconds })}
           />
           <Toggle
             label="Permitir pasar"
