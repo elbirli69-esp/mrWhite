@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   HABLAYA_WHISPER_BUILD,
+  aggregateFileProgress,
   extractTranscriptText,
   pickWhisperModelId,
   resampleTo16k,
@@ -9,7 +10,21 @@ import {
 
 describe('HABLAYA_WHISPER_BUILD', () => {
   it('expone el stamp de la build actual (PWA)', () => {
-    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-5');
+    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-6');
+  });
+});
+
+describe('aggregateFileProgress', () => {
+  it('pondera varios ficheros por bytes', () => {
+    const files = new Map([
+      ['a.onnx', { loaded: 50, total: 100 }],
+      ['b.onnx', { loaded: 0, total: 100 }],
+    ]);
+    expect(aggregateFileProgress(files)).toBe(25);
+  });
+
+  it('devuelve 0 si no hay totales', () => {
+    expect(aggregateFileProgress(new Map())).toBe(0);
   });
 });
 

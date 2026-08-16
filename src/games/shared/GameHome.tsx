@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Toggle } from '../../components/Toggle';
@@ -11,6 +12,9 @@ interface GameHomeProps {
   readableMode: boolean;
   onReadableModeChange: (enabled: boolean) => void;
   onStart: () => void;
+  startDisabled?: boolean;
+  startLabel?: string;
+  banner?: ReactNode;
 }
 
 export function GameHome({
@@ -21,6 +25,9 @@ export function GameHome({
   readableMode,
   onReadableModeChange,
   onStart,
+  startDisabled = false,
+  startLabel = 'Configurar partida',
+  banner,
 }: GameHomeProps) {
   return (
     <div className="flex flex-col gap-10">
@@ -75,6 +82,8 @@ export function GameHome({
           ))}
         </ul>
 
+        {banner ? <div className="mb-6">{banner}</div> : null}
+
         <div className="mb-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
           <Toggle
             label="Modo legible"
@@ -84,7 +93,9 @@ export function GameHome({
           />
         </div>
 
-        <Button onClick={onStart}>Configurar partida</Button>
+        <Button onClick={onStart} disabled={startDisabled}>
+          {startLabel}
+        </Button>
       </Card>
     </div>
   );

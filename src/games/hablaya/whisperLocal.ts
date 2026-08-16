@@ -15,7 +15,7 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-5';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-6';
 
 export type DeviceHints = {
   userAgent?: string;
@@ -67,6 +67,13 @@ async function loadPipeline(
   modelId: string,
   device: 'webgpu' | 'wasm',
   dtype: string,
+  onProgress?: (info: {
+    status: string;
+    file?: string;
+    progress?: number;
+    loaded?: number;
+    total?: number;
+  }) => void,
 ): Promise<AsrPipeline> {
   let transformers: typeof import('@huggingface/transformers');
   try {
@@ -85,10 +92,88 @@ async function loadPipeline(
     model: string,
     options?: Record<string, unknown>,
   ) => Promise<AsrPipeline>;
-  return create('automatic-speech-recognition', modelId, { device, dtype });
+  return create('automatic-speech-recognition', modelId, {
+    device,
+    dtype,
+    progress_callback: onProgress
+      ? (info: {
+          status: string;
+          file?: string;
+          progress?: number;
+          loaded?: number;
+          total?: number;
+        }) => onProgress(info)
+      : undefined,
+  });
 }
 
-async function getTranscriber(onStatus?: (msg: string) => void): Promise<AsrPipeline> {
+/** Media de progreso 0–100 a partir de varios ficheros del modelo. */
+export function aggregateFileProgress(
+  files: Map<string, { loaded: number; total: number }>,
+): number {
+  let loaded = 0;
+  let total = 0;
+  for (const entry of files.values()) {
+    loaded += entry.loaded;
+    total += entry.total;
+  }
+  if (total <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((100 * loaded) / total)));
+}
+
+export function isWhisperPipelineReady(): boolean {
+  return Boolean(transcriberPromise && loadedDevice && loadedModelId);
+}
+
+export type WhisperPreloadHandlers = {
+  onStatus?: (msg: string) => void;
+  onProgress?: (percent: number) => void;
+};
+
+/**
+ * Descarga y deja listo Whisper en el dispositivo (caché del navegador).
+ * Seguro llamar varias veces: reutiliza la misma carga.
+ */
+export async function preloadWhisperLocal(
+  handlers: WhisperPreloadHandlers = {},
+): Promise<{ device: 'webgpu' | 'wasm'; modelId: string }> {
+  const fileProgress = new Map<string, { loaded: number; total: number }>();
+  const onFileProgress = (info: {
+    status: string;
+    file?: string;
+    progress?: number;
+    loaded?: number;
+    total?: number;
+  }) => {
+    if (info.status === 'progress' && info.file && typeof info.loaded === 'number' && typeof info.total === 'number') {
+      fileProgress.set(info.file, { loaded: info.loaded, total: info.total });
+      handlers.onProgress?.(aggregateFileProgress(fileProgress));
+    } else if (info.status === 'initiate' && info.file) {
+      handlers.onStatus?.(`Descargando ${info.file}…`);
+    } else if (info.status === 'done' && info.file) {
+      handlers.onStatus?.(`Listo: ${info.file}`);
+    }
+  };
+
+  const pipe = await getTranscriber(handlers.onStatus, onFileProgress);
+  void pipe;
+  handlers.onProgress?.(100);
+  handlers.onStatus?.(
+    loadedDevice === 'webgpu' ? 'Whisper listo (WebGPU)' : 'Whisper listo (WASM)',
+  );
+  return { device: loadedDevice ?? 'wasm', modelId: loadedModelId ?? pickModelId() };
+}
+
+async function getTranscriber(
+  onStatus?: (msg: string) => void,
+  onFileProgress?: (info: {
+    status: string;
+    file?: string;
+    progress?: number;
+    loaded?: number;
+    total?: number;
+  }) => void,
+): Promise<AsrPipeline> {
   const modelId = pickModelId();
   if (transcriberPromise && loadedModelId !== modelId) {
     transcriberPromise = null;
@@ -101,9 +186,9 @@ async function getTranscriber(onStatus?: (msg: string) => void): Promise<AsrPipe
     transcriberPromise = (async () => {
       const preferGpu = await webgpuAvailable();
       if (preferGpu) {
-        onStatus?.(`Cargando Whisper ${shortName} (WebGPU)…`);
+        onStatus?.(`Descargando Whisper ${shortName} (WebGPU)…`);
         try {
-          const pipe = await loadPipeline(modelId, 'webgpu', 'fp32');
+          const pipe = await loadPipeline(modelId, 'webgpu', 'fp32', onFileProgress);
           loadedDevice = 'webgpu';
           loadedModelId = modelId;
           return pipe;
@@ -114,10 +199,10 @@ async function getTranscriber(onStatus?: (msg: string) => void): Promise<AsrPipe
 
       onStatus?.(
         shortName === 'tiny'
-          ? 'Cargando Whisper tiny (WASM)…'
-          : 'Cargando Whisper base (WASM, puede tardar)…',
+          ? 'Descargando Whisper tiny (WASM)…'
+          : 'Descargando Whisper base (WASM, puede tardar)…',
       );
-      const pipe = await loadPipeline(modelId, 'wasm', 'q8');
+      const pipe = await loadPipeline(modelId, 'wasm', 'q8', onFileProgress);
       loadedDevice = 'wasm';
       loadedModelId = modelId;
       return pipe;
@@ -222,7 +307,7 @@ export function extractTranscriptText(output: unknown): string {
   return '';
 }
 
-export function whisperDeviceLabel(): string | null {
+export function whisperDeviceLabel(): 'webgpu' | 'wasm' | null {
   return loadedDevice;
 }
 

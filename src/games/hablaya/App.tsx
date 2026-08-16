@@ -20,6 +20,8 @@ import {
   type TopicMode,
 } from './logic';
 import { useHablaYa } from './useHablaYa';
+import { useWhisperPreload } from './useWhisperPreload';
+import { WhisperDownloadBanner } from './WhisperDownloadBanner';
 import { HABLAYA_WHISPER_BUILD } from './whisperLocal';
 
 export default function HablaYaApp() {
@@ -27,6 +29,7 @@ export default function HablaYaApp() {
   const game = useHablaYa();
   const { state } = game;
   const [customDraft, setCustomDraft] = useState('');
+  const whisper = useWhisperPreload(true);
 
   if (state.screen === 'pass') {
     return (
@@ -52,13 +55,30 @@ export default function HablaYaApp() {
           emoji="🎙️"
           tagline="Elige categoría, habla contra reloj y que te puntúen la mesa… y la IA."
           steps={[
+            'Primero se descarga Whisper en el dispositivo (solo la primera vez).',
             'Configura tiempo, rondas, serio/inventado y cómo se puntúa.',
-            'En tu turno eliges categoría; Whisper local transcribe el audio en el dispositivo.',
-            'Todos escuchan, votan 0–10 y DeepSeek aporta su nota.',
+            'Hablas, Whisper transcribe en local y DeepSeek + la mesa puntúan.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
           onStart={game.goConfig}
+          startDisabled={!whisper.ready}
+          startLabel={
+            whisper.status === 'loading'
+              ? 'Espera: descargando Whisper…'
+              : whisper.status === 'error'
+                ? 'Whisper no está listo'
+                : 'Configurar partida'
+          }
+          banner={
+            <WhisperDownloadBanner
+              status={whisper.status}
+              progress={whisper.progress}
+              message={whisper.message}
+              error={whisper.error}
+              onRetry={whisper.retry}
+            />
+          }
         />
       )}
       {state.screen === 'home' ? (
