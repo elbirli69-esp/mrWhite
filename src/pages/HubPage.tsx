@@ -18,6 +18,13 @@ const partyGames = [
     tone: 'camaleon',
   },
   {
+    href: '/codigosecreto',
+    name: 'Código Secreto',
+    line: 'Dos equipos, pista + número (1–5) y un tablero de 25.',
+    cta: 'Jugar',
+    tone: 'codigosecreto',
+  },
+  {
     href: '/spyfall',
     name: 'Spyfall',
     line: 'Un lugar secreto, preguntas y espías improvisando.',
