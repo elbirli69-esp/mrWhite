@@ -250,6 +250,67 @@ export function applyGuess(params: {
   };
 }
 
+export function applyGuesses(params: {
+  cards: BoardCard[];
+  cardIds: readonly number[];
+  activeTeam: TeamColor;
+  guessesLeft: number;
+}): {
+  cards: BoardCard[];
+  guessesLeft: number;
+  lastCard: BoardCard | null;
+  terminal:
+    | { type: 'win'; winner: TeamColor }
+    | { type: 'assassin'; winner: TeamColor }
+    | { type: 'endTurn'; nextTeam: TeamColor }
+    | null;
+} {
+  let cards = params.cards;
+  let guessesLeft = params.guessesLeft;
+  let lastCard: BoardCard | null = null;
+
+  for (const cardId of params.cardIds) {
+    if (guessesLeft <= 0) break;
+    const result = applyGuess({
+      cards,
+      cardId,
+      activeTeam: params.activeTeam,
+      guessesLeft,
+    });
+    if (!result) continue;
+    cards = result.cards;
+    lastCard = result.outcome.card;
+
+    if (result.outcome.type === 'assassin') {
+      return {
+        cards,
+        guessesLeft: 0,
+        lastCard,
+        terminal: { type: 'assassin', winner: result.outcome.winner },
+      };
+    }
+    if (result.outcome.type === 'win') {
+      return {
+        cards,
+        guessesLeft: 0,
+        lastCard,
+        terminal: { type: 'win', winner: result.outcome.winner },
+      };
+    }
+    if (result.outcome.type === 'endTurn') {
+      return {
+        cards,
+        guessesLeft: 0,
+        lastCard,
+        terminal: { type: 'endTurn', nextTeam: result.outcome.nextTeam },
+      };
+    }
+    guessesLeft = result.outcome.guessesLeft;
+  }
+
+  return { cards, guessesLeft, lastCard, terminal: null };
+}
+
 export function cardTone(kind: CardKind, revealed: boolean, showKey: boolean): string {
   if (!revealed && !showKey) {
     return 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]';

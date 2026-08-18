@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  applyGuess,
+  applyGuesses,
   createDeal,
   createPlayers,
   DEFAULT_CONFIG,
@@ -257,60 +257,11 @@ export function useCodigoSecreto() {
   }, []);
 
   const guessCard = useCallback((cardId: number) => {
-    setState((prev) => {
-      if (!prev.deal || prev.screen !== 'guess') return prev;
-      const result = applyGuess({
-        cards: prev.deal.cards,
-        cardId,
-        activeTeam: prev.activeTeam,
-        guessesLeft: prev.guessesLeft,
-      });
-      if (!result) return prev;
+    setState((prev) => guessCardsReducer(prev, [cardId]));
+  }, []);
 
-      const { cards, outcome } = result;
-      const deal = { ...prev.deal, cards };
-
-      if (outcome.type === 'assassin' || outcome.type === 'win') {
-        return {
-          ...prev,
-          deal,
-          screen: 'end',
-          winner: outcome.winner,
-          lastGuessWord: outcome.card.word,
-          lastGuessKind: outcome.card.kind,
-          endTitle:
-            outcome.type === 'assassin'
-              ? `¡Asesino! Ganan los ${teamLabel(outcome.winner)}`
-              : `Ganan los ${teamLabel(outcome.winner)}`,
-          endSubtitle:
-            outcome.type === 'assassin'
-              ? `Tocasteis «${outcome.card.word}».`
-              : `Quedaban ${remainingForTeam(cards, oppositeTeam(outcome.winner))} del otro equipo.`,
-          guessesLeft: 0,
-        };
-      }
-
-      if (outcome.type === 'endTurn') {
-        return {
-          ...prev,
-          deal,
-          screen: 'passClue',
-          activeTeam: outcome.nextTeam,
-          clue: null,
-          guessesLeft: 0,
-          lastGuessWord: outcome.card.word,
-          lastGuessKind: outcome.card.kind,
-        };
-      }
-
-      return {
-        ...prev,
-        deal,
-        guessesLeft: outcome.guessesLeft,
-        lastGuessWord: outcome.card.word,
-        lastGuessKind: outcome.card.kind,
-      };
-    });
+  const guessCards = useCallback((cardIds: number[]) => {
+    setState((prev) => guessCardsReducer(prev, cardIds));
   }, []);
 
   const endTurnEarly = useCallback(() => {
@@ -363,7 +314,64 @@ export function useCodigoSecreto() {
     setClueCount,
     submitClue,
     guessCard,
+    guessCards,
     endTurnEarly,
     newGame,
+  };
+}
+
+function guessCardsReducer(prev: State, cardIds: readonly number[]): State {
+  if (!prev.deal || prev.screen !== 'guess' || cardIds.length === 0) return prev;
+
+  const result = applyGuesses({
+    cards: prev.deal.cards,
+    cardIds,
+    activeTeam: prev.activeTeam,
+    guessesLeft: prev.guessesLeft,
+  });
+  const deal = { ...prev.deal, cards: result.cards };
+  const lastGuessWord = result.lastCard?.word ?? prev.lastGuessWord;
+  const lastGuessKind = result.lastCard?.kind ?? prev.lastGuessKind;
+
+  if (result.terminal?.type === 'assassin' || result.terminal?.type === 'win') {
+    const winner = result.terminal.winner;
+    return {
+      ...prev,
+      deal,
+      screen: 'end',
+      winner,
+      lastGuessWord,
+      lastGuessKind,
+      endTitle:
+        result.terminal.type === 'assassin'
+          ? `¡Asesino! Ganan los ${teamLabel(winner)}`
+          : `Ganan los ${teamLabel(winner)}`,
+      endSubtitle:
+        result.terminal.type === 'assassin'
+          ? `Tocasteis «${result.lastCard?.word ?? ''}».`
+          : `Quedaban ${remainingForTeam(result.cards, oppositeTeam(winner))} del otro equipo.`,
+      guessesLeft: 0,
+    };
+  }
+
+  if (result.terminal?.type === 'endTurn') {
+    return {
+      ...prev,
+      deal,
+      screen: 'passClue',
+      activeTeam: result.terminal.nextTeam,
+      clue: null,
+      guessesLeft: 0,
+      lastGuessWord,
+      lastGuessKind,
+    };
+  }
+
+  return {
+    ...prev,
+    deal,
+    guessesLeft: result.guessesLeft,
+    lastGuessWord,
+    lastGuessKind,
   };
 }
