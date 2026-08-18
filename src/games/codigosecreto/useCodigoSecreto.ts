@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   applyGuesses,
+  buildGuessResult,
   createDeal,
   createPlayers,
   DEFAULT_CONFIG,
@@ -16,6 +17,7 @@ import {
   type CodigoSecretoDeal,
   type CodigoSecretoPlayer,
   type CodigoSecretoScreen,
+  type GuessResultState,
   type TeamColor,
 } from './logic';
 import { loadJson, loadNames, resizeNames, saveJson, validateNames } from '../shared/persist';
@@ -38,6 +40,7 @@ interface State {
   guessesLeft: number;
   lastGuessWord: string | null;
   lastGuessKind: BoardCard['kind'] | null;
+  guessResult: GuessResultState | null;
   endTitle: string;
   endSubtitle: string;
   winner: TeamColor | null;
@@ -56,6 +59,7 @@ function blankMatchFields() {
     guessesLeft: 0,
     lastGuessWord: null as string | null,
     lastGuessKind: null as BoardCard['kind'] | null,
+    guessResult: null as GuessResultState | null,
     endTitle: '',
     endSubtitle: '',
     winner: null as TeamColor | null,
@@ -264,6 +268,52 @@ export function useCodigoSecreto() {
     setState((prev) => guessCardsReducer(prev, cardIds));
   }, []);
 
+  const dismissGuessResult = useCallback(() => {
+    setState((prev) => {
+      if (prev.screen !== 'guessResult' || !prev.guessResult) return prev;
+      const { next, guessesLeft } = prev.guessResult;
+
+      if (next.type === 'continue') {
+        return {
+          ...prev,
+          screen: 'guess',
+          guessesLeft,
+          guessResult: null,
+        };
+      }
+
+      if (next.type === 'endTurn') {
+        return {
+          ...prev,
+          screen: 'passClue',
+          activeTeam: next.nextTeam,
+          clue: null,
+          guessesLeft: 0,
+          guessResult: null,
+        };
+      }
+
+      const winner = next.winner;
+      return {
+        ...prev,
+        screen: 'end',
+        winner,
+        guessesLeft: 0,
+        guessResult: null,
+        endTitle:
+          next.type === 'assassin'
+            ? `¡Veneno! Ganan los ${teamLabel(winner)}`
+            : `Ganan los ${teamLabel(winner)}`,
+        endSubtitle:
+          next.type === 'assassin'
+            ? `Tocasteis el veneno («${prev.lastGuessWord ?? ''}»).`
+            : prev.deal
+              ? `Quedaban ${remainingForTeam(prev.deal.cards, oppositeTeam(winner))} del otro equipo.`
+              : '',
+      };
+    });
+  }, []);
+
   const endTurnEarly = useCallback(() => {
     setState((prev) => {
       if (prev.screen !== 'guess') return prev;
@@ -275,6 +325,7 @@ export function useCodigoSecreto() {
         guessesLeft: 0,
         lastGuessWord: null,
         lastGuessKind: null,
+        guessResult: null,
       };
     });
   }, []);
@@ -315,6 +366,7 @@ export function useCodigoSecreto() {
     submitClue,
     guessCard,
     guessCards,
+    dismissGuessResult,
     endTurnEarly,
     newGame,
   };
@@ -329,49 +381,25 @@ function guessCardsReducer(prev: State, cardIds: readonly number[]): State {
     activeTeam: prev.activeTeam,
     guessesLeft: prev.guessesLeft,
   });
+  if (result.revealedBatch.length === 0) return prev;
+
   const deal = { ...prev.deal, cards: result.cards };
   const lastGuessWord = result.lastCard?.word ?? prev.lastGuessWord;
   const lastGuessKind = result.lastCard?.kind ?? prev.lastGuessKind;
-
-  if (result.terminal?.type === 'assassin' || result.terminal?.type === 'win') {
-    const winner = result.terminal.winner;
-    return {
-      ...prev,
-      deal,
-      screen: 'end',
-      winner,
-      lastGuessWord,
-      lastGuessKind,
-      endTitle:
-        result.terminal.type === 'assassin'
-          ? `¡Asesino! Ganan los ${teamLabel(winner)}`
-          : `Ganan los ${teamLabel(winner)}`,
-      endSubtitle:
-        result.terminal.type === 'assassin'
-          ? `Tocasteis «${result.lastCard?.word ?? ''}».`
-          : `Quedaban ${remainingForTeam(result.cards, oppositeTeam(winner))} del otro equipo.`,
-      guessesLeft: 0,
-    };
-  }
-
-  if (result.terminal?.type === 'endTurn') {
-    return {
-      ...prev,
-      deal,
-      screen: 'passClue',
-      activeTeam: result.terminal.nextTeam,
-      clue: null,
-      guessesLeft: 0,
-      lastGuessWord,
-      lastGuessKind,
-    };
-  }
+  const guessResult = buildGuessResult({
+    activeTeam: prev.activeTeam,
+    revealedBatch: result.revealedBatch,
+    guessesLeft: result.guessesLeft,
+    terminal: result.terminal,
+  });
 
   return {
     ...prev,
     deal,
+    screen: 'guessResult',
     guessesLeft: result.guessesLeft,
     lastGuessWord,
     lastGuessKind,
+    guessResult,
   };
 }

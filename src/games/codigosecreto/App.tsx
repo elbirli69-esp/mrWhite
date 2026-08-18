@@ -41,10 +41,17 @@ function kindLabel(kind: CardKind): string {
     case 'neutral':
       return 'Neutral';
     case 'assassin':
-      return 'Asesino';
+      return 'Veneno';
     default:
       return kind;
   }
+}
+
+function resultBucketLabel(kind: CardKind, activeTeam: TeamColor): string {
+  if (kind === 'assassin') return 'Veneno';
+  if (kind === 'neutral') return 'Neutrales';
+  if (kind === activeTeam) return `Vuestras (${teamLabel(activeTeam)})`;
+  return `Del rival (${teamLabel(kind)})`;
 }
 
 /** Tipografía según longitud: las cortas ganan tamaño; las largas siguen cabiendo. */
@@ -166,7 +173,14 @@ function WordBoard({
                 {selectedIds.indexOf(card.id) + 1}
               </span>
             ) : null}
-            {card.word}
+            {(card.revealed || showKey) && card.kind === 'assassin' ? (
+              <span className="absolute right-0.5 top-0.5 rounded bg-black px-1 text-[0.55rem] font-bold tracking-wide text-yellow-300">
+                ☠
+              </span>
+            ) : null}
+            <span className={(card.revealed || showKey) && card.kind === 'assassin' ? 'font-black' : undefined}>
+              {card.word}
+            </span>
           </button>
         );
       })}
@@ -304,7 +318,7 @@ export default function CodigoSecretoApp() {
               ? `${game.activeSpymaster.name} (jefe) no debe tocar el móvil al adivinar.`
               : undefined
           }
-          warning="El mapa de colores ya no se muestra. Dad el móvil a quien vaya a tocar las cartas. El jefe de espías puede mirar de lejos, pero no la pantalla de cerca."
+          warning="El mapa de colores ya no se muestra. Dad el móvil a quien vaya a tocar las cartas. El jefe de espías puede mirar de lejos, pero no la pantalla de cerca. Ojo con el veneno."
           buttonLabel="Abrir tablero para adivinar"
           onConfirm={game.confirmHandoff}
         />
@@ -318,6 +332,7 @@ export default function CodigoSecretoApp() {
       centered={
         state.screen !== 'names' &&
         state.screen !== 'guess' &&
+        state.screen !== 'guessResult' &&
         state.screen !== 'clue'
       }
     >
@@ -329,7 +344,7 @@ export default function CodigoSecretoApp() {
           steps={[
             'Formad dos equipos. Cada uno tiene un jefe de espías.',
             'El jefe da una pista y cuántas palabras (1–5) hay que tocar.',
-            'Si tocáis el asesino, perdéis. Completad vuestras palabras para ganar.',
+            'Si tocáis el veneno, perdéis. Completad vuestras palabras para ganar.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
@@ -590,6 +605,84 @@ export default function CodigoSecretoApp() {
               </Button>
             </div>
           )}
+        </div>
+      )}
+
+      {state.screen === 'guessResult' && state.deal && state.guessResult && (
+        <div className="mx-auto flex w-full max-w-lg flex-col gap-5 pb-8">
+          <header className="text-center">
+            <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold">
+              {state.guessResult.next.type === 'assassin'
+                ? '¡Veneno!'
+                : state.guessResult.next.type === 'win'
+                  ? '¡Victoria!'
+                  : 'Resultado'}
+            </h1>
+            <p className="mt-2 text-[var(--color-text-muted)]">
+              {state.guessResult.next.type === 'assassin'
+                ? `Tocasteis el veneno. Ganan los ${teamLabel(state.guessResult.next.winner)}.`
+                : state.guessResult.next.type === 'win'
+                  ? `Completasteis el tablero. Ganan los ${teamLabel(state.guessResult.next.winner)}.`
+                  : state.guessResult.next.type === 'endTurn'
+                    ? 'Esta ronda de pistas termina. Pasará el turno.'
+                    : `Acertasteis. Aún podéis marcar ${state.guessResult.guessesLeft} más.`}
+            </p>
+          </header>
+
+          <div className="flex flex-col gap-3">
+            {(['own', 'rival', 'neutral', 'assassin'] as const).map((bucket) => {
+              const items = state.guessResult!.items.filter((item) => {
+                if (bucket === 'assassin') return item.kind === 'assassin';
+                if (bucket === 'neutral') return item.kind === 'neutral';
+                if (bucket === 'own') return item.kind === state.guessResult!.activeTeam;
+                return item.kind === 'red' || item.kind === 'blue'
+                  ? item.kind !== state.guessResult!.activeTeam
+                  : false;
+              });
+              if (items.length === 0) return null;
+              const sampleKind = items[0]!.kind;
+              return (
+                <div
+                  key={bucket}
+                  className={[
+                    'rounded-2xl border px-4 py-3',
+                    bucket === 'assassin'
+                      ? 'border-yellow-300 bg-yellow-400/15'
+                      : bucket === 'own'
+                        ? teamChipClass(state.guessResult!.activeTeam)
+                        : bucket === 'rival'
+                          ? teamChipClass(
+                              state.guessResult!.activeTeam === 'red' ? 'blue' : 'red',
+                            )
+                          : 'border-stone-400/40 bg-stone-500/15 text-stone-100',
+                  ].join(' ')}
+                >
+                  <p className="text-[length:var(--text-body-sm)] font-semibold opacity-90">
+                    {resultBucketLabel(sampleKind, state.guessResult!.activeTeam)}
+                    {bucket === 'assassin' ? ' · fin de partida' : ''}
+                  </p>
+                  <ul className="mt-2 space-y-1 font-[family-name:var(--font-display)] text-xl font-semibold">
+                    {items.map((item) => (
+                      <li key={`${item.word}-${item.kind}`}>
+                        {bucket === 'assassin' ? '☠ ' : ''}
+                        {item.word}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+
+          <WordBoard cards={state.deal.cards} showKey interactive={false} readable={readableMode} />
+
+          <Button onClick={game.dismissGuessResult}>
+            {state.guessResult.next.type === 'continue'
+              ? 'Seguir adivinando'
+              : state.guessResult.next.type === 'endTurn'
+                ? 'Pasar al otro equipo'
+                : 'Ver final'}
+          </Button>
         </div>
       )}
 
