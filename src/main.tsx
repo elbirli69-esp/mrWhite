@@ -98,6 +98,11 @@ async function boot() {
       title: 'Camaleón',
       loader: () => import('./games/camaleon/App'),
     },
+    '/codigosecreto': {
+      app: 'codigosecreto',
+      title: 'Código Secreto',
+      loader: () => import('./games/codigosecreto/App'),
+    },
     '/spyfall': {
       app: 'spyfall',
       title: 'Spyfall',

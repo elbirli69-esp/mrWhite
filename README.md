@@ -6,6 +6,7 @@ Landing en `/` para elegir app:
 
 - **Mr White** → `/mrwhite` — impostores y palabras secretas (local o salas online)
 - **Camaleón** → `/camaleon` — tablero, pistas y camaleón
+- **Código Secreto** → `/codigosecreto` — dos equipos, pista + número (1–5) y tablero 5×5
 - **Spyfall** → `/spyfall` — lugar secreto y espías
 - **Heads Up** → `/headsup` — palabra en la frente con temporizador
 - **Just One** → `/justone` — pistas únicas para adivinar
