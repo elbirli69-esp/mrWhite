@@ -15,17 +15,25 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-8';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-9';
 
-/** Opciones ASR alineadas con producción (tests de fixtures las reutilizan). */
+/** Opciones ASR alineadas con producción (tests de fixtures / audio largo). */
 export const HABLAYA_WHISPER_ASR_OPTIONS = {
   language: 'spanish',
   task: 'transcribe',
-  // 30s es el sweet-spot de Whisper; 20s con q8 alucinaba mucho en castellano.
   chunk_length_s: 30,
   stride_length_s: 5,
   return_timestamps: true,
   max_new_tokens: 444,
+  temperature: 0,
+} as const;
+
+/** Ventanas cortas en vivo: un solo pase, sin chunking de 30s. */
+export const HABLAYA_WHISPER_LIVE_OPTIONS = {
+  language: 'spanish',
+  task: 'transcribe',
+  return_timestamps: true,
+  max_new_tokens: 224,
   temperature: 0,
 } as const;
 
@@ -356,12 +364,56 @@ export function toWhisperSamples(audio: Float32Array | ArrayLike<number>): Float
   return new Float32Array(audio);
 }
 
+export function spanishWhisperPrompt(category?: string): string {
+  const topic = category?.trim();
+  return topic
+    ? `Transcribe en castellano el discurso sobre: ${topic}. Nombres y marcas en su forma habitual.`
+    : 'Transcribe en castellano.';
+}
+
 /**
- * Transcribe audio en el dispositivo. Primera llamada descarga el modelo.
+ * Transcribe un Float32Array 16 kHz ya preparado.
+ */
+export async function transcribeSamples(
+  audio: Float32Array,
+  options: {
+    onStatus?: (msg: string) => void;
+    category?: string;
+    live?: boolean;
+  } = {},
+): Promise<{ text: string; device: 'webgpu' | 'wasm' }> {
+  const samples = toWhisperSamples(audio);
+  const durationSec = samples.length / TARGET_RATE;
+  if (durationSec < 0.35) {
+    return { text: '', device: loadedDevice ?? 'wasm' };
+  }
+
+  const transcriber = await getTranscriber(options.onStatus);
+  const asrOptions = options.live
+    ? { ...HABLAYA_WHISPER_LIVE_OPTIONS, prompt: spanishWhisperPrompt(options.category) }
+    : { ...HABLAYA_WHISPER_ASR_OPTIONS, prompt: spanishWhisperPrompt(options.category) };
+
+  let output: unknown;
+  try {
+    output = await transcriber(samples, asrOptions);
+  } catch (error) {
+    transcriberPromise = null;
+    loadedDevice = null;
+    loadedModelId = null;
+    const detail = error instanceof Error ? error.message : 'error desconocido';
+    throw new Error(`Falló Whisper local (${detail})`);
+  }
+
+  return { text: extractTranscriptText(output), device: loadedDevice ?? 'wasm' };
+}
+
+/**
+ * Transcribe un blob grabado. Primera llamada descarga el modelo.
  */
 export async function transcribeLocally(
   blob: Blob,
   onStatus?: (msg: string) => void,
+  category?: string,
 ): Promise<{ text: string; device: 'webgpu' | 'wasm' }> {
   onStatus?.('Preparando audio…');
   let audio: Float32Array;
@@ -377,32 +429,12 @@ export async function transcribeLocally(
     throw new Error('Audio demasiado corto para transcribir');
   }
 
-  onStatus?.(`Audio listo (~${durationSec.toFixed(1)}s). Cargando modelo…`);
-  const transcriber = await getTranscriber(onStatus);
-  onStatus?.(
-    loadedDevice === 'webgpu'
-      ? 'Transcribiendo en el dispositivo (WebGPU)…'
-      : 'Transcribiendo en el dispositivo (WASM, paciencia)…',
-  );
-
-  let output: unknown;
-  try {
-    // Pasar Float32Array crudo (ya a 16 kHz). No usar { data, sampling_rate }.
-    output = await transcriber(audio, { ...HABLAYA_WHISPER_ASR_OPTIONS });
-  } catch (error) {
-    transcriberPromise = null;
-    loadedDevice = null;
-    loadedModelId = null;
-    const detail = error instanceof Error ? error.message : 'error desconocido';
-    throw new Error(`Falló Whisper local (${detail})`);
-  }
-
-  const text = extractTranscriptText(output);
-  if (!text) {
+  onStatus?.(`Audio listo (~${durationSec.toFixed(1)}s). Transcribiendo…`);
+  const result = await transcribeSamples(audio, { onStatus, category, live: durationSec < 12 });
+  if (!result.text) {
     throw new Error(
       'Whisper no sacó texto. Habla más cerca del micrófono o escribe un resumen manual.',
     );
   }
-
-  return { text, device: loadedDevice ?? 'wasm' };
+  return result;
 }

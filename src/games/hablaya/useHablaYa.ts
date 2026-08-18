@@ -14,6 +14,7 @@ import {
   type TurnRecord,
 } from './logic';
 import { startRecorderSession, transcriptLooksUsable, transcriptTooShortMessage, type RecorderSession } from './record';
+import { createLiveWhisperSession, type LiveWhisperController } from './liveWhisper';
 import { loadJson, loadNames, resizeNames, saveJson, validateNames } from '../shared/persist';
 
 const CONFIG_KEY = 'hablaya-config';
@@ -96,6 +97,7 @@ function revokeUrl(url: string | null) {
 export function useHablaYa() {
   const [state, setState] = useState<State>(initialState);
   const sessionRef = useRef<RecorderSession | null>(null);
+  const liveWhisperRef = useRef<LiveWhisperController | null>(null);
   const timerRef = useRef<number | null>(null);
   const finishingRef = useRef(false);
   const audioBlobRef = useRef<Blob | null>(null);
@@ -368,6 +370,8 @@ export function useHablaYa() {
     clearTimer();
     const session = sessionRef.current;
     sessionRef.current = null;
+    const live = liveWhisperRef.current;
+    liveWhisperRef.current = null;
     if (!session) {
       finishingRef.current = false;
       return;
@@ -376,22 +380,29 @@ export function useHablaYa() {
     setState((prev) => ({ ...prev, recording: false }));
     const meta = turnMetaRef.current;
     try {
-      const { blob } = await session.stop();
+      const [{ blob }, liveText] = await Promise.all([
+        session.stop(),
+        live ? live.flush() : Promise.resolve(''),
+      ]);
       audioBlobRef.current = blob;
       const audioUrl = URL.createObjectURL(blob);
       const wantsAi = meta.evalMode !== 'votes';
+      const readyText = liveText.trim() || live?.getText().trim() || '';
 
-      // Ir a review al instante y lanzar Whisper→DeepSeek sin botón intermedio.
       setState((prev) => {
         revokeUrl(prev.audioUrl);
         return {
           ...prev,
           screen: 'review',
           audioUrl,
-          transcript: '',
+          transcript: readyText,
           needsTranscript: false,
           aiLoading: wantsAi,
-          aiStatus: wantsAi ? 'Transcribiendo con Whisper…' : null,
+          aiStatus: wantsAi
+            ? readyText
+              ? 'Puntuando con DeepSeek…'
+              : 'Cerrando transcripción…'
+            : null,
           aiScore: null,
           aiFeedback: null,
           aiError: null,
@@ -399,7 +410,11 @@ export function useHablaYa() {
         };
       });
 
-      if (wantsAi) {
+      if (!wantsAi) return;
+
+      if (transcriptLooksUsable(readyText)) {
+        void runAiScoreFromText(readyText);
+      } else {
         void runAiFromAudio(blob);
       }
     } catch {
@@ -415,7 +430,7 @@ export function useHablaYa() {
     } finally {
       finishingRef.current = false;
     }
-  }, [runAiFromAudio]);
+  }, [runAiFromAudio, runAiScoreFromText]);
 
   const setTranscript = useCallback((transcript: string) => {
     setState((prev) => ({ ...prev, transcript }));
@@ -459,8 +474,23 @@ export function useHablaYa() {
   const startRecording = useCallback(async () => {
     clearTimer();
     audioBlobRef.current = null;
+    liveWhisperRef.current = null;
     try {
-      const session = await startRecorderSession();
+      const category = turnMetaRef.current.category;
+      const live = createLiveWhisperSession({
+        category,
+        onUpdate: (text) => {
+          setState((prev) =>
+            prev.recording || prev.screen === 'record'
+              ? { ...prev, transcript: text }
+              : prev,
+          );
+        },
+      });
+      liveWhisperRef.current = live;
+      const session = await startRecorderSession({
+        onPcm: (samples) => live.pushPcm(samples),
+      });
       sessionRef.current = session;
       setState((prev) => ({
         ...prev,
@@ -484,6 +514,7 @@ export function useHablaYa() {
         });
       }, 1000);
     } catch {
+      liveWhisperRef.current = null;
       setState((prev) => ({
         ...prev,
         recording: false,

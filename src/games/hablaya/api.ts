@@ -20,7 +20,7 @@ export async function evaluateRecording(input: {
 }): Promise<HablaYaScoreResult> {
   let transcript = '';
   try {
-    const local = await transcribeLocally(input.blob, input.onStatus);
+    const local = await transcribeLocally(input.blob, input.onStatus, input.category);
     transcript = local.text;
     input.onTranscript?.(transcript);
   } catch (error) {

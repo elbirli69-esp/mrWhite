@@ -57,7 +57,7 @@ export default function HablaYaApp() {
           steps={[
             'Primero se descarga Whisper en el dispositivo (base/small; solo la primera vez).',
             'Configura tiempo, rondas, serio/inventado y cómo se puntúa.',
-            'Hablas, Whisper transcribe en local (puedes corregir) y DeepSeek + la mesa puntúan.',
+            'Hablas: Whisper transcribe en vivo y, al terminar, DeepSeek puntúa al momento.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
@@ -303,8 +303,17 @@ export default function HablaYaApp() {
               {state.secondsLeft}
             </p>
             <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              {state.recording ? 'Grabando…' : 'Pulsa para empezar a grabar'}
+              {state.recording
+                ? state.transcript.trim()
+                  ? 'Transcribiendo en vivo…'
+                  : 'Grabando… Whisper irá escribiendo en unos segundos'
+                : 'Pulsa para empezar a grabar'}
             </p>
+            {state.recording && state.transcript.trim() ? (
+              <p className="max-h-32 overflow-y-auto px-3 text-left text-[length:var(--text-body-sm)] text-[var(--color-text)]">
+                {state.transcript}
+              </p>
+            ) : null}
             {state.aiError ? (
               <p className="text-[length:var(--text-body-sm)] text-[var(--color-danger)]">{state.aiError}</p>
             ) : null}
@@ -347,12 +356,11 @@ export default function HablaYaApp() {
                 </p>
                 <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
                   {state.aiLoading
-                    ? state.aiStatus ||
-                      'Al terminar el turno se transcribe y se envía solo a DeepSeek…'
+                    ? state.aiStatus || 'Al terminar se envía a DeepSeek…'
                     : state.needsTranscript
                       ? 'Whisper local no sacó texto. Reintentad, o escuchad el audio y escribid un resumen a mano.'
                       : state.aiScore != null
-                        ? 'Ya puntuado automáticamente. Puedes corregir el texto y re-puntuar si hace falta.'
+                        ? 'Ya puntuado. Puedes corregir el texto y re-puntuar si hace falta.'
                         : 'Puedes corregir el texto y re-puntuar.'}
                 </p>
                 <textarea
@@ -363,7 +371,7 @@ export default function HablaYaApp() {
                   autoFocus={state.needsTranscript}
                   placeholder={
                     state.aiLoading && !state.transcript.trim()
-                      ? 'Transcribiendo… en cuanto haya texto se envía a DeepSeek.'
+                      ? 'Cerrando la transcripción en vivo…'
                       : state.aiLoading
                         ? 'Texto listo · puntuando con DeepSeek…'
                         : 'Aquí debería aparecer lo que se ha dicho del tema…'
@@ -400,8 +408,8 @@ export default function HablaYaApp() {
                 <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
                   {state.aiStatus || 'Procesando…'}
                   {state.transcript.trim()
-                    ? ' · Ya hay texto; DeepSeek está puntuando.'
-                    : ' · Whisper primero, luego DeepSeek solo.'}
+                    ? ' · Texto en vivo listo; DeepSeek está puntuando.'
+                    : ' · Cerrando Whisper en vivo, luego DeepSeek.'}
                 </p>
               ) : state.aiScore != null ? (
                 <>

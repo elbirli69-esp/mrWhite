@@ -5,12 +5,13 @@ import {
   extractTranscriptText,
   pickWhisperModelId,
   resampleTo16k,
+  spanishWhisperPrompt,
   toWhisperSamples,
 } from './whisperLocal';
 
 describe('HABLAYA_WHISPER_BUILD', () => {
   it('expone el stamp de la build actual (PWA)', () => {
-    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-8');
+    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-9');
   });
 });
 
@@ -25,6 +26,13 @@ describe('aggregateFileProgress', () => {
 
   it('devuelve 0 si no hay totales', () => {
     expect(aggregateFileProgress(new Map())).toBe(0);
+  });
+});
+
+describe('spanishWhisperPrompt', () => {
+  it('incluye la categoría para sesgar nombres', () => {
+    expect(spanishWhisperPrompt('Avión')).toMatch(/Avión/);
+    expect(spanishWhisperPrompt()).toMatch(/castellano/i);
   });
 });
 
