@@ -325,16 +325,16 @@ export function cardTone(kind: CardKind, revealed: boolean, showKey: boolean): s
   switch (kind) {
     case 'red':
       return revealed
-        ? 'border-rose-400/50 bg-rose-500/35 text-rose-50'
-        : 'border-rose-400/40 bg-rose-500/15 text-rose-100';
+        ? 'border-red-300 bg-red-600 text-white shadow-[0_0_0_2px_rgba(248,113,113,0.55)]'
+        : 'border-red-400 bg-red-600/55 text-red-50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.45)]';
     case 'blue':
       return revealed
-        ? 'border-sky-400/50 bg-sky-500/35 text-sky-50'
-        : 'border-sky-400/40 bg-sky-500/15 text-sky-100';
+        ? 'border-sky-200 bg-blue-600 text-white shadow-[0_0_0_2px_rgba(96,165,250,0.55)]'
+        : 'border-sky-300 bg-blue-600/55 text-sky-50 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]';
     case 'neutral':
       return revealed
-        ? 'border-stone-400/40 bg-stone-500/30 text-stone-100'
-        : 'border-stone-400/30 bg-stone-500/10 text-stone-200';
+        ? 'border-stone-300/50 bg-stone-500/45 text-stone-50'
+        : 'border-stone-400/35 bg-stone-500/15 text-stone-200';
     case 'assassin':
       // Veneno: contraste fuerte frente a neutrales (amarillo/negro, no gris).
       return revealed

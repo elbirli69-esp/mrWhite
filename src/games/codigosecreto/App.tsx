@@ -28,8 +28,8 @@ import { useCodigoSecreto } from './useCodigoSecreto';
 
 function teamChipClass(team: TeamColor): string {
   return team === 'red'
-    ? 'border-rose-400/40 bg-rose-500/20 text-rose-100'
-    : 'border-sky-400/40 bg-sky-500/20 text-sky-100';
+    ? 'border-red-300 bg-red-600/80 text-white'
+    : 'border-sky-200 bg-blue-600/80 text-white';
 }
 
 function kindLabel(kind: CardKind): string {
@@ -178,7 +178,11 @@ function WordBoard({
                 ☠
               </span>
             ) : null}
-            <span className={(card.revealed || showKey) && card.kind === 'assassin' ? 'font-black' : undefined}>
+            <span
+              className={
+                (card.revealed || showKey) && card.kind === 'assassin' ? 'font-black' : undefined
+              }
+            >
               {card.word}
             </span>
           </button>
