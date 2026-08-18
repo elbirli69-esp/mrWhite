@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -48,14 +48,31 @@ function kindLabel(kind: CardKind): string {
   }
 }
 
+/** Tipografía según longitud: las cortas ganan tamaño; las largas siguen cabiendo. */
+function wordTextClass(word: string, readable: boolean): string {
+  const len = word.replace(/\s+/g, '').length;
+  if (readable) {
+    if (len <= 7) return 'text-[clamp(0.82rem,3.6vw,1.05rem)]';
+    if (len <= 10) return 'text-[clamp(0.72rem,3.1vw,0.95rem)]';
+    if (len <= 13) return 'text-[clamp(0.64rem,2.7vw,0.85rem)]';
+    return 'text-[clamp(0.56rem,2.3vw,0.75rem)]';
+  }
+  if (len <= 7) return 'text-[clamp(0.76rem,3.4vw,1rem)]';
+  if (len <= 10) return 'text-[clamp(0.68rem,3vw,0.9rem)]';
+  if (len <= 13) return 'text-[clamp(0.6rem,2.55vw,0.8rem)]';
+  return 'text-[clamp(0.52rem,2.15vw,0.7rem)]';
+}
+
 function ScoreBoard({
   cards,
   startingTeam,
   activeTeam,
+  compact = false,
 }: {
   cards: readonly BoardCard[];
   startingTeam: TeamColor;
   activeTeam: TeamColor;
+  compact?: boolean;
 }) {
   const redNeed = remainingForTeam(cards, 'red');
   const blueNeed = remainingForTeam(cards, 'blue');
@@ -69,17 +86,23 @@ function ScoreBoard({
           <div
             key={team}
             className={[
-              'rounded-2xl border px-3 py-3',
+              'rounded-2xl border',
+              compact ? 'px-2.5 py-2' : 'px-3 py-3',
               teamChipClass(team),
               active ? 'ring-2 ring-[var(--color-accent)]/50' : '',
             ].join(' ')}
           >
-            <p className="text-[length:var(--text-body-sm)] opacity-80">
+            <p className={`opacity-80 ${compact ? 'text-xs' : 'text-[length:var(--text-body-sm)]'}`}>
               {teamLabel(team)}
               {team === startingTeam ? ' · empiezan' : ''}
               {active ? ' · turno' : ''}
             </p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl font-semibold">
+            <p
+              className={[
+                'font-[family-name:var(--font-display)] font-semibold',
+                compact ? 'mt-0.5 text-xl' : 'mt-1 text-2xl',
+              ].join(' ')}
+            >
               {need}
               <span className="text-base font-medium opacity-70"> / {total}</span>
             </p>
@@ -94,26 +117,40 @@ function WordBoard({
   cards,
   showKey,
   interactive,
-  onGuess,
+  selectedId = null,
+  onSelect,
+  readable = false,
 }: {
   cards: readonly BoardCard[];
   showKey: boolean;
   interactive: boolean;
-  onGuess?: (cardId: number) => void;
+  selectedId?: number | null;
+  onSelect?: (cardId: number) => void;
+  readable?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+    <div
+      className="-mx-1 grid grid-cols-5 gap-1 sm:-mx-0 sm:gap-1.5"
+      role="group"
+      aria-label="Tablero de Código Secreto"
+    >
       {cards.map((card) => {
-        const canTap = interactive && !card.revealed && onGuess;
+        const canTap = interactive && !card.revealed && onSelect;
+        const selected = selectedId === card.id;
         return (
           <button
             key={card.id}
             type="button"
             disabled={!canTap}
-            onClick={() => onGuess?.(card.id)}
+            onClick={() => onSelect?.(card.id)}
+            aria-pressed={interactive ? selected : undefined}
             className={[
-              'min-h-[3.1rem] rounded-xl border px-0.5 py-2 text-center text-[0.68rem] font-semibold leading-tight sm:min-h-[3.6rem] sm:text-[length:var(--text-body-sm)]',
+              'flex aspect-[5/6] w-full items-center justify-center rounded-lg border px-0.5 py-1 text-center font-semibold leading-snug tracking-tight break-words hyphens-auto sm:rounded-xl',
+              wordTextClass(card.word, readable),
               cardTone(card.kind, card.revealed, showKey),
+              selected
+                ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)] scale-[1.03] z-[1]'
+                : '',
               canTap
                 ? 'transition-transform active:scale-[0.97] hover:brightness-110'
                 : 'cursor-default',
@@ -155,10 +192,20 @@ export default function CodigoSecretoApp() {
   const { readableMode, setReadableMode } = useReadableMode();
   const game = useCodigoSecreto();
   const { state } = game;
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   useEffect(() => {
     if (state.screen === 'reveal' && state.revealed) vibrateReveal();
   }, [state.screen, state.revealed]);
+
+  useEffect(() => {
+    setSelectedCardId(null);
+  }, [state.screen, state.guessesLeft, state.activeTeam, state.clue?.word]);
+
+  const selectedCard =
+    selectedCardId !== null
+      ? (state.deal?.cards.find((card) => card.id === selectedCardId) ?? null)
+      : null;
 
   if (state.screen === 'pass' || state.screen === 'passClue') {
     return (
@@ -304,16 +351,16 @@ export default function CodigoSecretoApp() {
       )}
 
       {state.screen === 'clue' && state.deal && game.activeSpymaster && (
-        <div className="mx-auto flex w-full max-w-lg flex-col gap-5 pb-8">
+        <div className="mx-auto flex w-full max-w-lg flex-col gap-4 pb-8">
           <header>
             <p className={`inline-flex rounded-full border px-3 py-1 text-sm ${teamChipClass(state.activeTeam)}`}>
               Turno {teamLabel(state.activeTeam)}
             </p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold">
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
               Pista de {game.activeSpymaster.name}
             </h1>
-            <p className="mt-2 text-[var(--color-text-muted)]">
-              Mira el mapa de colores. Di una palabra y cuántas cartas (1–5) enlaza.
+            <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Mapa de colores abajo. Una palabra + número (1–5).
             </p>
           </header>
 
@@ -321,9 +368,10 @@ export default function CodigoSecretoApp() {
             cards={state.deal.cards}
             startingTeam={state.deal.startingTeam}
             activeTeam={state.activeTeam}
+            compact
           />
 
-          <WordBoard cards={state.deal.cards} showKey interactive={false} />
+          <WordBoard cards={state.deal.cards} showKey interactive={false} readable={readableMode} />
 
           <Card>
             <label className="mb-2 block text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
@@ -358,17 +406,19 @@ export default function CodigoSecretoApp() {
       )}
 
       {state.screen === 'guess' && state.deal && state.clue && (
-        <div className="mx-auto flex w-full max-w-lg flex-col gap-5 pb-8">
+        <div className="mx-auto flex w-full max-w-lg flex-col gap-4 pb-8">
           <header>
-            <p className={`inline-flex rounded-full border px-3 py-1 text-sm ${teamChipClass(state.activeTeam)}`}>
-              Adivinan los {teamLabel(state.activeTeam)}
-            </p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              «{state.clue.word}» · {state.clue.count}
-            </h1>
-            <p className="mt-2 text-[var(--color-text-muted)]">
-              Tocad hasta {state.guessesLeft} palabra{state.guessesLeft === 1 ? '' : 's'} más. Si
-              falláis, pasa el turno.
+            <div className="flex flex-wrap items-center gap-2">
+              <p className={`inline-flex rounded-full border px-3 py-1 text-sm ${teamChipClass(state.activeTeam)}`}>
+                {teamLabel(state.activeTeam)}
+              </p>
+              <p className="font-[family-name:var(--font-display)] text-xl font-semibold sm:text-2xl">
+                «{state.clue.word}» · {state.clue.count}
+              </p>
+            </div>
+            <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Quedan {state.guessesLeft} toque{state.guessesLeft === 1 ? '' : 's'}. Elegid carta y
+              confirmad.
             </p>
           </header>
 
@@ -376,6 +426,7 @@ export default function CodigoSecretoApp() {
             cards={state.deal.cards}
             startingTeam={state.deal.startingTeam}
             activeTeam={state.activeTeam}
+            compact
           />
 
           {state.lastGuessWord ? (
@@ -389,12 +440,38 @@ export default function CodigoSecretoApp() {
             cards={state.deal.cards}
             showKey={false}
             interactive
-            onGuess={game.guessCard}
+            selectedId={selectedCardId}
+            onSelect={(id) => setSelectedCardId((prev) => (prev === id ? null : id))}
+            readable={readableMode}
           />
 
-          <Button variant="ghost" onClick={game.endTurnEarly}>
-            Pasar turno
-          </Button>
+          {selectedCard ? (
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+              <p className="text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+                ¿Revelar esta carta?
+              </p>
+              <p className="mt-1 text-center font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
+                {selectedCard.word}
+              </p>
+              <div className="mt-4 flex flex-col gap-2">
+                <Button
+                  onClick={() => {
+                    game.guessCard(selectedCard.id);
+                    setSelectedCardId(null);
+                  }}
+                >
+                  Confirmar
+                </Button>
+                <Button variant="ghost" onClick={() => setSelectedCardId(null)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="ghost" onClick={game.endTurnEarly}>
+              Pasar turno
+            </Button>
+          )}
         </div>
       )}
 
@@ -407,7 +484,7 @@ export default function CodigoSecretoApp() {
             <p className="mt-2 text-[var(--color-text-muted)]">{state.endSubtitle}</p>
           </header>
 
-          <WordBoard cards={state.deal.cards} showKey interactive={false} />
+          <WordBoard cards={state.deal.cards} showKey interactive={false} readable={readableMode} />
 
           <div className="flex flex-col gap-3">
             <Button onClick={game.newGame}>Nueva partida</Button>
