@@ -116,17 +116,20 @@ function WordBoard({
   cards,
   showKey,
   interactive,
-  selectedId = null,
-  onSelect,
+  selectedIds = [],
+  maxSelectable = 0,
+  onToggle,
   readable = false,
 }: {
   cards: readonly BoardCard[];
   showKey: boolean;
   interactive: boolean;
-  selectedId?: number | null;
-  onSelect?: (cardId: number) => void;
+  selectedIds?: readonly number[];
+  maxSelectable?: number;
+  onToggle?: (cardId: number) => void;
   readable?: boolean;
 }) {
+  const selectedSet = new Set(selectedIds);
   return (
     <div
       className="-mx-1 grid grid-cols-5 gap-1 sm:-mx-0 sm:gap-1.5"
@@ -134,27 +137,35 @@ function WordBoard({
       aria-label="Tablero de Código Secreto"
     >
       {cards.map((card) => {
-        const canTap = interactive && !card.revealed && onSelect;
-        const selected = selectedId === card.id;
+        const selected = selectedSet.has(card.id);
+        const atCap = selectedIds.length >= maxSelectable && !selected;
+        const canTap = interactive && !card.revealed && onToggle && !atCap;
+        const canDeselect = interactive && !card.revealed && onToggle && selected;
         return (
           <button
             key={card.id}
             type="button"
-            disabled={!canTap}
-            onClick={() => onSelect?.(card.id)}
+            disabled={!canTap && !canDeselect}
+            onClick={() => onToggle?.(card.id)}
             aria-pressed={interactive ? selected : undefined}
             className={[
-              'flex aspect-[5/6] w-full items-center justify-center rounded-lg border px-0.5 py-1 text-center font-semibold leading-snug tracking-tight break-words hyphens-auto sm:rounded-xl',
+              'relative flex aspect-[5/6] w-full items-center justify-center rounded-lg border px-0.5 py-1 text-center font-semibold leading-snug tracking-tight break-words hyphens-auto sm:rounded-xl',
               wordTextClass(card.word, readable),
               cardTone(card.kind, card.revealed, showKey),
               selected
                 ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)] scale-[1.03] z-[1]'
                 : '',
-              canTap
+              canTap || canDeselect
                 ? 'transition-transform active:scale-[0.97] hover:brightness-110'
                 : 'cursor-default',
+              atCap && !selected ? 'opacity-55' : '',
             ].join(' ')}
           >
+            {selected ? (
+              <span className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)] text-[0.65rem] font-bold text-[var(--color-bg)]">
+                {selectedIds.indexOf(card.id) + 1}
+              </span>
+            ) : null}
             {card.word}
           </button>
         );
@@ -231,20 +242,18 @@ export default function CodigoSecretoApp() {
   const { readableMode, setReadableMode } = useReadableMode();
   const game = useCodigoSecreto();
   const { state } = game;
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (state.screen === 'reveal' && state.revealed) vibrateReveal();
   }, [state.screen, state.revealed]);
 
   useEffect(() => {
-    setSelectedCardId(null);
+    setSelectedIds([]);
   }, [state.screen, state.guessesLeft, state.activeTeam, state.clue?.word]);
 
-  const selectedCard =
-    selectedCardId !== null
-      ? (state.deal?.cards.find((card) => card.id === selectedCardId) ?? null)
-      : null;
+  const selectedCards =
+    state.deal?.cards.filter((card) => selectedIds.includes(card.id) && !card.revealed) ?? [];
 
   if (state.screen === 'pass' && game.nextRevealPlayer) {
     const next = game.nextRevealPlayer;
@@ -512,8 +521,8 @@ export default function CodigoSecretoApp() {
               </p>
             </div>
             <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Quedan {state.guessesLeft} toque{state.guessesLeft === 1 ? '' : 's'}. Elegid carta y
-              confirmad.
+              Marcad hasta {state.guessesLeft} carta{state.guessesLeft === 1 ? '' : 's'} (en orden) y
+              reveladlas. Si falláis, acaba el turno.
             </p>
           </header>
 
@@ -526,46 +535,60 @@ export default function CodigoSecretoApp() {
 
           {state.lastGuessWord ? (
             <p className="text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Última: «{state.lastGuessWord}»
+              Última revelada: «{state.lastGuessWord}»
               {state.lastGuessKind ? ` · ${kindLabel(state.lastGuessKind)}` : ''}
+              {state.guessesLeft > 0 ? ` · aún podéis marcar ${state.guessesLeft}` : ''}
             </p>
           ) : null}
 
           <WordBoard
             cards={state.deal.cards}
             showKey={false}
-            interactive
-            selectedId={selectedCardId}
-            onSelect={(id) => setSelectedCardId((prev) => (prev === id ? null : id))}
+            interactive={state.guessesLeft > 0}
+            selectedIds={selectedIds}
+            maxSelectable={state.guessesLeft}
+            onToggle={(id) => {
+              setSelectedIds((prev) => {
+                if (prev.includes(id)) return prev.filter((x) => x !== id);
+                if (prev.length >= state.guessesLeft) return prev;
+                return [...prev, id];
+              });
+            }}
             readable={readableMode}
           />
 
-          {selectedCard ? (
+          {selectedCards.length > 0 ? (
             <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
               <p className="text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                ¿Revelar esta carta?
+                {selectedCards.length} de {state.guessesLeft} seleccionada
+                {selectedCards.length === 1 ? '' : 's'}
               </p>
-              <p className="mt-1 text-center font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
-                {selectedCard.word}
+              <p className="mt-2 text-center font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight leading-snug">
+                {selectedCards.map((card) => card.word).join(' · ')}
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 <Button
                   onClick={() => {
-                    game.guessCard(selectedCard.id);
-                    setSelectedCardId(null);
+                    game.guessCards(selectedIds);
+                    setSelectedIds([]);
                   }}
                 >
-                  Confirmar
+                  Revelar {selectedCards.length} carta{selectedCards.length === 1 ? '' : 's'}
                 </Button>
-                <Button variant="ghost" onClick={() => setSelectedCardId(null)}>
-                  Cancelar
+                <Button variant="ghost" onClick={() => setSelectedIds([])}>
+                  Quitar selección
                 </Button>
               </div>
             </div>
           ) : (
-            <Button variant="ghost" onClick={game.endTurnEarly}>
-              Pasar turno
-            </Button>
+            <div className="flex flex-col gap-2">
+              <p className="text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+                Tocad las cartas del tablero para marcarlas. No hace falta usar las {state.guessesLeft}.
+              </p>
+              <Button variant="ghost" onClick={game.endTurnEarly}>
+                Dejar de adivinar · pasar turno
+              </Button>
+            </div>
           )}
         </div>
       )}

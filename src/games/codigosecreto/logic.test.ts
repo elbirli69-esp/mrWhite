@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyGuess,
+  applyGuesses,
   BOARD_SIZE,
   buildKindLayout,
   createDeal,
@@ -97,27 +98,63 @@ describe('codigo secreto logic', () => {
     }
   });
 
-  it('permite ganar al completar las palabras del equipo', () => {
-    const cards = Array.from({ length: BOARD_SIZE }, (_, id) => ({
+  it('permite varias adivinanzas correctas en el mismo turno', () => {
+    const kinds = buildKindLayout('red');
+    const cards = kinds.map((kind, id) => ({
       id,
-      word: `W${id}`,
-      kind: (id === 0 ? 'red' : id === 1 ? 'blue' : 'neutral') as const,
-      revealed: id !== 0,
+      word: `P${id}`,
+      kind,
+      revealed: false,
     }));
-    // Force classic counts for remaining helper: only one red left unrevealed.
-    const result = applyGuess({
-      cards: cards.map((c, id) =>
-        id === 0
-          ? { ...c, kind: 'red', revealed: false }
-          : { ...c, kind: id < 9 ? 'red' : 'blue', revealed: true },
-      ),
-      cardId: 0,
+    const teamCards = cards.filter((c) => c.kind === 'red').slice(0, 2);
+    const result = applyGuesses({
+      cards,
+      cardIds: teamCards.map((c) => c.id),
       activeTeam: 'red',
+      guessesLeft: 3,
+    });
+    expect(result.terminal).toBeNull();
+    expect(result.guessesLeft).toBe(1);
+    expect(teamCards.every((c) => result.cards.find((x) => x.id === c.id)?.revealed)).toBe(true);
+  });
+
+  it('si aciertas exactamente el número de la pista, acaba el turno', () => {
+    const kinds = buildKindLayout('blue');
+    const cards = kinds.map((kind, id) => ({
+      id,
+      word: `B${id}`,
+      kind,
+      revealed: false,
+    }));
+    const teamCard = cards.find((c) => c.kind === 'blue')!;
+    const result = applyGuesses({
+      cards,
+      cardIds: [teamCard.id],
+      activeTeam: 'blue',
       guessesLeft: 1,
     });
-    expect(result?.outcome.type).toBe('win');
-    if (result?.outcome.type === 'win') {
-      expect(result.outcome.winner).toBe('red');
+    expect(result.terminal?.type).toBe('endTurn');
+    if (result.terminal?.type === 'endTurn') {
+      expect(result.terminal.nextTeam).toBe('red');
     }
+  });
+
+  it('con pista de 3, el primer acierto no pasa el turno', () => {
+    const kinds = buildKindLayout('red');
+    const cards = kinds.map((kind, id) => ({
+      id,
+      word: `R${id}`,
+      kind,
+      revealed: false,
+    }));
+    const teamCard = cards.find((c) => c.kind === 'red')!;
+    const result = applyGuesses({
+      cards,
+      cardIds: [teamCard.id],
+      activeTeam: 'red',
+      guessesLeft: 3,
+    });
+    expect(result.terminal).toBeNull();
+    expect(result.guessesLeft).toBe(2);
   });
 });
