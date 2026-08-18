@@ -32,6 +32,7 @@ export type CodigoSecretoScreen =
   | 'ready'
   | 'passClue'
   | 'clue'
+  | 'passGuess'
   | 'guess'
   | 'end';
 
