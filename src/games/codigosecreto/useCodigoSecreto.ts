@@ -22,7 +22,6 @@ import { loadJson, loadNames, resizeNames, saveJson, validateNames } from '../sh
 
 const CONFIG_KEY = 'codigosecreto-config';
 const NAMES_KEY = 'codigosecreto-names';
-const PASS_MS = 1000;
 
 interface State {
   screen: CodigoSecretoScreen;
@@ -103,6 +102,10 @@ export function useCodigoSecreto() {
   );
 
   const currentPlayer = state.players[state.currentPlayerIndex] ?? null;
+  const nextRevealPlayer =
+    state.screen === 'pass'
+      ? (state.players[state.currentPlayerIndex + 1] ?? null)
+      : null;
   const activeSpymaster =
     state.players.find((p) => p.team === state.activeTeam && p.isSpymaster) ?? null;
 
@@ -190,32 +193,32 @@ export function useCodigoSecreto() {
     });
   }, []);
 
-  useEffect(() => {
-    if (state.screen !== 'pass') return undefined;
-    const timer = window.setTimeout(() => {
-      setState((prev) => ({
-        ...prev,
-        screen: 'reveal',
-        currentPlayerIndex: prev.currentPlayerIndex + 1,
-        revealed: false,
-      }));
-    }, PASS_MS);
-    return () => window.clearTimeout(timer);
-  }, [state.screen]);
-
-  useEffect(() => {
-    if (state.screen !== 'passClue') return undefined;
-    const timer = window.setTimeout(() => {
-      setState((prev) => ({
-        ...prev,
-        screen: 'clue',
-        clueDraft: '',
-        clueCount: 1,
-        clueError: null,
-      }));
-    }, PASS_MS);
-    return () => window.clearTimeout(timer);
-  }, [state.screen]);
+  /** Avanza solo cuando la persona correcta confirma que tiene el móvil. */
+  const confirmHandoff = useCallback(() => {
+    setState((prev) => {
+      if (prev.screen === 'pass') {
+        return {
+          ...prev,
+          screen: 'reveal',
+          currentPlayerIndex: prev.currentPlayerIndex + 1,
+          revealed: false,
+        };
+      }
+      if (prev.screen === 'passClue') {
+        return {
+          ...prev,
+          screen: 'clue',
+          clueDraft: '',
+          clueCount: 1,
+          clueError: null,
+        };
+      }
+      if (prev.screen === 'passGuess') {
+        return { ...prev, screen: 'guess' };
+      }
+      return prev;
+    });
+  }, []);
 
   const beginPlay = useCallback(() => {
     setState((prev) => ({
@@ -243,7 +246,7 @@ export function useCodigoSecreto() {
       if (error) return { ...prev, clueError: error };
       return {
         ...prev,
-        screen: 'guess',
+        screen: 'passGuess',
         clue: { word: prev.clueDraft.trim(), count: prev.clueCount },
         guessesLeft: prev.clueCount,
         clueError: null,
@@ -343,6 +346,7 @@ export function useCodigoSecreto() {
   return {
     state,
     currentPlayer,
+    nextRevealPlayer,
     activeSpymaster,
     configValidation,
     goHome,
@@ -353,6 +357,7 @@ export function useCodigoSecreto() {
     startDeal,
     revealRole,
     passToNext,
+    confirmHandoff,
     beginPlay,
     setClueDraft,
     setClueCount,

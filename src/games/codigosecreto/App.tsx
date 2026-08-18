@@ -6,7 +6,6 @@ import { NumberStepper } from '../../components/NumberStepper';
 import { ScreenShell } from '../../components/ScreenShell';
 import { useReadableMode } from '../../hooks/useReadableMode';
 import { NamesPage } from '../../pages/NamesPage';
-import { PassPhonePage } from '../../pages/PassPhonePage';
 import { vibrateReveal } from '../../utils/game';
 import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { ConfigShell } from '../shared/ConfigShell';
@@ -164,6 +163,46 @@ function WordBoard({
   );
 }
 
+function HandoffScreen({
+  title,
+  recipient,
+  roleLine,
+  warning,
+  buttonLabel,
+  contextLine,
+  onConfirm,
+}: {
+  title: string;
+  recipient: string;
+  roleLine?: string;
+  warning: string;
+  buttonLabel: string;
+  contextLine?: string;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-black px-6 py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="flex w-full max-w-md flex-col gap-6 text-center"
+      >
+        <p className="text-sm font-medium tracking-wide text-stone-400 uppercase">{title}</p>
+        <h1 className="font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          {recipient}
+        </h1>
+        {roleLine ? <p className="text-lg text-stone-300">{roleLine}</p> : null}
+        {contextLine ? <p className="text-[length:var(--text-body-sm)] text-stone-400">{contextLine}</p> : null}
+        <div className="rounded-2xl border border-amber-400/35 bg-amber-500/10 px-4 py-4 text-left">
+          <p className="text-[length:var(--text-body-sm)] leading-relaxed text-amber-100">{warning}</p>
+        </div>
+        <Button onClick={onConfirm}>{buttonLabel}</Button>
+      </motion.div>
+    </div>
+  );
+}
+
 function TeamList({ players }: { players: readonly CodigoSecretoPlayer[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
@@ -207,10 +246,59 @@ export default function CodigoSecretoApp() {
       ? (state.deal?.cards.find((card) => card.id === selectedCardId) ?? null)
       : null;
 
-  if (state.screen === 'pass' || state.screen === 'passClue') {
+  if (state.screen === 'pass' && game.nextRevealPlayer) {
+    const next = game.nextRevealPlayer;
     return (
-      <ScreenShell screenKey={state.screen} bleed>
-        <PassPhonePage />
+      <ScreenShell screenKey="pass" bleed>
+        <HandoffScreen
+          title="Pasa el móvil a"
+          recipient={next.name}
+          roleLine={`Jugador ${state.currentPlayerIndex + 2} de ${state.players.length}`}
+          warning={`Solo ${next.name} debe mirar la pantalla. El resto, apartad la vista hasta que diga «listo».`}
+          buttonLabel={`Soy ${next.name}`}
+          onConfirm={game.confirmHandoff}
+        />
+      </ScreenShell>
+    );
+  }
+
+  if (state.screen === 'passClue' && game.activeSpymaster) {
+    const spy = game.activeSpymaster;
+    const context =
+      state.lastGuessWord != null
+        ? `Última carta: «${state.lastGuessWord}»${state.lastGuessKind ? ` · ${kindLabel(state.lastGuessKind)}` : ''}. Turno de los ${teamLabel(state.activeTeam)}.`
+        : `Empieza el turno de los ${teamLabel(state.activeTeam)}.`;
+    return (
+      <ScreenShell screenKey="passClue" bleed>
+        <HandoffScreen
+          title="Pasa el móvil a"
+          recipient={spy.name}
+          roleLine={`Jefe de espías · ${teamLabel(spy.team)}`}
+          contextLine={context}
+          warning={`No pulses todavía. Entrégaselo a ${spy.name}. En la siguiente pantalla sale el mapa de colores: si lo mira otra persona, se rompe la partida.`}
+          buttonLabel={`Soy ${spy.name} · ver mapa`}
+          onConfirm={game.confirmHandoff}
+        />
+      </ScreenShell>
+    );
+  }
+
+  if (state.screen === 'passGuess' && state.clue) {
+    return (
+      <ScreenShell screenKey="passGuess" bleed>
+        <HandoffScreen
+          title="Ahora pásalo a la mesa"
+          recipient={`Agentes · ${teamLabel(state.activeTeam)}`}
+          roleLine={`Pista: «${state.clue.word}» · ${state.clue.count}`}
+          contextLine={
+            game.activeSpymaster
+              ? `${game.activeSpymaster.name} (jefe) no debe tocar el móvil al adivinar.`
+              : undefined
+          }
+          warning="El mapa de colores ya no se muestra. Dad el móvil a quien vaya a tocar las cartas. El jefe de espías puede mirar de lejos, pero no la pantalla de cerca."
+          buttonLabel="Abrir tablero para adivinar"
+          onConfirm={game.confirmHandoff}
+        />
       </ScreenShell>
     );
   }
@@ -218,7 +306,11 @@ export default function CodigoSecretoApp() {
   return (
     <ScreenShell
       screenKey={state.screen}
-      centered={state.screen !== 'names' && state.screen !== 'guess' && state.screen !== 'clue'}
+      centered={
+        state.screen !== 'names' &&
+        state.screen !== 'guess' &&
+        state.screen !== 'clue'
+      }
     >
       {state.screen === 'home' && (
         <GameHome
@@ -294,7 +386,7 @@ export default function CodigoSecretoApp() {
                   className="flex flex-col gap-4"
                 >
                   <p className="text-center text-[var(--color-text-muted)]">
-                    Solo {game.currentPlayer.name} debe mirar.
+                    Apartad la vista. Solo {game.currentPlayer.name} debe mirar y pulsar.
                   </p>
                   <Button onClick={game.revealRole}>Ver mi equipo</Button>
                 </motion.div>
@@ -320,8 +412,8 @@ export default function CodigoSecretoApp() {
                   </div>
                   <Button onClick={game.passToNext}>
                     {state.currentPlayerIndex >= state.players.length - 1
-                      ? 'Listos'
-                      : 'Siguiente jugador'}
+                      ? 'Listos · ver equipos'
+                      : 'Ocultar y pasar el móvil'}
                   </Button>
                 </motion.div>
               )}
@@ -337,12 +429,15 @@ export default function CodigoSecretoApp() {
               Equipos listos
             </h1>
             <p className="mt-2 text-[var(--color-text-muted)]">
-              Empiezan los {teamLabel(state.deal.startingTeam)}. Pasad el móvil a su jefe de espías.
+              Empiezan los {teamLabel(state.deal.startingTeam)}. Al continuar, el móvil irá al jefe
+              de espías de ese equipo (mapa de colores). No lo mires si no eres tú.
             </p>
           </header>
           <TeamList players={state.players} />
           <div className="flex flex-col gap-3">
-            <Button onClick={game.beginPlay}>Empezar partida</Button>
+            <Button onClick={game.beginPlay}>
+              Pasar al jefe de {teamLabel(state.deal.startingTeam)}
+            </Button>
             <Button variant="ghost" onClick={game.goConfig}>
               Cambiar configuración
             </Button>
@@ -360,7 +455,7 @@ export default function CodigoSecretoApp() {
               Pista de {game.activeSpymaster.name}
             </h1>
             <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Mapa de colores abajo. Una palabra + número (1–5).
+              Solo {game.activeSpymaster.name} debe mirar este mapa. El resto, apartados.
             </p>
           </header>
 
@@ -399,7 +494,7 @@ export default function CodigoSecretoApp() {
               </p>
             ) : null}
             <div className="mt-5">
-              <Button onClick={game.submitClue}>Dar pista</Button>
+              <Button onClick={game.submitClue}>Dar pista y pasar a la mesa</Button>
             </div>
           </Card>
         </div>
