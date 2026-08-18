@@ -34,6 +34,7 @@ export type CodigoSecretoScreen =
   | 'clue'
   | 'passGuess'
   | 'guess'
+  | 'guessResult'
   | 'end';
 
 export interface CodigoSecretoPlayer {
@@ -258,6 +259,7 @@ export function applyGuesses(params: {
 }): {
   cards: BoardCard[];
   guessesLeft: number;
+  revealedBatch: BoardCard[];
   lastCard: BoardCard | null;
   terminal:
     | { type: 'win'; winner: TeamColor }
@@ -268,6 +270,7 @@ export function applyGuesses(params: {
   let cards = params.cards;
   let guessesLeft = params.guessesLeft;
   let lastCard: BoardCard | null = null;
+  const revealedBatch: BoardCard[] = [];
 
   for (const cardId of params.cardIds) {
     if (guessesLeft <= 0) break;
@@ -280,11 +283,13 @@ export function applyGuesses(params: {
     if (!result) continue;
     cards = result.cards;
     lastCard = result.outcome.card;
+    revealedBatch.push(result.outcome.card);
 
     if (result.outcome.type === 'assassin') {
       return {
         cards,
         guessesLeft: 0,
+        revealedBatch,
         lastCard,
         terminal: { type: 'assassin', winner: result.outcome.winner },
       };
@@ -293,6 +298,7 @@ export function applyGuesses(params: {
       return {
         cards,
         guessesLeft: 0,
+        revealedBatch,
         lastCard,
         terminal: { type: 'win', winner: result.outcome.winner },
       };
@@ -301,6 +307,7 @@ export function applyGuesses(params: {
       return {
         cards,
         guessesLeft: 0,
+        revealedBatch,
         lastCard,
         terminal: { type: 'endTurn', nextTeam: result.outcome.nextTeam },
       };
@@ -308,7 +315,7 @@ export function applyGuesses(params: {
     guessesLeft = result.outcome.guessesLeft;
   }
 
-  return { cards, guessesLeft, lastCard, terminal: null };
+  return { cards, guessesLeft, revealedBatch, lastCard, terminal: null };
 }
 
 export function cardTone(kind: CardKind, revealed: boolean, showKey: boolean): string {
@@ -329,10 +336,51 @@ export function cardTone(kind: CardKind, revealed: boolean, showKey: boolean): s
         ? 'border-stone-400/40 bg-stone-500/30 text-stone-100'
         : 'border-stone-400/30 bg-stone-500/10 text-stone-200';
     case 'assassin':
+      // Veneno: contraste fuerte frente a neutrales (amarillo/negro, no gris).
       return revealed
-        ? 'border-zinc-200/40 bg-zinc-950 text-zinc-100'
-        : 'border-zinc-400/50 bg-zinc-900/80 text-zinc-100';
+        ? 'border-yellow-300 bg-[repeating-linear-gradient(-45deg,#111,#111_6px,#facc15_6px,#facc15_12px)] text-black shadow-[0_0_0_2px_rgba(250,204,21,0.85)]'
+        : 'border-yellow-300/80 bg-yellow-400/20 text-yellow-100 shadow-[inset_0_0_0_1px_rgba(250,204,21,0.35)]';
     default:
       return 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]';
   }
+}
+
+export type GuessResultNext =
+  | { type: 'continue' }
+  | { type: 'endTurn'; nextTeam: TeamColor }
+  | { type: 'win'; winner: TeamColor }
+  | { type: 'assassin'; winner: TeamColor };
+
+export interface GuessResultState {
+  activeTeam: TeamColor;
+  items: Array<{ word: string; kind: CardKind }>;
+  guessesLeft: number;
+  next: GuessResultNext;
+}
+
+export function buildGuessResult(params: {
+  activeTeam: TeamColor;
+  revealedBatch: readonly BoardCard[];
+  guessesLeft: number;
+  terminal:
+    | { type: 'win'; winner: TeamColor }
+    | { type: 'assassin'; winner: TeamColor }
+    | { type: 'endTurn'; nextTeam: TeamColor }
+    | null;
+}): GuessResultState {
+  const next: GuessResultNext =
+    params.terminal == null
+      ? { type: 'continue' }
+      : params.terminal.type === 'endTurn'
+        ? { type: 'endTurn', nextTeam: params.terminal.nextTeam }
+        : params.terminal.type === 'win'
+          ? { type: 'win', winner: params.terminal.winner }
+          : { type: 'assassin', winner: params.terminal.winner };
+
+  return {
+    activeTeam: params.activeTeam,
+    items: params.revealedBatch.map((card) => ({ word: card.word, kind: card.kind })),
+    guessesLeft: params.guessesLeft,
+    next,
+  };
 }

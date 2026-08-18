@@ -3,6 +3,7 @@ import {
   applyGuess,
   applyGuesses,
   BOARD_SIZE,
+  buildGuessResult,
   buildKindLayout,
   createDeal,
   createPlayers,
@@ -115,6 +116,7 @@ describe('codigo secreto logic', () => {
     });
     expect(result.terminal).toBeNull();
     expect(result.guessesLeft).toBe(1);
+    expect(result.revealedBatch).toHaveLength(2);
     expect(teamCards.every((c) => result.cards.find((x) => x.id === c.id)?.revealed)).toBe(true);
   });
 
@@ -134,6 +136,7 @@ describe('codigo secreto logic', () => {
       guessesLeft: 1,
     });
     expect(result.terminal?.type).toBe('endTurn');
+    expect(result.revealedBatch).toHaveLength(1);
     if (result.terminal?.type === 'endTurn') {
       expect(result.terminal.nextTeam).toBe('red');
     }
@@ -156,5 +159,50 @@ describe('codigo secreto logic', () => {
     });
     expect(result.terminal).toBeNull();
     expect(result.guessesLeft).toBe(2);
+  });
+
+  it('clasifica el lote revelado para la pantalla de resultado', () => {
+    const kinds = buildKindLayout('red');
+    const cards = kinds.map((kind, id) => ({
+      id,
+      word: `X${id}`,
+      kind,
+      revealed: false,
+    }));
+    const own = cards.find((c) => c.kind === 'red')!;
+    const rival = cards.find((c) => c.kind === 'blue')!;
+    const result = applyGuesses({
+      cards,
+      cardIds: [own.id, rival.id],
+      activeTeam: 'red',
+      guessesLeft: 3,
+    });
+    const summary = buildGuessResult({
+      activeTeam: 'red',
+      revealedBatch: result.revealedBatch,
+      guessesLeft: result.guessesLeft,
+      terminal: result.terminal,
+    });
+    expect(summary.items.map((i) => i.kind)).toEqual(['red', 'blue']);
+    expect(summary.next.type).toBe('endTurn');
+  });
+
+  it('el veneno termina la partida en el lote', () => {
+    const kinds = buildKindLayout('red');
+    const cards = kinds.map((kind, id) => ({
+      id,
+      word: `V${id}`,
+      kind,
+      revealed: false,
+    }));
+    const assassin = cards.find((c) => c.kind === 'assassin')!;
+    const result = applyGuesses({
+      cards,
+      cardIds: [assassin.id],
+      activeTeam: 'red',
+      guessesLeft: 2,
+    });
+    expect(result.terminal?.type).toBe('assassin');
+    expect(result.revealedBatch[0]?.kind).toBe('assassin');
   });
 });
