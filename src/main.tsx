@@ -128,6 +128,11 @@ async function boot() {
       title: 'Unánimo',
       loader: () => import('./games/unanimo/App'),
     },
+    '/papelitos': {
+      app: 'papelitos',
+      title: 'Papelitos',
+      loader: () => import('./games/papelitos/App'),
+    },
     '/hablaya': {
       app: 'hablaya',
       title: 'Habla ya',

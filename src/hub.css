@@ -389,6 +389,20 @@ html[data-app='hub'] #root {
   outline: none;
 }
 
+.hub-choice--papelitos {
+  background:
+    linear-gradient(145deg, rgba(30, 26, 16, 0.94), rgba(42, 34, 18, 0.9));
+  border-color: rgba(220, 180, 90, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--papelitos:hover,
+.hub-choice--papelitos:focus-visible {
+  border-color: rgba(220, 180, 90, 0.6);
+  box-shadow: 0 22px 60px rgba(220, 180, 90, 0.12);
+  outline: none;
+}
+
 .hub-choice--hablaya {
   background:
     linear-gradient(145deg, rgba(28, 18, 24, 0.94), rgba(42, 22, 32, 0.9));
@@ -461,6 +475,11 @@ html[data-app='hub'] #root {
   font-size: clamp(2.2rem, 7.5vw, 3rem);
 }
 
+.hub-choice--papelitos .hub-choice-name {
+  color: #ffe9c8;
+  font-size: clamp(2.1rem, 7vw, 2.8rem);
+}
+
 .hub-choice--hablaya .hub-choice-name {
   color: #ffe4ec;
   font-size: clamp(2.2rem, 7.5vw, 3rem);
@@ -519,6 +538,10 @@ html[data-app='hub'] #root {
 
 .hub-choice--unanimo .hub-choice-cta {
   color: #8fd0e8;
+}
+
+.hub-choice--papelitos .hub-choice-cta {
+  color: #e8c878;
 }
 
 .hub-choice--hablaya .hub-choice-cta {
