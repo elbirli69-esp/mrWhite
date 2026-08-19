@@ -14,6 +14,7 @@ type GameTone =
   | 'justone'
   | 'fakeartist'
   | 'unanimo'
+  | 'papelitos'
   | 'hablaya'
   | 'calm'
   | 'bulardo'
@@ -92,6 +93,14 @@ const partyGames: HubGame[] = [
     line: 'Coincide con el grupo, no intentes ser el más original.',
     cta: 'Jugar',
     tone: 'unanimo',
+    group: 'pistas',
+  },
+  {
+    href: '/papelitos',
+    name: 'Papelitos',
+    line: 'Bote, tres rondas: describir, una palabra y mímica.',
+    cta: 'Jugar',
+    tone: 'papelitos',
     group: 'pistas',
   },
   {
