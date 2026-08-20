@@ -417,6 +417,20 @@ html[data-app='hub'] #root {
   outline: none;
 }
 
+.hub-choice--snakeoil {
+  background:
+    linear-gradient(145deg, rgba(28, 24, 14, 0.94), rgba(40, 32, 16, 0.9));
+  border-color: rgba(180, 200, 80, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hub-choice--snakeoil:hover,
+.hub-choice--snakeoil:focus-visible {
+  border-color: rgba(180, 200, 80, 0.6);
+  box-shadow: 0 22px 60px rgba(180, 200, 80, 0.12);
+  outline: none;
+}
+
 .hub-choice-name {
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 9vw, 3.6rem);
@@ -485,6 +499,11 @@ html[data-app='hub'] #root {
   font-size: clamp(2.2rem, 7.5vw, 3rem);
 }
 
+.hub-choice--snakeoil .hub-choice-name {
+  color: #eef6c8;
+  font-size: clamp(2rem, 7vw, 2.8rem);
+}
+
 .hub-choice-line {
   max-width: 22rem;
   color: var(--hub-muted);
@@ -546,6 +565,10 @@ html[data-app='hub'] #root {
 
 .hub-choice--hablaya .hub-choice-cta {
   color: #f0a0b8;
+}
+
+.hub-choice--snakeoil .hub-choice-cta {
+  color: #c8d878;
 }
 
 @media (min-width: 720px) {

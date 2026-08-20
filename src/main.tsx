@@ -138,6 +138,11 @@ async function boot() {
       title: 'Habla ya',
       loader: () => import('./games/hablaya/App'),
     },
+    '/snakeoil': {
+      app: 'snakeoil',
+      title: 'Snake Oil',
+      loader: () => import('./games/snakeoil/App'),
+    },
   };
 
   const party = partyRoutes[path];
