@@ -1,46 +1,80 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest'
 import {
   buildEvaluateSystemPrompt,
   buildObjectionSystemPrompt,
   parseEvaluation,
   parseObjection,
-} from './snakeoilScore';
+} from './snakeoilScore'
 
-describe('snakeoil score schema', () => {
-  it('prompts piden JSON estructurado', () => {
-    expect(buildEvaluateSystemPrompt()).toMatch(/customer_fit/);
-    expect(buildEvaluateSystemPrompt()).toMatch(/funny_comment/);
-    expect(buildObjectionSystemPrompt()).toMatch(/objection/);
-  });
+describe('snakeoil score schema v3', () => {
+  it('prompts piden JSON de juego (no examen)', () => {
+    expect(buildEvaluateSystemPrompt()).toMatch(/customer_buy_probability/)
+    expect(buildEvaluateSystemPrompt()).toMatch(/winning_style/)
+    expect(buildEvaluateSystemPrompt()).toMatch(/JUEGO/)
+    expect(buildObjectionSystemPrompt('hard')).toMatch(/DIFÍCIL/)
+    expect(buildObjectionSystemPrompt('easy')).toMatch(/FÁCIL/)
+  })
 
-  it('parsea evaluación completa', () => {
+  it('parsea evaluación con buy probability y defensa', () => {
     const parsed = parseEvaluation(
       JSON.stringify({
-        score: 82,
+        score: 87,
         persuasion: 91,
-        creativity: 87,
+        creativity: 96,
         improvisation: 84,
-        coherence: 76,
-        humor: 89,
-        customer_fit: 93,
-        objection_handling: 80,
-        clarity: 70,
-        originality: 88,
-        fluency: 75,
-        word_use: 90,
+        coherence: 63,
+        humor: 90,
+        adaptation: 92,
+        defense: 88,
+        customer_buy_probability: 38,
         strengths: ['Bien', 'Muy bien'],
         weaknesses: ['Mejorable'],
-        best_moment: 'El cierre',
-        funny_comment: 'Ridículamente convincente.',
+        best_moment: 'El calcetín antena',
+        funny_comment: 'Contra todo pronóstico.',
+        customer_verdict: 'Lo odio. Lo necesito.',
         label: 'Excelente vendedor',
+        badges: ['absurd_works', 'actor'],
+        winning_style: 'humor',
       }),
-    );
-    expect(parsed?.score).toBe(82);
-    expect(parsed?.dimensions.customerFit).toBe(93);
-    expect(parsed?.label).toMatch(/Excelente/);
-  });
+    )
+    expect(parsed?.score).toBe(87)
+    expect(parsed?.customerBuyProbability).toBe(38)
+    expect(parsed?.dimensions.adaptation).toBe(92)
+    expect(parsed?.dimensions.defense).toBe(88)
+    expect(parsed?.customerVerdict).toMatch(/odio/i)
+    expect(parsed?.winningStyle).toBe('humor')
+    expect(parsed?.badges).toContain('absurd_works')
+  })
 
-  it('parsea objeción', () => {
-    expect(parseObjection('{"objection":"¿Y por qué 300€?"}')).toMatch(/300/);
-  });
-});
+  it('parsea objeción en personaje', () => {
+    expect(parseObjection('{"objection":"¿Este paraguas me protege del sol?","kind":"logic"}')?.objection).toMatch(
+      /paraguas/,
+    )
+  })
+
+  it('acepta customer_fit legado como adaptation', () => {
+    const parsed = parseEvaluation(
+      JSON.stringify({
+        score: 70,
+        persuasion: 70,
+        creativity: 70,
+        improvisation: 70,
+        coherence: 70,
+        humor: 70,
+        customer_fit: 81,
+        objection_handling: 77,
+        customer_buy_probability: 50,
+        strengths: ['a'],
+        weaknesses: ['b'],
+        best_moment: 'x',
+        funny_comment: 'y',
+        customer_verdict: 'z',
+        label: 'ok',
+        badges: [],
+        winning_style: 'balanced',
+      }),
+    )
+    expect(parsed?.dimensions.adaptation).toBe(81)
+    expect(parsed?.dimensions.defense).toBe(77)
+  })
+})

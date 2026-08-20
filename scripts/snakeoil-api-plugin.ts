@@ -3,6 +3,9 @@ import type { Plugin } from 'vite'
 import {
   evaluateSnakeOilRound,
   generateSnakeOilObjection,
+  type CustomerProfileInput,
+  type ConversationTurnInput,
+  type Difficulty,
 } from '../api/_lib/snakeoilScore.js'
 
 async function readBody(req: IncomingMessage): Promise<unknown> {
@@ -37,6 +40,52 @@ function asNumber(value: unknown, fallback: number): number {
   return Number.isFinite(n) ? n : fallback
 }
 
+function asDifficulty(value: unknown): Difficulty {
+  if (value === 'easy' || value === 'hard' || value === 'normal') return value
+  return 'normal'
+}
+
+function asCustomer(body: Record<string, unknown>): CustomerProfileInput {
+  const nested = (body.customer && typeof body.customer === 'object'
+    ? (body.customer as Record<string, unknown>)
+    : null)
+  const name =
+    asString(nested?.name) ||
+    asString(body.customerTitle) ||
+    asString(body.customer) ||
+    'Cliente'
+  return {
+    name,
+    description: asString(nested?.description) || asString(body.customerDescription) || name,
+    personality: asString(nested?.personality) || asString(body.customerPersonality) || 'Escéptico',
+    need:
+      asString(nested?.need) ||
+      asString(body.customerNeed) ||
+      asString(body.customer) ||
+      name,
+    secretConcern: asString(nested?.secretConcern) || asString(body.secretConcern) || '',
+    patience: asNumber(nested?.patience ?? body.patience, 50),
+    skepticism: asNumber(nested?.skepticism ?? body.skepticism, 50),
+    humor: asNumber(nested?.humor ?? body.humor, 50),
+  }
+}
+
+function asConversation(body: Record<string, unknown>): ConversationTurnInput[] {
+  if (Array.isArray(body.conversation)) {
+    return body.conversation
+      .map((t) => {
+        if (!t || typeof t !== 'object') return null
+        const row = t as Record<string, unknown>
+        const role = asString(row.role)
+        const text = asString(row.text)
+        if (!role || !text) return null
+        return { role, text }
+      })
+      .filter((t): t is ConversationTurnInput => !!t)
+  }
+  return []
+}
+
 /** Sirve /api/snakeoil en vite. */
 export function snakeoilApiPlugin(): Plugin {
   return {
@@ -58,34 +107,42 @@ export function snakeoilApiPlugin(): Plugin {
 
           const body = (await readBody(req)) as Record<string, unknown>
           const action = asString(body.action) || 'evaluate'
-          const customerTitle = asString(body.customerTitle) || asString(body.customer)
-          const customerNeed = asString(body.customerNeed) || customerTitle
+          const customer = asCustomer(body)
           const productName = asString(body.productName) || asString(body.product)
           const words = asStringArray(body.words)
           const pitchTranscript = asString(body.pitchTranscript) || asString(body.transcript)
+          const difficulty = asDifficulty(body.difficulty)
 
           if (action === 'objection') {
-            const objection = await generateSnakeOilObjection({
-              customerTitle,
-              customerNeed,
+            const turn = asNumber(body.turn, 1) === 2 ? 2 : 1
+            const result = await generateSnakeOilObjection({
+              customer,
               words,
               productName,
               pitchTranscript,
+              difficulty,
+              objectionKindHint: asString(body.objectionKindHint) || undefined,
+              turn,
+              previousObjection: asString(body.previousObjection) || undefined,
+              previousReply: asString(body.previousReply) || undefined,
             })
-            sendJson(res, 200, { ok: true, objection })
+            sendJson(res, 200, { ok: true, objection: result.objection, kind: result.kind })
             return
           }
 
           const evaluation = await evaluateSnakeOilRound({
-            customerTitle,
-            customerNeed,
+            customer,
             words,
             productName,
+            conversation: asConversation(body),
             pitchTranscript,
             objection: asString(body.objection),
             replyTranscript: asString(body.replyTranscript),
             pitchSeconds: asNumber(body.pitchSeconds ?? body.durationSec, 45),
             replySeconds: asNumber(body.replySeconds, 20),
+            difficulty,
+            format: asString(body.format) || 'full',
+            eventTitle: asString(body.eventTitle) || undefined,
           })
           sendJson(res, 200, { ok: true, evaluation })
         } catch (error) {

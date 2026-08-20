@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -11,27 +11,14 @@ import { GameHome } from '../shared/GameHome';
 import { WhisperDownloadBanner } from '../hablaya/WhisperDownloadBanner';
 import { useWhisperPreload } from '../hablaya/useWhisperPreload';
 import {
-  OBJECTION_SECONDS_OPTIONS,
-  PITCH_SECONDS_OPTIONS,
+  BADGE_CATALOG,
+  PRIMARY_DIMS,
   WORD_COUNT_OPTIONS,
   customerHeadline,
+  difficultyLabel,
 } from './engine';
-import type { AiEvaluation, DimensionScores } from './types';
+import type { AiEvaluation, Badge, Difficulty, MatchFormat } from './types';
 import { useSnakeOil } from './useSnakeOil';
-
-const DIM_LABELS: Array<{ key: keyof DimensionScores; label: string }> = [
-  { key: 'persuasion', label: 'Persuasión' },
-  { key: 'creativity', label: 'Creatividad' },
-  { key: 'improvisation', label: 'Improvisación' },
-  { key: 'coherence', label: 'Coherencia' },
-  { key: 'humor', label: 'Humor' },
-  { key: 'customerFit', label: 'Adaptación al cliente' },
-  { key: 'objectionHandling', label: 'Objeciones' },
-  { key: 'clarity', label: 'Claridad' },
-  { key: 'originality', label: 'Originalidad' },
-  { key: 'fluency', label: 'Fluidez' },
-  { key: 'wordUse', label: 'Uso de palabras' },
-];
 
 function MicPulse({ active }: { active: boolean }) {
   if (!active) return null;
@@ -43,25 +30,224 @@ function MicPulse({ active }: { active: boolean }) {
   );
 }
 
-function ScoreHero({ evaluation }: { evaluation: AiEvaluation }) {
+function ComboBanner({ combo }: { combo: number }) {
+  if (combo < 2) return null;
   return (
-    <motion.div
-      initial={{ scale: 0.85, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-      className="text-center"
+    <motion.p
+      initial={{ y: -8, opacity: 0, scale: 0.9 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      className="text-center font-[family-name:var(--font-display)] text-xl font-bold text-[var(--color-accent)]"
     >
-      <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums text-[var(--color-accent)] sm:text-8xl">
-        {evaluation.score}
-        <span className="text-3xl text-[var(--color-text-muted)]">/100</span>
-      </p>
-      <p className="mt-3 font-[family-name:var(--font-display)] text-2xl font-semibold">
-        {evaluation.label}
-      </p>
-      <p className="mt-3 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-        {evaluation.funnyComment}
-      </p>
-    </motion.div>
+      🔥 COMBO ×{combo}
+    </motion.p>
+  );
+}
+
+function LiveBadges({ badges }: { badges: Badge[] }) {
+  if (!badges.length) return null;
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      <AnimatePresence>
+        {badges.map((b) => (
+          <motion.span
+            key={b.id}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="rounded-full border border-[var(--color-accent)]/50 bg-[var(--color-accent)]/15 px-3 py-1 text-sm font-semibold"
+          >
+            {b.emoji} {b.title}
+          </motion.span>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function DimBar({ label, value }: { label: string; value: number }) {
+  return (
+    <li className="flex items-center gap-3">
+      <span className="w-32 shrink-0 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+        {label}
+      </span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--color-bg)]">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.45 }}
+          className="h-full rounded-full bg-[var(--color-accent)]"
+        />
+      </div>
+      <span className="w-8 text-right font-semibold tabular-nums">{value}</span>
+    </li>
+  );
+}
+
+function ResultCard({
+  evaluation,
+  productName,
+  showAnalysis,
+  onToggleAnalysis,
+  combo,
+}: {
+  evaluation: AiEvaluation;
+  productName: string;
+  showAnalysis: boolean;
+  onToggleAnalysis: () => void;
+  combo: number;
+}) {
+  return (
+    <div className="flex flex-col gap-6">
+      <motion.div
+        initial={{ scale: 0.88, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+        className="text-center"
+      >
+        <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">
+          🧪 Resultado del experimento
+        </p>
+        <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-bold">{productName}</h2>
+        <p className="mt-4 font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums text-[var(--color-accent)] sm:text-8xl">
+          {evaluation.score}
+          <span className="text-3xl text-[var(--color-text-muted)]">/100</span>
+        </p>
+        <p className="mt-2 font-[family-name:var(--font-display)] text-xl font-semibold">
+          {evaluation.label}
+        </p>
+        <p className="mx-auto mt-3 max-w-md text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+          {evaluation.funnyComment}
+        </p>
+        <ComboBanner combo={combo} />
+      </motion.div>
+
+      <Card>
+        <p className="mb-3 text-center text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+          💰 Probabilidad de compra
+        </p>
+        <p className="text-center font-[family-name:var(--font-display)] text-5xl font-bold tabular-nums">
+          {evaluation.customerBuyProbability}
+          <span className="text-2xl text-[var(--color-text-muted)]">%</span>
+        </p>
+      </Card>
+
+      <ul className="flex flex-col gap-2">
+        {PRIMARY_DIMS.map(({ key, label }) => (
+          <DimBar key={key} label={label} value={evaluation.dimensions[key]} />
+        ))}
+      </ul>
+
+      {evaluation.badges.length > 0 ? (
+        <div className="flex flex-wrap justify-center gap-2">
+          {evaluation.badges.map((id) => {
+            const b = BADGE_CATALOG[id];
+            if (!b) return null;
+            return (
+              <span
+                key={id}
+                className="rounded-full border border-[var(--color-border)] px-3 py-1 text-sm"
+                title={b.description}
+              >
+                {b.emoji} {b.title}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <Card>
+        <p className="font-[family-name:var(--font-display)] text-lg font-semibold">🎤 Mejor momento</p>
+        <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+          {evaluation.bestMoment}
+        </p>
+        <p className="mt-5 font-[family-name:var(--font-display)] text-lg font-semibold">
+          🤖 Veredicto del cliente
+        </p>
+        <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-accent)]">
+          “{evaluation.customerVerdict}”
+        </p>
+      </Card>
+
+      <Button variant="ghost" onClick={onToggleAnalysis}>
+        {showAnalysis ? 'Ocultar análisis' : 'Ver análisis'}
+      </Button>
+
+      {showAnalysis ? (
+        <Card>
+          <p className="font-[family-name:var(--font-display)] text-lg font-semibold">Lo bueno</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            {evaluation.strengths.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+          <p className="mt-4 font-[family-name:var(--font-display)] text-lg font-semibold">
+            Para la próxima
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            {evaluation.weaknesses.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+          <p className="mt-4 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            Estilo ganador: {evaluation.winningStyle}
+          </p>
+        </Card>
+      ) : null}
+    </div>
+  );
+}
+
+function FormatButton({
+  active,
+  title,
+  subtitle,
+  onClick,
+}: {
+  active: boolean;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border px-4 py-3 text-left transition ${
+        active
+          ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/15'
+          : 'border-[var(--color-border)] bg-[var(--color-surface)]'
+      }`}
+    >
+      <p className="font-[family-name:var(--font-display)] text-lg font-semibold">{title}</p>
+      <p className="mt-1 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">{subtitle}</p>
+    </button>
+  );
+}
+
+function DifficultyRow({
+  value,
+  onChange,
+}: {
+  value: Difficulty;
+  onChange: (d: Difficulty) => void;
+}) {
+  const opts: Difficulty[] = ['easy', 'normal', 'hard'];
+  return (
+    <div className="flex gap-2">
+      {opts.map((d) => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => onChange(d)}
+          className={`min-h-[var(--touch-min)] flex-1 rounded-xl border px-2 font-semibold ${
+            value === d
+              ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-[var(--color-accent)]'
+              : 'border-[var(--color-border)]'
+          }`}
+        >
+          {difficultyLabel(d)}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -70,7 +256,12 @@ export default function SnakeOilApp() {
   const game = useSnakeOil();
   const { state } = game;
   const whisper = useWhisperPreload(true);
-  const deal = state.deal;
+  const deal = state.round?.deal;
+  const productName = state.round?.product.name ?? '';
+  const avg =
+    state.stats.gamesPlayed > 0
+      ? Math.round(state.stats.totalScore / state.stats.gamesPlayed)
+      : 0;
 
   return (
     <ScreenShell
@@ -78,15 +269,15 @@ export default function SnakeOilApp() {
       centered={state.screen !== 'config' && state.screen !== 'result'}
     >
       {state.screen === 'home' && (
-        <>
+        <div className="flex flex-col gap-6">
           <GameHome
             title="Snake Oil"
             emoji="🐍"
-            tagline="Inventa un producto absurdo, véndelo al micrófono y que el jurado-IA te ponga nota de concurso."
+            tagline="Vende un invento absurdo a un cliente imposible. Improvisa. Cierra. Otra partida."
             steps={[
-              'Whisper se descarga en el móvil (solo la primera vez).',
-              'Recibes un cliente imposible y 2–3 palabras al azar.',
-              'Pitch + objeción: la IA puntúa persuasión, humor e improvisación.',
+              'Whisper se descarga la primera vez.',
+              'Elige modo rápido o completo y una dificultad.',
+              'Pitch → cliente en personaje → objeciones, giros y nota con probabilidad de compra.',
             ]}
             readableMode={readableMode}
             onReadableModeChange={setReadableMode}
@@ -97,7 +288,7 @@ export default function SnakeOilApp() {
                 ? 'Espera: descargando Whisper…'
                 : whisper.status === 'error'
                   ? 'Whisper no está listo'
-                  : 'Configurar y jugar'
+                  : 'Jugar'
             }
             banner={
               <WhisperDownloadBanner
@@ -109,25 +300,82 @@ export default function SnakeOilApp() {
               />
             }
           />
-          {state.stats.rounds > 0 ? (
-            <p className="mt-4 text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              Rondas: {state.stats.rounds} · Mejor: {state.stats.bestScore}/100 · Media:{' '}
-              {Math.round(state.stats.totalScore / state.stats.rounds)}
-            </p>
+
+          {state.stats.gamesPlayed > 0 ? (
+            <Card>
+              <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.currentStreak || '—'}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">🔥 Racha</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestScore}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">🏆 Mejor</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestPersuasion}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">💰 Vendedor</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestImprovisation}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">🧠 Impro</p>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+                {state.stats.gamesPlayed} partidas · media {avg} · combo máx ×{state.stats.bestCombo || 1}
+              </p>
+            </Card>
           ) : null}
-        </>
+          <ComboBanner combo={state.combo} />
+        </div>
       )}
 
       {state.screen === 'config' && (
         <ConfigShell
-          title="Modo solitario"
-          description="MVP: tú vendes, la IA es cliente y jurado. El multijugador llega después sobre el mismo motor."
+          title="Prepara la venta"
+          description="Solitario por ahora. El motor ya separa Player / Round / Evaluation para multi más adelante."
           error={game.configValidation.error}
           canContinue={game.configValidation.valid}
-          continueLabel="Empezar ronda"
+          continueLabel="Empezar"
           onBack={game.goHome}
           onContinue={game.startRound}
         >
+          <div className="flex flex-col gap-2">
+            <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text-muted)]">
+              Formato
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <FormatButton
+                active={state.config.format === 'quick'}
+                title="⚡ Partida rápida"
+                subtitle="~3 min · pitch 30s · objeción · resultado"
+                onClick={() => game.updateConfig({ format: 'quick' as MatchFormat })}
+              />
+              <FormatButton
+                active={state.config.format === 'full'}
+                title="🎤 Modo completo"
+                subtitle="Pitch 60s · objeción · evento · resultado"
+                onClick={() => game.updateConfig({ format: 'full' as MatchFormat })}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text-muted)]">
+              Dificultad
+            </p>
+            <DifficultyRow
+              value={state.config.difficulty}
+              onChange={(difficulty) => game.updateConfig({ difficulty })}
+            />
+            <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              {state.config.difficulty === 'easy' && 'Cliente comprensivo. Objeciones sencillas.'}
+              {state.config.difficulty === 'normal' && 'Cliente escéptico. Preguntas razonables.'}
+              {state.config.difficulty === 'hard' &&
+                'Cliente exigente. Contradicciones y giros inesperados.'}
+            </p>
+          </div>
+
           <NumberStepper
             label="Palabras"
             description="2 o 3 piezas para inventar el producto."
@@ -137,32 +385,16 @@ export default function SnakeOilApp() {
             options={[...WORD_COUNT_OPTIONS]}
             onChange={(wordCount) => game.updateConfig({ wordCount: wordCount as 2 | 3 })}
           />
-          <NumberStepper
-            label="Segundos de pitch"
-            description="Tiempo para vender."
-            value={state.config.pitchSeconds}
-            min={45}
-            max={60}
-            options={[...PITCH_SECONDS_OPTIONS]}
-            onChange={(pitchSeconds) => game.updateConfig({ pitchSeconds })}
-          />
-          <Toggle
-            label="Fase de objeción"
-            description="La IA te planta una pregunta y tienes 15–20 s para responder."
-            checked={state.config.enableObjection}
-            onChange={(enableObjection) => game.updateConfig({ enableObjection })}
-          />
-          {state.config.enableObjection ? (
-            <NumberStepper
-              label="Segundos de respuesta"
-              description="Contra-reloj tras la objeción."
-              value={state.config.objectionSeconds}
-              min={15}
-              max={20}
-              options={[...OBJECTION_SECONDS_OPTIONS]}
-              onChange={(objectionSeconds) => game.updateConfig({ objectionSeconds })}
+
+          {state.config.format === 'full' ? (
+            <Toggle
+              label="Fase de objeción"
+              description="Si la apagas, solo pitch + nota (menos diversión)."
+              checked={state.config.enableObjection}
+              onChange={(enableObjection) => game.updateConfig({ enableObjection })}
             />
           ) : null}
+
           <AdultModeToggle
             checked={state.config.adultMode}
             onChange={(adultMode) => game.updateConfig({ adultMode })}
@@ -172,6 +404,7 @@ export default function SnakeOilApp() {
 
       {state.screen === 'deal' && deal && (
         <div className="flex flex-col gap-8">
+          <ComboBanner combo={state.combo} />
           <header className="text-center">
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">
               Cliente
@@ -180,7 +413,13 @@ export default function SnakeOilApp() {
               {customerHeadline(deal.customer)}
             </h1>
             <p className="mx-auto mt-4 max-w-md text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              {deal.customer.need}
+              {deal.customer.description}
+            </p>
+            <p className="mx-auto mt-3 max-w-md text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Necesidad: {deal.customer.need}
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-[length:var(--text-body-sm)] italic text-[var(--color-text-muted)]">
+              {deal.customer.personality}
             </p>
           </header>
 
@@ -222,13 +461,13 @@ export default function SnakeOilApp() {
           </header>
           <input
             type="text"
-            value={state.productName}
+            value={productName}
             onChange={(e) => game.setProductName(e.target.value)}
             maxLength={80}
             className="min-h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 font-[family-name:var(--font-display)] text-xl font-semibold outline-none focus:border-[var(--color-accent)]"
           />
-          <Button onClick={game.goPitch} disabled={!state.productName.trim()}>
-            Subir al escenario
+          <Button onClick={game.goPitch} disabled={!productName.trim()}>
+            Hablar con el cliente
           </Button>
         </div>
       )}
@@ -237,10 +476,10 @@ export default function SnakeOilApp() {
         <div className="flex flex-col gap-6 text-center">
           <header>
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Cliente · {customerHeadline(deal.customer)}
+              {customerHeadline(deal.customer)}
             </p>
             <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-bold">
-              {state.productName}
+              {productName}
             </h1>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {deal.words.map((w) => (
@@ -260,11 +499,11 @@ export default function SnakeOilApp() {
             </p>
             <p className="flex items-center gap-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
               <MicPulse active={state.recording} />
-              {state.recording ? 'HABLANDO…' : 'Listo cuando tú lo estés'}
+              {state.recording ? 'VENDIENDO…' : 'Listo cuando tú lo estés'}
             </p>
-            {state.recording && state.pitchTranscript ? (
-              <p className="max-h-28 overflow-y-auto px-2 text-left text-[length:var(--text-body-sm)] text-[var(--color-text)]">
-                {state.pitchTranscript}
+            {state.recording && game.liveTranscript ? (
+              <p className="max-h-28 overflow-y-auto px-2 text-left text-[length:var(--text-body-sm)]">
+                {game.liveTranscript}
               </p>
             ) : null}
           </Card>
@@ -287,38 +526,41 @@ export default function SnakeOilApp() {
         <div className="flex flex-col items-center gap-6 py-16 text-center">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
+            transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
             className="h-12 w-12 rounded-full border-4 border-[var(--color-accent)] border-t-transparent"
           />
           <p className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-            {state.statusMessage || 'Analizando…'}
+            {state.statusMessage || 'Negociando…'}
           </p>
+          <LiveBadges badges={state.liveBadges} />
         </div>
       )}
 
-      {state.screen === 'objection' && (
+      {state.screen === 'customer' && deal && (
         <div className="flex flex-col gap-8 text-center">
+          <LiveBadges badges={state.liveBadges} />
           <header>
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Objeción del cliente
+              {customerHeadline(deal.customer)}
+              {state.objectionTurn === 2 ? ' · segunda ronda' : ''}
             </p>
             <h1 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-semibold leading-snug sm:text-3xl">
-              “{state.objection}”
+              “{state.currentObjection}”
             </h1>
           </header>
           {state.error ? (
             <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              (Objeción de reserva · {state.error})
+              (Objeción de reserva)
             </p>
           ) : null}
-          <Button onClick={game.beginReply}>Responder ({state.config.objectionSeconds}s)</Button>
+          <Button onClick={game.beginReply}>Responder ({state.config.replySeconds}s)</Button>
         </div>
       )}
 
       {state.screen === 'reply' && (
         <div className="flex flex-col gap-6 text-center">
           <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-            “{state.objection}”
+            “{state.currentObjection}”
           </p>
           <Card className="flex flex-col items-center gap-3 py-10">
             <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums">
@@ -326,13 +568,8 @@ export default function SnakeOilApp() {
             </p>
             <p className="flex items-center gap-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
               <MicPulse active={state.recording} />
-              {state.recording ? 'DEFENDIENDO…' : 'Contraataque'}
+              {state.recording ? 'NEGOCIANDO…' : 'Tu turno'}
             </p>
-            {state.recording && state.replyTranscript ? (
-              <p className="max-h-24 overflow-y-auto px-2 text-left text-[length:var(--text-body-sm)]">
-                {state.replyTranscript}
-              </p>
-            ) : null}
           </Card>
           {!state.recording ? (
             <Button onClick={() => void game.startRecording()}>🎙️ Responder</Button>
@@ -344,63 +581,57 @@ export default function SnakeOilApp() {
         </div>
       )}
 
+      {state.screen === 'event' && deal?.event && (
+        <div className="flex flex-col gap-8 text-center">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+            <p className="font-[family-name:var(--font-display)] text-3xl font-bold">
+              {deal.event.title}
+            </p>
+            <p className="mx-auto mt-4 max-w-md text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+              {deal.event.body}
+            </p>
+          </motion.div>
+          <LiveBadges badges={state.liveBadges} />
+          <Button onClick={game.beginEventReply}>
+            Reaccionar ({deal.event.reactionSeconds}s)
+          </Button>
+        </div>
+      )}
+
+      {state.screen === 'event_reply' && (
+        <div className="flex flex-col gap-6 text-center">
+          <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            {deal?.event?.title}
+          </p>
+          <Card className="flex flex-col items-center gap-3 py-10">
+            <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums">
+              {state.secondsLeft}
+            </p>
+            <p className="flex items-center gap-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+              <MicPulse active={state.recording} />
+              {state.recording ? 'IMPROVISANDO…' : 'Giro de guion'}
+            </p>
+          </Card>
+          {!state.recording ? (
+            <Button onClick={() => void game.startRecording()}>🎙️ Hablar</Button>
+          ) : (
+            <Button variant="danger" onClick={game.stopRecording}>
+              Listo
+            </Button>
+          )}
+        </div>
+      )}
+
       {state.screen === 'result' && (
         <div className="flex flex-col gap-8 pb-6">
-          {state.evaluation ? (
-            <>
-              <ScoreHero evaluation={state.evaluation} />
-
-              <Card>
-                <p className="mb-4 font-[family-name:var(--font-display)] text-xl font-semibold">
-                  Desglose
-                </p>
-                <ul className="flex flex-col gap-2">
-                  {DIM_LABELS.map(({ key, label }) => {
-                    const value = state.evaluation!.dimensions[key];
-                    return (
-                      <li key={key} className="flex items-center gap-3">
-                        <span className="w-40 shrink-0 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                          {label}
-                        </span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--color-bg)]">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${value}%` }}
-                            transition={{ duration: 0.5 }}
-                            className="h-full rounded-full bg-[var(--color-accent)]"
-                          />
-                        </div>
-                        <span className="w-10 text-right font-semibold tabular-nums">{value}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Card>
-
-              <Card>
-                <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
-                  Lo que ha funcionado
-                </p>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                  {state.evaluation.strengths.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
-                {state.evaluation.bestMoment ? (
-                  <p className="mt-4 text-[length:var(--text-body)] text-[var(--color-accent)]">
-                    Mejor momento: {state.evaluation.bestMoment}
-                  </p>
-                ) : null}
-                <p className="mt-6 font-[family-name:var(--font-display)] text-xl font-semibold">
-                  Para el próximo pitch
-                </p>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                  {state.evaluation.weaknesses.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
-              </Card>
-            </>
+          {state.round?.evaluation ? (
+            <ResultCard
+              evaluation={state.round.evaluation}
+              productName={productName}
+              showAnalysis={state.showAnalysis}
+              onToggleAnalysis={game.toggleAnalysis}
+              combo={state.round.comboAfter}
+            />
           ) : (
             <Card>
               <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
@@ -410,36 +641,10 @@ export default function SnakeOilApp() {
             </Card>
           )}
 
-          {state.stats.rounds > 0 ? (
-            <Card>
-              <p className="font-[family-name:var(--font-display)] text-lg font-semibold">
-                Estadísticas de la sesión
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-                <div>
-                  <p className="text-2xl font-bold">{state.stats.bestScore}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Mejor venta</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{state.stats.bestCreativity}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Creatividad</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{state.stats.bestImprovisation}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Impro</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{state.stats.bestObjection}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Objeciones</p>
-                </div>
-              </div>
-            </Card>
-          ) : null}
-
           <div className="flex flex-col gap-3">
-            <Button onClick={game.startRound}>Otra ronda</Button>
+            <Button onClick={game.startRound}>Otra partida</Button>
             <Button variant="ghost" onClick={game.goConfig}>
-              Configuración
+              Cambiar modo
             </Button>
             <Button variant="ghost" onClick={game.goHome}>
               Inicio

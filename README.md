@@ -14,7 +14,7 @@ Landing en `/` para elegir app:
 - **Unánimo** → `/unanimo` — coincidir palabras con el grupo
 - **Papelitos** → `/papelitos` — bote de papeles (mesa o pack), tres rondas
 - **Habla ya** → `/hablaya` — categorías, micrófono, votos 0–10 e IA (serio o inventado)
-- **Snake Oil** → `/snakeoil` — inventa un producto absurdo, graba el pitch, responde a la objeción de la IA y recibe nota 0–100 (Whisper + DeepSeek)
+- **Snake Oil** → `/snakeoil` — vende un invento absurdo a un cliente-IA con personalidad (pitch, objeciones, eventos, combo, probabilidad de compra; Whisper + DeepSeek)
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
