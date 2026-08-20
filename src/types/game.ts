@@ -21,7 +21,7 @@ export interface Player {
   word: string | null;
   /**
    * Pista solo para Mr White (si la partida la tiene activada):
-   * concepto cercano a la palabra secreta para improvisar sin regalarla.
+   * asociación concreta de la palabra secreta para improvisar sin regalarla.
    */
   hint: string | null;
   /** Ronda en la que fue eliminado; null si sigue en juego. */

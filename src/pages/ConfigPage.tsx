@@ -85,7 +85,7 @@ export function ConfigPage({
 
           <Toggle
             label="Pistas para Mr White"
-            description="Si está activo, Mr White ve una pista cercana a la palabra secreta."
+            description="Si está activo, Mr White ve una pista muy relacionada con la palabra secreta."
             checked={config.mrWhiteHasHints}
             disabled={config.mrWhiteCount === 0}
             onChange={(mrWhiteHasHints) => onChange({ mrWhiteHasHints })}
@@ -100,7 +100,7 @@ export function ConfigPage({
 
           <NumberStepper
             label="Farsantes"
-            description="Ven una palabra parecida (sin saberlo)."
+            description="Ven una palabra muy parecida a la secreta (sin saberlo)."
             value={config.farsanteCount}
             min={0}
             max={Math.max(0, config.playerCount - 1 - config.mrWhiteCount)}
