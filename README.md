@@ -14,6 +14,7 @@ Landing en `/` para elegir app:
 - **Unánimo** → `/unanimo` — coincidir palabras con el grupo
 - **Papelitos** → `/papelitos` — bote de papeles (mesa o pack), tres rondas
 - **Habla ya** → `/hablaya` — categorías, micrófono, votos 0–10 e IA (serio o inventado)
+- **Adivina** → `/adivina` — palabra de 5 letras en solitario (estilo Wordle)
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 

@@ -8,6 +8,7 @@ interface ConfigShellProps {
   children: ReactNode;
   error?: string | null;
   canContinue: boolean;
+  continueLabel?: string;
   onBack: () => void;
   onContinue: () => void;
 }
@@ -18,6 +19,7 @@ export function ConfigShell({
   children,
   error,
   canContinue,
+  continueLabel = 'Continuar',
   onBack,
   onContinue,
 }: ConfigShellProps) {
@@ -53,7 +55,7 @@ export function ConfigShell({
 
         <div className="mt-8 flex flex-col gap-3">
           <Button onClick={onContinue} disabled={!canContinue}>
-            Continuar
+            {continueLabel}
           </Button>
           <Button variant="ghost" onClick={onBack}>
             Cancelar
