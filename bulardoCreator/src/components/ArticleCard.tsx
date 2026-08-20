@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import type { BulardoArticle } from '../api'
+import type { BulardoArticle, BulardoAction, BulardoMode } from '../api'
+import { copyArticle } from '../formatArticle'
 
 type Props = {
   question: string
   article: BulardoArticle
-  credible?: boolean
+  mode: BulardoMode
+  busy?: boolean
+  onAction?: (action: BulardoAction) => void
 }
 
 function bodyParagraphs(body: string): string[] {
@@ -14,9 +18,32 @@ function bodyParagraphs(body: string): string[] {
     .filter(Boolean)
 }
 
-export function ArticleCard({ question, article, credible = false }: Props) {
+function modeLabel(mode: BulardoMode): string {
+  if (mode === 'credible') return 'Creíble'
+  if (mode === 'suave') return 'Cuñado suave'
+  return 'Cuñado científico'
+}
+
+export function ArticleCard({
+  question,
+  article,
+  mode,
+  busy = false,
+  onAction,
+}: Props) {
   const paragraphs = bodyParagraphs(article.body)
-  const isCredible = credible || article.mode === 'credible'
+  const [copied, setCopied] = useState(false)
+  const resolvedMode = article.mode ?? mode
+
+  async function onCopy() {
+    try {
+      await copyArticle(article)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1600)
+    } catch {
+      setCopied(false)
+    }
+  }
 
   return (
     <motion.article
@@ -27,10 +54,10 @@ export function ArticleCard({ question, article, credible = false }: Props) {
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-[var(--bulardo-accent-soft)] px-2.5 py-1 text-[0.7rem] font-semibold tracking-[0.14em] text-[var(--bulardo-accent)] uppercase">
-          {isCredible ? 'Creíble' : 'Cuñado científico'}
+          {modeLabel(resolvedMode)}
         </span>
         <span className="line-clamp-3 max-w-full text-xs tracking-wide break-words text-[var(--bulardo-muted)] whitespace-pre-wrap">
-          Por curiosidad · {question}
+          Pedido · {question}
         </span>
       </div>
 
@@ -57,6 +84,40 @@ export function ArticleCard({ question, article, credible = false }: Props) {
           {article.closer}
         </p>
       ) : null}
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void onCopy()}
+          className="rounded-lg border border-[var(--bulardo-line)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--bulardo-ink)] uppercase hover:bg-[rgba(242,238,230,0.06)]"
+        >
+          {copied ? 'Copiado' : 'Copiar'}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onAction?.('regenerate')}
+          className="rounded-lg border border-[var(--bulardo-line)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--bulardo-ink)] uppercase hover:bg-[rgba(242,238,230,0.06)] disabled:opacity-50"
+        >
+          Regenerar
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onAction?.('moreAbsurd')}
+          className="rounded-lg border border-[var(--bulardo-line)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--bulardo-ink)] uppercase hover:bg-[rgba(242,238,230,0.06)] disabled:opacity-50"
+        >
+          Más absurdo
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onAction?.('moreSober')}
+          className="rounded-lg border border-[var(--bulardo-line)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--bulardo-ink)] uppercase hover:bg-[rgba(242,238,230,0.06)] disabled:opacity-50"
+        >
+          Más sobrio
+        </button>
+      </div>
     </motion.article>
   )
 }
