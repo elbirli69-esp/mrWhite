@@ -52,11 +52,13 @@ function clamp100(value: number): number {
 }
 
 function transcriptionCaveat(): string {
-  return `IMPORTANTE sobre el texto:
-- Es TRANSCRIPCIÓN automática (Whisper): puede haber errores de ASR.
-- Evalúa la IDEA y el discurso, no ortografía ni palabras mal reconocidas.
-- No castigues estilo informal o gracioso: aquí eso suma.
-- Sí penaliza vacío, no vender, no adaptar al cliente, o no usar las palabras de forma inteligente.`
+  return `IMPORTANTE sobre la TRANSCRIPCIÓN (ASR / Whisper):
+- Puede contener errores de reconocimiento de voz, plurales raros u orthografía imperfecta.
+- Evalúa el contenido que el jugador PROBABLEMENTE quiso comunicar.
+- No penalices excesivamente errores ortográficos o pequeñas alteraciones de palabras causadas por ASR.
+- NO inventes argumentos, chistes ni detalles que no aparecen en la transcripción.
+- NO "mejores" el discurso del jugador antes de evaluarlo.
+- NO atribuyas al jugador la objeción u otros turnos de la IA: solo evalúa sus turnos (player_pitch, player_reply, player_event_reply).`
 }
 
 function difficultyInstructions(difficulty: Difficulty): string {
@@ -184,24 +186,57 @@ export function buildEvaluateUserPrompt(input: {
   format: string
   eventTitle?: string
 }): string {
-  const convo = input.conversation
-    .map((t) => `[${t.role}] ${t.text}`)
+  const pitch = input.conversation
+    .filter((t) => t.role === 'player_pitch')
+    .map((t) => t.text)
+    .join('\n')
+    .slice(0, 3500)
+  const objections = input.conversation
+    .filter((t) => t.role === 'customer')
+    .map((t, i) => `Objeción ${i + 1} (IA/cliente, NO es del jugador):\n"""${t.text.slice(0, 500)}"""`)
     .join('\n\n')
-    .slice(0, 7000)
+  const replies = input.conversation
+    .filter((t) => t.role === 'player_reply')
+    .map((t, i) => `Respuesta del jugador ${i + 1}:\n"""${t.text.slice(0, 2000)}"""`)
+    .join('\n\n')
+  const events = input.conversation
+    .filter((t) => t.role === 'event')
+    .map((t) => `Evento (sistema):\n"""${t.text.slice(0, 400)}"""`)
+    .join('\n\n')
+  const eventReplies = input.conversation
+    .filter((t) => t.role === 'player_event_reply')
+    .map((t) => `Reacción del jugador al evento:\n"""${t.text.slice(0, 2000)}"""`)
+    .join('\n\n')
 
-  return `FORMATO: ${input.format} · DIFICULTAD: ${input.difficulty}
-CLIENTE: ${input.customer.name} ${input.customer.description}
+  return `TASK: Evalúa el desempeño del JUGADOR en esta partida de Snake Oil.
+Distingue claramente CONTEXT / PITCH / OBJECTION (IA) / RESPONSE (jugador).
+
+=== CONTEXT ===
+FORMATO: ${input.format} · DIFICULTAD: ${input.difficulty}
+CLIENTE: ${input.customer.name}
+DESCRIPCIÓN: ${input.customer.description}
 PERSONALIDAD: ${input.customer.personality}
 NECESIDAD: ${input.customer.need}
 PREOCUPACIÓN SECRETA: ${input.customer.secretConcern}
 (paciencia ${input.customer.patience}, escepticismo ${input.customer.skepticism}, humor ${input.customer.humor})
-PALABRAS: ${input.words.join(', ')}
-PRODUCTO: ${input.productName}
+PALABRAS ASIGNADAS: ${input.words.join(', ')}
+PRODUCTO INVENTADO: ${input.productName}
 TIEMPOS: pitch ${input.pitchSeconds}s / respuestas ${input.replySeconds}s
-EVENTO: ${input.eventTitle ?? '(ninguno)'}
+EVENTO DE PARTIDA: ${input.eventTitle ?? '(ninguno)'}
 
-CONVERSACIÓN COMPLETA:
-${convo}`
+=== PITCH (jugador) ===
+"""
+${pitch || '(vacío)'}
+"""
+
+=== OBJECTION (IA / cliente — no evaluar como discurso del jugador) ===
+${objections || '(sin objeción)'}
+
+=== RESPONSE (jugador) ===
+${replies || '(sin respuesta)'}
+
+${events ? `=== EVENT ===\n${events}\n` : ''}
+${eventReplies ? `=== EVENT RESPONSE (jugador) ===\n${eventReplies}\n` : ''}`
 }
 
 function dimFrom(raw: Record<string, unknown>, snake: string, alt?: string): number {

@@ -1,5 +1,8 @@
 import { transcribeLocally } from '../hablaya/whisperLocal';
+import { normalizeGameTranscript } from './asrNormalize';
+import type { PipelineTracker } from './pipelineMetrics';
 import type { AiEvaluation, BadgeId, Customer, ConversationTurn, Difficulty, MatchFormat } from './types';
+import { buildSnakeOilWhisperPrompt, snakeOilLexicon } from './whisperContext';
 
 type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; transcript?: string };
 
@@ -33,9 +36,45 @@ export async function transcribeBlob(
   blob: Blob,
   hint: string,
   onStatus?: (msg: string) => void,
+  extras: {
+    customer?: Customer;
+    words?: string[];
+    productName?: string;
+    preferFinalQuality?: boolean;
+    tracker?: PipelineTracker;
+  } = {},
 ): Promise<string> {
-  const local = await transcribeLocally(blob, onStatus, hint);
-  return local.text;
+  const productName = extras.productName ?? hint;
+  const words = extras.words ?? [];
+  const prompt =
+    extras.customer
+      ? buildSnakeOilWhisperPrompt({
+          customer: extras.customer,
+          productName,
+          words,
+        })
+      : undefined;
+  const lexicon = snakeOilLexicon({
+    words,
+    productName,
+    customerName: extras.customer?.name,
+  });
+
+  extras.tracker?.mark('finalWhisperStartMs');
+  const local = await transcribeLocally(blob, onStatus, productName, {
+    prompt,
+    lexicon,
+    preferFinalQuality: extras.preferFinalQuality ?? true,
+  });
+  extras.tracker?.mark('finalWhisperDoneMs');
+  extras.tracker?.setMeta({
+    usedFinalPass: true,
+    audioSec: local.audioSec,
+  });
+
+  const normalized = normalizeGameTranscript(local.text, words, productName);
+  extras.tracker?.setMeta({ normalizedHits: normalized.hits.length });
+  return normalized.normalized || local.text;
 }
 
 export async function requestObjection(input: {
@@ -48,8 +87,10 @@ export async function requestObjection(input: {
   turn?: 1 | 2;
   previousObjection?: string;
   previousReply?: string;
+  tracker?: PipelineTracker;
 }): Promise<ApiResult<{ objection: string; kind: string }>> {
   try {
+    input.tracker?.mark('deepseekStartMs');
     const data = await postSnakeOil({
       action: 'objection',
       customer: customerPayload(input.customer),
@@ -62,6 +103,7 @@ export async function requestObjection(input: {
       previousObjection: input.previousObjection,
       previousReply: input.previousReply,
     });
+    input.tracker?.mark('deepseekDoneMs');
     const objection = typeof data.objection === 'string' ? data.objection : '';
     if (!objection) return { ok: false, error: 'Objeción vacía' };
     return {
@@ -104,9 +146,10 @@ function normalizeEvaluation(raw: Record<string, unknown>): AiEvaluation | null 
         : String(raw.customer_verdict ?? ''),
     label: typeof raw.label === 'string' ? raw.label : 'Vendedor',
     badges,
-    winningStyle: ((typeof raw.winningStyle === 'string'
-      ? raw.winningStyle
-      : raw.winning_style) as AiEvaluation['winningStyle']) || 'balanced',
+    winningStyle:
+      ((typeof raw.winningStyle === 'string'
+        ? raw.winningStyle
+        : raw.winning_style) as AiEvaluation['winningStyle']) || 'balanced',
   };
 }
 
@@ -120,8 +163,10 @@ export async function requestEvaluation(input: {
   difficulty: Difficulty;
   format: MatchFormat;
   eventTitle?: string;
+  tracker?: PipelineTracker;
 }): Promise<ApiResult<AiEvaluation>> {
   try {
+    input.tracker?.mark('deepseekStartMs');
     const data = await postSnakeOil({
       action: 'evaluate',
       customer: customerPayload(input.customer),
@@ -134,6 +179,7 @@ export async function requestEvaluation(input: {
       format: input.format,
       eventTitle: input.eventTitle,
     });
+    input.tracker?.mark('deepseekDoneMs');
     const evaluation = normalizeEvaluation((data.evaluation ?? {}) as Record<string, unknown>);
     if (!evaluation) return { ok: false, error: 'Evaluación incompleta' };
     return { ok: true, data: evaluation };
@@ -142,8 +188,13 @@ export async function requestEvaluation(input: {
   }
 }
 
+/**
+ * Híbrido: live provisional (UI) + pase final de calidad sobre el blob
+ * + normalización controlada del léxico del juego.
+ */
 export async function pitchToObjection(input: {
   blob: Blob;
+  liveTranscript?: string;
   customer: Customer;
   words: string[];
   productName: string;
@@ -151,20 +202,65 @@ export async function pitchToObjection(input: {
   objectionKindHint?: string;
   onStatus?: (msg: string) => void;
   onTranscript?: (text: string) => void;
-}): Promise<ApiResult<{ transcript: string; objection: string; kind: string }>> {
+  tracker?: PipelineTracker;
+}): Promise<
+  ApiResult<{ transcript: string; objection: string; kind: string; rawTranscript: string }>
+> {
   let transcript = '';
+  let rawTranscript = '';
   try {
-    transcript = await transcribeBlob(input.blob, input.productName, input.onStatus);
+    input.onStatus?.('📝 Procesando tu discurso…');
+    rawTranscript = await transcribeBlob(input.blob, input.productName, (msg) => {
+      if (msg.includes('Transcribiendo') || msg.includes('Audio')) {
+        input.onStatus?.('🧠 Analizando tus argumentos…');
+      } else {
+        input.onStatus?.(msg);
+      }
+    }, {
+      customer: input.customer,
+      words: input.words,
+      productName: input.productName,
+      preferFinalQuality: true,
+      tracker: input.tracker,
+    });
+    transcript = rawTranscript;
+    // Si el pase final falla calidad pero el live era usable, no debería llegar aquí;
+    // si el final está vacío, caemos al live.
+    if (!transcript.trim() && input.liveTranscript?.trim()) {
+      const fallback = normalizeGameTranscript(
+        input.liveTranscript,
+        input.words,
+        input.productName,
+      );
+      transcript = fallback.normalized || input.liveTranscript;
+      input.tracker?.setMeta({ usedFinalPass: false, normalizedHits: fallback.hits.length });
+    }
     input.onTranscript?.(transcript);
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : 'Error al transcribir',
-      transcript,
-    };
+    if (input.liveTranscript?.trim()) {
+      const fallback = normalizeGameTranscript(
+        input.liveTranscript,
+        input.words,
+        input.productName,
+      );
+      transcript = fallback.normalized || input.liveTranscript;
+      rawTranscript = input.liveTranscript;
+      input.tracker?.setMeta({ usedFinalPass: false, normalizedHits: fallback.hits.length });
+      input.onTranscript?.(transcript);
+    } else {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Error al transcribir',
+        transcript,
+      };
+    }
   }
 
-  input.onStatus?.('El cliente está pensando…');
+  if (!transcript.trim()) {
+    return { ok: false, error: 'Transcripción vacía', transcript };
+  }
+
+  input.onStatus?.('😈 El cliente está preparando una objeción…');
   const objection = await requestObjection({
     customer: input.customer,
     words: input.words,
@@ -173,12 +269,14 @@ export async function pitchToObjection(input: {
     difficulty: input.difficulty,
     objectionKindHint: input.objectionKindHint,
     turn: 1,
+    tracker: input.tracker,
   });
   if (!objection.ok) return { ok: false, error: objection.error, transcript };
   return {
     ok: true,
     data: {
       transcript,
+      rawTranscript,
       objection: objection.data.objection,
       kind: objection.data.kind,
     },

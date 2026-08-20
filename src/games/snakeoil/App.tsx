@@ -19,6 +19,7 @@ import {
 } from './engine';
 import type { AiEvaluation, Badge, Difficulty, MatchFormat } from './types';
 import { useSnakeOil } from './useSnakeOil';
+import { AsrDebugPanel } from './AsrDebugPanel';
 
 function MicPulse({ active }: { active: boolean }) {
   if (!active) return null;
@@ -327,6 +328,9 @@ export default function SnakeOilApp() {
             </Card>
           ) : null}
           <ComboBanner combo={state.combo} />
+          {state.asrDebug ? (
+            <AsrDebugPanel words={['calcetín', 'dinosaurio', 'microondas']} productName="DinoSock 3000" />
+          ) : null}
         </div>
       )}
 
@@ -512,6 +516,10 @@ export default function SnakeOilApp() {
             <p className="text-[length:var(--text-body-sm)] text-[var(--color-danger)]">{state.error}</p>
           ) : null}
 
+          {state.needsRetry ? (
+            <Button onClick={game.retryPitch}>Repetir pitch</Button>
+          ) : null}
+
           {!state.recording ? (
             <Button onClick={() => void game.startRecording()}>🎙️ Empezar pitch</Button>
           ) : (
@@ -519,6 +527,11 @@ export default function SnakeOilApp() {
               Terminar ya
             </Button>
           )}
+          {state.recording ? (
+            <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              🎙️ Escuchando…
+            </p>
+          ) : null}
         </div>
       )}
 
@@ -533,6 +546,11 @@ export default function SnakeOilApp() {
             {state.statusMessage || 'Negociando…'}
           </p>
           <LiveBadges badges={state.liveBadges} />
+          {state.asrDebug && state.pipelineReport ? (
+            <pre className="max-w-md whitespace-pre-wrap rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-left text-xs text-[var(--color-text-muted)]">
+              {state.pipelineReport.summary}
+            </pre>
+          ) : null}
         </div>
       )}
 
@@ -650,6 +668,17 @@ export default function SnakeOilApp() {
               Inicio
             </Button>
           </div>
+
+          {state.asrDebug && state.pipelineReport ? (
+            <Card>
+              <p className="font-[family-name:var(--font-display)] text-lg font-semibold">
+                Latencia (dev)
+              </p>
+              <pre className="mt-2 whitespace-pre-wrap text-xs text-[var(--color-text-muted)]">
+                {state.pipelineReport.summary}
+              </pre>
+            </Card>
+          ) : null}
         </div>
       )}
     </ScreenShell>

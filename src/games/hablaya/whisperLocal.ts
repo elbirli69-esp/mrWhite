@@ -15,7 +15,7 @@ let loadedModelId: string | null = null;
 const TARGET_RATE = 16_000;
 
 /** Stamp para comprobar que el móvil no está con una PWA vieja. */
-export const HABLAYA_WHISPER_BUILD = 'local-whisper-9';
+export const HABLAYA_WHISPER_BUILD = 'local-whisper-10';
 
 /** Opciones ASR alineadas con producción (tests de fixtures / audio largo). */
 export const HABLAYA_WHISPER_ASR_OPTIONS = {
@@ -371,6 +371,17 @@ export function spanishWhisperPrompt(category?: string): string {
     : 'Transcribe en castellano.';
 }
 
+/** Prompt ASR con léxico conocido (Snake Oil / categorías). No inventa contenido. */
+export function spanishWhisperPromptWithLexicon(input: {
+  topic?: string;
+  lexicon?: string[];
+}): string {
+  const base = spanishWhisperPrompt(input.topic);
+  const words = (input.lexicon ?? []).map((w) => w.trim()).filter(Boolean).slice(0, 12);
+  if (!words.length) return base;
+  return `${base} Vocabulario probable: ${words.join(', ')}.`;
+}
+
 /**
  * Transcribe un Float32Array 16 kHz ya preparado.
  */
@@ -379,20 +390,27 @@ export async function transcribeSamples(
   options: {
     onStatus?: (msg: string) => void;
     category?: string;
+    /** Si se pasa, sustituye el prompt por defecto (p. ej. léxico del juego). */
+    prompt?: string;
+    lexicon?: string[];
     live?: boolean;
   } = {},
-): Promise<{ text: string; device: 'webgpu' | 'wasm' }> {
+): Promise<{ text: string; device: 'webgpu' | 'wasm'; durationMs: number }> {
   const samples = toWhisperSamples(audio);
   const durationSec = samples.length / TARGET_RATE;
   if (durationSec < 0.35) {
-    return { text: '', device: loadedDevice ?? 'wasm' };
+    return { text: '', device: loadedDevice ?? 'wasm', durationMs: 0 };
   }
 
   const transcriber = await getTranscriber(options.onStatus);
+  const prompt =
+    options.prompt?.trim() ||
+    spanishWhisperPromptWithLexicon({ topic: options.category, lexicon: options.lexicon });
   const asrOptions = options.live
-    ? { ...HABLAYA_WHISPER_LIVE_OPTIONS, prompt: spanishWhisperPrompt(options.category) }
-    : { ...HABLAYA_WHISPER_ASR_OPTIONS, prompt: spanishWhisperPrompt(options.category) };
+    ? { ...HABLAYA_WHISPER_LIVE_OPTIONS, prompt }
+    : { ...HABLAYA_WHISPER_ASR_OPTIONS, prompt };
 
+  const t0 = performance.now();
   let output: unknown;
   try {
     output = await transcriber(samples, asrOptions);
@@ -404,7 +422,11 @@ export async function transcribeSamples(
     throw new Error(`Falló Whisper local (${detail})`);
   }
 
-  return { text: extractTranscriptText(output), device: loadedDevice ?? 'wasm' };
+  return {
+    text: extractTranscriptText(output),
+    device: loadedDevice ?? 'wasm',
+    durationMs: performance.now() - t0,
+  };
 }
 
 /**
@@ -414,7 +436,8 @@ export async function transcribeLocally(
   blob: Blob,
   onStatus?: (msg: string) => void,
   category?: string,
-): Promise<{ text: string; device: 'webgpu' | 'wasm' }> {
+  extras: { prompt?: string; lexicon?: string[]; preferFinalQuality?: boolean } = {},
+): Promise<{ text: string; device: 'webgpu' | 'wasm'; durationMs: number; audioSec: number }> {
   onStatus?.('Preparando audio…');
   let audio: Float32Array;
   try {
@@ -430,11 +453,19 @@ export async function transcribeLocally(
   }
 
   onStatus?.(`Audio listo (~${durationSec.toFixed(1)}s). Transcribiendo…`);
-  const result = await transcribeSamples(audio, { onStatus, category, live: durationSec < 12 });
+  // Pitches largos: pase final de calidad (chunk_length_s 30). Cortos: modo live más ligero.
+  const useLiveOpts = extras.preferFinalQuality ? false : durationSec < 12;
+  const result = await transcribeSamples(audio, {
+    onStatus,
+    category,
+    prompt: extras.prompt,
+    lexicon: extras.lexicon,
+    live: useLiveOpts,
+  });
   if (!result.text) {
     throw new Error(
       'Whisper no sacó texto. Habla más cerca del micrófono o escribe un resumen manual.',
     );
   }
-  return result;
+  return { ...result, audioSec: durationSec };
 }

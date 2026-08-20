@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildEvaluateSystemPrompt,
+  buildEvaluateUserPrompt,
   buildObjectionSystemPrompt,
   parseEvaluation,
   parseObjection,
@@ -11,8 +12,40 @@ describe('snakeoil score schema v3', () => {
     expect(buildEvaluateSystemPrompt()).toMatch(/customer_buy_probability/)
     expect(buildEvaluateSystemPrompt()).toMatch(/winning_style/)
     expect(buildEvaluateSystemPrompt()).toMatch(/JUEGO/)
+    expect(buildEvaluateSystemPrompt()).toMatch(/NO inventes argumentos/)
     expect(buildObjectionSystemPrompt('hard')).toMatch(/DIFÍCIL/)
     expect(buildObjectionSystemPrompt('easy')).toMatch(/FÁCIL/)
+  })
+
+  it('user prompt separa CONTEXT / PITCH / OBJECTION / RESPONSE', () => {
+    const text = buildEvaluateUserPrompt({
+      customer: {
+        name: 'Vampiro',
+        description: 'd',
+        personality: 'p',
+        need: 'n',
+        secretConcern: 's',
+        patience: 50,
+        skepticism: 50,
+        humor: 50,
+      },
+      words: ['calcetín'],
+      productName: 'DinoSock',
+      conversation: [
+        { role: 'player_pitch', text: 'vendo calcetín' },
+        { role: 'customer', text: '¿precio?' },
+        { role: 'player_reply', text: 'barato' },
+      ],
+      pitchSeconds: 30,
+      replySeconds: 15,
+      difficulty: 'normal',
+      format: 'quick',
+    })
+    expect(text).toMatch(/=== CONTEXT ===/)
+    expect(text).toMatch(/=== PITCH \(jugador\) ===/)
+    expect(text).toMatch(/OBJECTION \(IA/)
+    expect(text).toMatch(/=== RESPONSE \(jugador\) ===/)
+    expect(text).toMatch(/NO es del jugador/)
   })
 
   it('parsea evaluación con buy probability y defensa', () => {

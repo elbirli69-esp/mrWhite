@@ -11,7 +11,7 @@ import {
 
 describe('HABLAYA_WHISPER_BUILD', () => {
   it('expone el stamp de la build actual (PWA)', () => {
-    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-9');
+    expect(HABLAYA_WHISPER_BUILD).toBe('local-whisper-10');
   });
 });
 

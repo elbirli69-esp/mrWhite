@@ -8,6 +8,7 @@ import {
 } from '../hablaya/record';
 import { loadJson, saveJson } from '../shared/persist';
 import { pitchToObjection, requestEvaluation, requestObjection, transcribeBlob } from './api';
+import { normalizeGameTranscript } from './asrNormalize';
 import {
   applyComboToScore,
   badgesFromIds,
@@ -26,6 +27,12 @@ import {
   updateStats,
   validateConfig,
 } from './engine';
+import {
+  createPipelineTracker,
+  isAsrDebugEnabled,
+  type PipelineReport,
+  type PipelineTracker,
+} from './pipelineMetrics';
 import type {
   AiEvaluation,
   Badge,
@@ -38,6 +45,7 @@ import type {
   SnakeOilConfig,
 } from './types';
 import { DEFAULT_CONFIG } from './types';
+import { buildSnakeOilWhisperPrompt } from './whisperContext';
 
 const CONFIG_KEY = 'snakeoil-config-v3';
 const STATS_KEY = 'snakeoil-stats-v3';
@@ -61,6 +69,10 @@ interface State {
   /** Objeción actual mostrada en pantalla customer. */
   currentObjection: string;
   objectionTurn: 1 | 2;
+  /** Fallo de ASR: ofrecer repetir pitch. */
+  needsRetry: boolean;
+  pipelineReport: PipelineReport | null;
+  asrDebug: boolean;
 }
 
 function loadCombo(): number {
@@ -101,6 +113,9 @@ function initialState(): State {
     showAnalysis: false,
     currentObjection: '',
     objectionTurn: 1,
+    needsRetry: false,
+    pipelineReport: null,
+    asrDebug: typeof window !== 'undefined' ? isAsrDebugEnabled() : false,
   };
 }
 
@@ -117,6 +132,7 @@ export function useSnakeOil() {
   const roundRef = useRef<Round | null>(null);
   const configRef = useRef(state.config);
   const comboRef = useRef(state.combo);
+  const trackerRef = useRef<PipelineTracker | null>(null);
 
   useEffect(() => {
     saveJson(CONFIG_KEY, state.config);
@@ -163,13 +179,14 @@ export function useSnakeOil() {
   }, []);
 
   const finalizeEvaluation = useCallback(
-    async (round: Round, conversation: ConversationTurn[]) => {
+    async (round: Round, conversation: ConversationTurn[], tracker?: PipelineTracker | null) => {
       const config = configRef.current;
       setState((prev) => ({
         ...prev,
         screen: 'evaluating',
-        statusMessage: 'El cliente decide…',
+        statusMessage: '⚖️ Evaluando tu respuesta…',
         round: { ...round, conversation },
+        needsRetry: false,
       }));
 
       const evaluation = await requestEvaluation({
@@ -182,7 +199,14 @@ export function useSnakeOil() {
         difficulty: config.difficulty,
         format: config.format,
         eventTitle: round.deal.event?.title,
+        tracker: tracker ?? undefined,
       });
+
+      tracker?.mark('uiResultMs');
+      const report = tracker?.report() ?? null;
+      if (report && typeof console !== 'undefined') {
+        console.info('[snakeoil pipeline]\n' + report.summary);
+      }
 
       if (!evaluation.ok) {
         setState((prev) => ({
@@ -190,6 +214,7 @@ export function useSnakeOil() {
           screen: 'result',
           error: evaluation.error || transcriptTooShortMessage(),
           statusMessage: null,
+          pipelineReport: report,
           round: { ...round, conversation, evaluation: null },
         }));
         return;
@@ -219,6 +244,8 @@ export function useSnakeOil() {
         statusMessage: null,
         error: null,
         showAnalysis: false,
+        pipelineReport: report,
+        needsRetry: false,
         round: {
           ...round,
           conversation,
@@ -318,7 +345,36 @@ export function useSnakeOil() {
       phase: 'pitch',
       secondsLeft: prev.config.pitchSeconds,
       error: null,
+      needsRetry: false,
+      statusMessage: null,
     }));
+  }, []);
+
+  const retryPitch = useCallback(() => {
+    setState((prev) => {
+      if (!prev.round) return prev;
+      return {
+        ...prev,
+        screen: 'pitch',
+        phase: 'pitch',
+        secondsLeft: prev.config.pitchSeconds,
+        error: null,
+        needsRetry: false,
+        statusMessage: null,
+        recording: false,
+        round: {
+          ...prev.round,
+          pitch: null,
+          objections: [],
+          replies: [],
+          eventReply: '',
+          conversation: [],
+          evaluation: null,
+        },
+        currentObjection: '',
+        objectionTurn: 1,
+      };
+    });
   }, []);
 
   const toggleAnalysis = useCallback(() => {
@@ -413,7 +469,7 @@ export function useSnakeOil() {
         return;
       }
 
-      await finalizeEvaluation(round, conversation);
+      await finalizeEvaluation(round, conversation, trackerRef.current);
     },
     [finalizeEvaluation, pushLiveBadge],
   );
@@ -427,32 +483,78 @@ export function useSnakeOil() {
     const live = liveRef.current;
     liveRef.current = null;
     const round = roundRef.current;
+    const tracker = trackerRef.current;
     if (!session || !round) {
       finishingRef.current = false;
       return;
     }
 
-    setState((prev) => ({ ...prev, recording: false, statusMessage: 'Escuchando tu pitch…' }));
+    tracker?.mark('speakEndMs');
+    setState((prev) => ({
+      ...prev,
+      recording: false,
+      screen: 'evaluating',
+      statusMessage: '📝 Procesando tu discurso…',
+      needsRetry: false,
+    }));
 
     try {
       const [{ blob }, liveText] = await Promise.all([
         session.stop(),
         live ? live.flush() : Promise.resolve(''),
       ]);
+      tracker?.mark('liveFlushDoneMs');
+      const liveTiming = live?.getTiming();
+      if (liveTiming) {
+        tracker?.setMeta({ liveWindows: liveTiming.windowsProcessed });
+        if (liveTiming.firstChunkQueuedAtMs != null && tracker) {
+          tracker.marks.firstChunkMs =
+            (tracker.marks.speakStartMs ?? performance.now()) + liveTiming.firstChunkQueuedAtMs;
+        }
+        if (liveTiming.firstResultAtMs != null && tracker) {
+          tracker.marks.firstWhisperResultMs =
+            (tracker.marks.speakStartMs ?? performance.now()) + liveTiming.firstResultAtMs;
+        }
+      }
+
       const readyText = liveText.trim() || live?.getText().trim() || '';
       const config = configRef.current;
 
       if (!config.enableObjection) {
         setState((prev) => ({
           ...prev,
-          screen: 'evaluating',
-          statusMessage: readyText ? 'Evaluando…' : 'Transcribiendo…',
+          statusMessage: '🧠 Analizando tus argumentos…',
         }));
         let transcript = readyText;
         if (!transcriptLooksUsable(transcript)) {
           transcript = await transcribeBlob(blob, round.product.name, (msg) => {
             setState((prev) => ({ ...prev, statusMessage: msg }));
+          }, {
+            customer: round.deal.customer,
+            words: round.deal.words,
+            productName: round.product.name,
+            preferFinalQuality: true,
+            tracker: tracker ?? undefined,
           });
+        } else {
+          const norm = normalizeGameTranscript(
+            transcript,
+            round.deal.words,
+            round.product.name,
+          );
+          transcript = norm.normalized || transcript;
+          tracker?.setMeta({ usedFinalPass: false, normalizedHits: norm.hits.length });
+        }
+        if (!transcriptLooksUsable(transcript)) {
+          setState((prev) => ({
+            ...prev,
+            screen: 'pitch',
+            error: '⚠️ No hemos entendido bien tu pitch. ¿Quieres repetirlo?',
+            needsRetry: true,
+            statusMessage: null,
+            pipelineReport: tracker?.report() ?? null,
+          }));
+          return;
         }
         const conversation: ConversationTurn[] = [{ role: 'player_pitch', text: transcript }];
         const nextRound: Round = {
@@ -460,27 +562,43 @@ export function useSnakeOil() {
           pitch: { transcript, durationSec: config.pitchSeconds },
           conversation,
         };
-        await finalizeEvaluation(nextRound, conversation);
+        await finalizeEvaluation(nextRound, conversation, tracker);
         return;
       }
 
-      setState((prev) => ({
-        ...prev,
-        screen: 'evaluating',
-        statusMessage: readyText ? 'El cliente responde…' : 'Transcribiendo el pitch…',
-      }));
-
       const result = await pitchToObjection({
         blob,
+        liveTranscript: readyText,
         customer: round.deal.customer,
         words: round.deal.words,
         productName: round.product.name,
         difficulty: config.difficulty,
         objectionKindHint: pickObjectionKind(config.difficulty),
         onStatus: (msg) => setState((prev) => ({ ...prev, statusMessage: msg })),
+        tracker: tracker ?? undefined,
       });
 
-      const transcript = result.ok ? result.data.transcript : result.transcript || readyText;
+      if (!result.ok && !transcriptLooksUsable(result.transcript || readyText)) {
+        setState((prev) => ({
+          ...prev,
+          screen: 'pitch',
+          error: '⚠️ No hemos entendido bien tu pitch. ¿Quieres repetirlo?',
+          needsRetry: true,
+          statusMessage: null,
+          pipelineReport: tracker?.report() ?? null,
+        }));
+        return;
+      }
+
+      const transcript = result.ok
+        ? result.data.transcript
+        : normalizeGameTranscript(
+            result.transcript || readyText,
+            round.deal.words,
+            round.product.name,
+          ).normalized ||
+          result.transcript ||
+          readyText;
       const objectionText = result.ok
         ? result.data.objection
         : '¿De verdad crees que alguien pagaría por eso? Convénceme.';
@@ -497,6 +615,7 @@ export function useSnakeOil() {
         conversation,
       };
 
+      tracker?.mark('uiResultMs');
       setState((prev) => ({
         ...prev,
         screen: 'customer',
@@ -507,13 +626,17 @@ export function useSnakeOil() {
         statusMessage: null,
         secondsLeft: config.replySeconds,
         phase: 'reply',
+        pipelineReport: tracker?.report() ?? null,
+        needsRetry: false,
       }));
     } catch {
       setState((prev) => ({
         ...prev,
         screen: 'pitch',
-        error: 'No se pudo procesar el audio',
+        error: '⚠️ No hemos entendido bien tu pitch. ¿Quieres repetirlo?',
+        needsRetry: true,
         statusMessage: null,
+        pipelineReport: tracker?.report() ?? null,
       }));
     } finally {
       finishingRef.current = false;
@@ -538,7 +661,7 @@ export function useSnakeOil() {
       ...prev,
       recording: false,
       screen: 'evaluating',
-      statusMessage: 'El cliente escucha…',
+      statusMessage: '📝 Procesando tu discurso…',
     }));
 
     try {
@@ -546,11 +669,27 @@ export function useSnakeOil() {
         session.stop(),
         live ? live.flush() : Promise.resolve(''),
       ]);
+      trackerRef.current?.mark('speakEndMs');
+      trackerRef.current?.mark('liveFlushDoneMs');
       let reply = liveText.trim() || live?.getText().trim() || '';
       if (!transcriptLooksUsable(reply)) {
+        setState((prev) => ({ ...prev, statusMessage: '🧠 Analizando tus argumentos…' }));
         reply = await transcribeBlob(blob, round.product.name, (msg) => {
           setState((prev) => ({ ...prev, statusMessage: msg }));
+        }, {
+          customer: round.deal.customer,
+          words: round.deal.words,
+          productName: round.product.name,
+          preferFinalQuality: false,
+          tracker: trackerRef.current ?? undefined,
         });
+      } else {
+        const norm = normalizeGameTranscript(reply, round.deal.words, round.product.name);
+        reply = norm.normalized || reply;
+      }
+
+      if (!transcriptLooksUsable(reply)) {
+        reply = '(respuesta poco audible)';
       }
 
       const conversation: ConversationTurn[] = [
@@ -597,7 +736,7 @@ export function useSnakeOil() {
       ...prev,
       recording: false,
       screen: 'evaluating',
-      statusMessage: 'Evaluando el giro…',
+      statusMessage: '⚖️ Evaluando tu respuesta…',
     }));
 
     try {
@@ -605,19 +744,30 @@ export function useSnakeOil() {
         session.stop(),
         live ? live.flush() : Promise.resolve(''),
       ]);
+      trackerRef.current?.mark('speakEndMs');
       let reply = liveText.trim() || live?.getText().trim() || '';
       if (!transcriptLooksUsable(reply)) {
         reply = await transcribeBlob(blob, round.product.name, (msg) => {
           setState((prev) => ({ ...prev, statusMessage: msg }));
+        }, {
+          customer: round.deal.customer,
+          words: round.deal.words,
+          productName: round.product.name,
+          preferFinalQuality: false,
+          tracker: trackerRef.current ?? undefined,
         });
+      } else {
+        const norm = normalizeGameTranscript(reply, round.deal.words, round.product.name);
+        reply = norm.normalized || reply;
       }
+      if (!transcriptLooksUsable(reply)) reply = '(reacción poco audible)';
       const conversation: ConversationTurn[] = [
         ...round.conversation,
         { role: 'player_event_reply', text: reply },
       ];
       const nextRound: Round = { ...round, eventReply: reply, conversation };
       pushLiveBadge(['survivor']);
-      await finalizeEvaluation(nextRound, conversation);
+      await finalizeEvaluation(nextRound, conversation, trackerRef.current);
     } catch {
       setState((prev) => ({
         ...prev,
@@ -642,8 +792,21 @@ export function useSnakeOil() {
           : state.config.replySeconds;
 
     try {
+      const round = state.round;
+      const prompt = round
+        ? buildSnakeOilWhisperPrompt({
+            customer: round.deal.customer,
+            productName: round.product.name,
+            words: round.deal.words,
+          })
+        : undefined;
+      const tracker = createPipelineTracker();
+      tracker.mark('speakStartMs');
+      trackerRef.current = tracker;
+
       const live = createLiveWhisperSession({
         category: state.round?.product.name ?? 'producto',
+        prompt,
         onUpdate: (text) => {
           setState((prev) => {
             if (!prev.recording || !prev.round) return prev;
@@ -659,6 +822,9 @@ export function useSnakeOil() {
             return prev;
           });
         },
+        onFirstResult: (ms) => {
+          tracker.mark('firstWhisperResultMs', (tracker.marks.speakStartMs ?? performance.now()) + ms);
+        },
       });
       liveRef.current = live;
       const session = await startRecorderSession({
@@ -670,6 +836,8 @@ export function useSnakeOil() {
         recording: true,
         secondsLeft: seconds,
         error: null,
+        needsRetry: false,
+        statusMessage: '🎙️ Escuchando…',
       }));
 
       timerRef.current = window.setInterval(() => {
@@ -697,8 +865,7 @@ export function useSnakeOil() {
     state.phase,
     state.config.pitchSeconds,
     state.config.replySeconds,
-    state.round?.product.name,
-    state.round?.deal.event?.reactionSeconds,
+    state.round,
     finishPitchAndContinue,
     finishReplyAndContinue,
     finishEventReplyAndEvaluate,
@@ -724,6 +891,7 @@ export function useSnakeOil() {
     setProductName,
     goProduct,
     goPitch,
+    retryPitch,
     beginReply,
     beginEventReply,
     startRecording,
