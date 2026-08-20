@@ -115,7 +115,7 @@ const partyGames: HubGame[] = [
   {
     href: '/snakeoil',
     name: 'Snake Oil',
-    line: 'Dos palabras, un pitch y la IA (o el cliente) elige al mejor vendedor.',
+    line: 'Pitch + objeción: vende absurdo y la IA te puntúa de 0 a 100.',
     cta: 'Jugar',
     tone: 'snakeoil',
     group: 'hablar',

@@ -1,134 +1,168 @@
+import { motion } from 'framer-motion';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { NumberStepper } from '../../components/NumberStepper';
 import { ScreenShell } from '../../components/ScreenShell';
+import { Toggle } from '../../components/Toggle';
 import { useReadableMode } from '../../hooks/useReadableMode';
-import { NamesPage } from '../../pages/NamesPage';
-import { PassPhonePage } from '../../pages/PassPhonePage';
 import { AdultModeToggle } from '../shared/AdultModeToggle';
 import { ConfigShell } from '../shared/ConfigShell';
 import { GameHome } from '../shared/GameHome';
 import { WhisperDownloadBanner } from '../hablaya/WhisperDownloadBanner';
 import { useWhisperPreload } from '../hablaya/useWhisperPreload';
-import { HABLAYA_WHISPER_BUILD } from '../hablaya/whisperLocal';
 import {
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  SECONDS_OPTIONS,
-  productLabel,
-  type JudgeMode,
-} from './logic';
+  OBJECTION_SECONDS_OPTIONS,
+  PITCH_SECONDS_OPTIONS,
+  WORD_COUNT_OPTIONS,
+  customerHeadline,
+} from './engine';
+import type { AiEvaluation, DimensionScores } from './types';
 import { useSnakeOil } from './useSnakeOil';
+
+const DIM_LABELS: Array<{ key: keyof DimensionScores; label: string }> = [
+  { key: 'persuasion', label: 'Persuasión' },
+  { key: 'creativity', label: 'Creatividad' },
+  { key: 'improvisation', label: 'Improvisación' },
+  { key: 'coherence', label: 'Coherencia' },
+  { key: 'humor', label: 'Humor' },
+  { key: 'customerFit', label: 'Adaptación al cliente' },
+  { key: 'objectionHandling', label: 'Objeciones' },
+  { key: 'clarity', label: 'Claridad' },
+  { key: 'originality', label: 'Originalidad' },
+  { key: 'fluency', label: 'Fluidez' },
+  { key: 'wordUse', label: 'Uso de palabras' },
+];
+
+function MicPulse({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <span className="relative inline-flex h-3 w-3">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+      <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500" />
+    </span>
+  );
+}
+
+function ScoreHero({ evaluation }: { evaluation: AiEvaluation }) {
+  return (
+    <motion.div
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+      className="text-center"
+    >
+      <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums text-[var(--color-accent)] sm:text-8xl">
+        {evaluation.score}
+        <span className="text-3xl text-[var(--color-text-muted)]">/100</span>
+      </p>
+      <p className="mt-3 font-[family-name:var(--font-display)] text-2xl font-semibold">
+        {evaluation.label}
+      </p>
+      <p className="mt-3 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+        {evaluation.funnyComment}
+      </p>
+    </motion.div>
+  );
+}
 
 export default function SnakeOilApp() {
   const { readableMode, setReadableMode } = useReadableMode();
   const game = useSnakeOil();
   const { state } = game;
   const whisper = useWhisperPreload(true);
-
-  if (state.screen === 'pass') {
-    return (
-      <ScreenShell screenKey="pass" bleed>
-        <PassPhonePage />
-      </ScreenShell>
-    );
-  }
+  const deal = state.deal;
 
   return (
     <ScreenShell
       screenKey={state.screen}
-      centered={
-        state.screen !== 'names' &&
-        state.screen !== 'build' &&
-        state.screen !== 'review' &&
-        state.screen !== 'pickWinner' &&
-        state.screen !== 'config'
-      }
+      centered={state.screen !== 'config' && state.screen !== 'result'}
     >
       {state.screen === 'home' && (
-        <GameHome
-          title="Snake Oil"
-          emoji="🐍"
-          tagline="Inventa un producto absurdo y véndeselo al cliente. La IA puntúa el pitch."
-          steps={[
-            'Whisper se descarga en el móvil (solo la primera vez).',
-            'El cliente tiene un rol; los demás juntan 2 cartas y hacen el pitch.',
-            'DeepSeek nota el discurso; el cliente (o la IA) elige el mejor.',
-          ]}
-          readableMode={readableMode}
-          onReadableModeChange={setReadableMode}
-          onStart={game.goConfig}
-          startDisabled={!whisper.ready}
-          startLabel={
-            whisper.status === 'loading'
-              ? 'Espera: descargando Whisper…'
-              : whisper.status === 'error'
-                ? 'Whisper no está listo'
-                : 'Configurar partida'
-          }
-          banner={
-            <WhisperDownloadBanner
-              status={whisper.status}
-              progress={whisper.progress}
-              message={whisper.message}
-              error={whisper.error}
-              onRetry={whisper.retry}
-            />
-          }
-        />
+        <>
+          <GameHome
+            title="Snake Oil"
+            emoji="🐍"
+            tagline="Inventa un producto absurdo, véndelo al micrófono y que el jurado-IA te ponga nota de concurso."
+            steps={[
+              'Whisper se descarga en el móvil (solo la primera vez).',
+              'Recibes un cliente imposible y 2–3 palabras al azar.',
+              'Pitch + objeción: la IA puntúa persuasión, humor e improvisación.',
+            ]}
+            readableMode={readableMode}
+            onReadableModeChange={setReadableMode}
+            onStart={game.goConfig}
+            startDisabled={!whisper.ready}
+            startLabel={
+              whisper.status === 'loading'
+                ? 'Espera: descargando Whisper…'
+                : whisper.status === 'error'
+                  ? 'Whisper no está listo'
+                  : 'Configurar y jugar'
+            }
+            banner={
+              <WhisperDownloadBanner
+                status={whisper.status}
+                progress={whisper.progress}
+                message={whisper.message}
+                error={whisper.error}
+                onRetry={whisper.retry}
+              />
+            }
+          />
+          {state.stats.rounds > 0 ? (
+            <p className="mt-4 text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Rondas: {state.stats.rounds} · Mejor: {state.stats.bestScore}/100 · Media:{' '}
+              {Math.round(state.stats.totalScore / state.stats.rounds)}
+            </p>
+          ) : null}
+        </>
       )}
-      {state.screen === 'home' ? (
-        <p className="mt-4 text-center text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-          Build {HABLAYA_WHISPER_BUILD} · misma pila de voz que Habla ya
-        </p>
-      ) : null}
 
       {state.screen === 'config' && (
         <ConfigShell
+          title="Modo solitario"
+          description="MVP: tú vendes, la IA es cliente y jurado. El multijugador llega después sobre el mismo motor."
           error={game.configValidation.error}
           canContinue={game.configValidation.valid}
+          continueLabel="Empezar ronda"
           onBack={game.goHome}
-          onContinue={game.goNames}
+          onContinue={game.startRound}
         >
           <NumberStepper
-            label="Jugadores"
-            description={`Entre ${MIN_PLAYERS} y ${MAX_PLAYERS}`}
-            value={state.config.playerCount}
-            min={MIN_PLAYERS}
-            max={MAX_PLAYERS}
-            onChange={(playerCount) => game.updateConfig({ playerCount })}
+            label="Palabras"
+            description="2 o 3 piezas para inventar el producto."
+            value={state.config.wordCount}
+            min={2}
+            max={3}
+            options={[...WORD_COUNT_OPTIONS]}
+            onChange={(wordCount) => game.updateConfig({ wordCount: wordCount as 2 | 3 })}
           />
           <NumberStepper
-            label="Segundos por pitch"
-            description="Tiempo para vender el invento."
-            value={state.config.secondsPerPitch}
-            min={30}
+            label="Segundos de pitch"
+            description="Tiempo para vender."
+            value={state.config.pitchSeconds}
+            min={45}
             max={60}
-            options={[...SECONDS_OPTIONS]}
-            onChange={(secondsPerPitch) => game.updateConfig({ secondsPerPitch })}
+            options={[...PITCH_SECONDS_OPTIONS]}
+            onChange={(pitchSeconds) => game.updateConfig({ pitchSeconds })}
           />
-          <ModePicker
-            label="Quién decide el ganador"
-            value={state.config.judgeMode}
-            options={[
-              {
-                id: 'both',
-                title: 'Cliente + nota IA',
-                desc: 'La IA puntúa cada pitch; el cliente elige con esa info.',
-              },
-              {
-                id: 'ai',
-                title: 'Solo IA',
-                desc: 'Gana automáticamente la nota más alta.',
-              },
-              {
-                id: 'customer',
-                title: 'Solo cliente',
-                desc: 'Clásico: el cliente elige sin IA (offline).',
-              },
-            ]}
-            onChange={(judgeMode) => game.updateConfig({ judgeMode: judgeMode as JudgeMode })}
+          <Toggle
+            label="Fase de objeción"
+            description="La IA te planta una pregunta y tienes 15–20 s para responder."
+            checked={state.config.enableObjection}
+            onChange={(enableObjection) => game.updateConfig({ enableObjection })}
           />
+          {state.config.enableObjection ? (
+            <NumberStepper
+              label="Segundos de respuesta"
+              description="Contra-reloj tras la objeción."
+              value={state.config.objectionSeconds}
+              min={15}
+              max={20}
+              options={[...OBJECTION_SECONDS_OPTIONS]}
+              onChange={(objectionSeconds) => game.updateConfig({ objectionSeconds })}
+            />
+          ) : null}
           <AdultModeToggle
             checked={state.config.adultMode}
             onChange={(adultMode) => game.updateConfig({ adultMode })}
@@ -136,314 +170,276 @@ export default function SnakeOilApp() {
         </ConfigShell>
       )}
 
-      {state.screen === 'names' && (
-        <NamesPage
-          names={state.playerNames}
-          error={game.namesError}
-          onChangeName={game.updatePlayerName}
-          onContinue={game.beginMatch}
-          onBack={game.goConfig}
-        />
-      )}
-
-      {state.screen === 'customerReveal' && game.customer && (
-        <div className="flex flex-col gap-8 text-center">
-          <header>
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Cliente · ronda {state.customersDone + 1}/{state.players.length}
+      {state.screen === 'deal' && deal && (
+        <div className="flex flex-col gap-8">
+          <header className="text-center">
+            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">
+              Cliente
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              {game.customer.name}
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl font-bold sm:text-5xl">
+              {customerHeadline(deal.customer)}
             </h1>
-            <p className="mt-6 font-[family-name:var(--font-display)] text-4xl font-semibold text-[var(--color-accent)] sm:text-5xl">
-              {state.customerRole}
-            </p>
-            <p className="mt-4 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              Los demás preparan un invento de 2 palabras y lo venden.
+            <p className="mx-auto mt-4 max-w-md text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+              {deal.customer.need}
             </p>
           </header>
-          <Button onClick={game.continueAfterCustomerReveal}>Pasar al primer vendedor</Button>
+
+          <div>
+            <p className="mb-3 text-center text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+              Tus palabras
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {deal.words.map((word, i) => (
+                <motion.span
+                  key={word}
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.08 * i }}
+                  className="rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-4 py-3 font-[family-name:var(--font-display)] text-xl font-bold uppercase tracking-wide text-[var(--color-accent)]"
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={game.goProduct}>Inventar producto</Button>
         </div>
       )}
 
-      {state.screen === 'build' && game.currentSeller && (
-        <div className="flex flex-col gap-5">
+      {state.screen === 'product' && deal && (
+        <div className="flex flex-col gap-6">
           <header>
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Vendedor · cliente: {state.customerRole}
+            <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              {customerHeadline(deal.customer)}
             </p>
             <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              {game.currentSeller.name}
+              Nombra tu invento
             </h1>
             <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              Elige exactamente 2 cartas para tu producto.
+              Combina {deal.words.join(' · ')}. Luego, al micrófono.
             </p>
           </header>
-
-          {state.selected.length === 2 ? (
-            <Card className="text-center">
-              <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">Tu invento</p>
-              <p className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)]">
-                {productLabel(state.selected[0]!, state.selected[1]!)}
-              </p>
-            </Card>
-          ) : null}
-
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {game.currentSeller.hand.map((word) => {
-              const active = state.selected.includes(word);
-              return (
-                <button
-                  key={word}
-                  type="button"
-                  onClick={() => game.toggleWord(word)}
-                  className={[
-                    'min-h-[var(--touch-min)] rounded-2xl border px-3 py-3 font-[family-name:var(--font-display)] text-lg font-semibold transition-colors',
-                    active
-                      ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-[var(--color-accent)]'
-                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]',
-                  ].join(' ')}
-                >
-                  {word}
-                </button>
-              );
-            })}
-          </div>
-
-          <Button onClick={game.confirmProduct} disabled={state.selected.length !== 2}>
-            Listo para el pitch
+          <input
+            type="text"
+            value={state.productName}
+            onChange={(e) => game.setProductName(e.target.value)}
+            maxLength={80}
+            className="min-h-[var(--touch-min)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 font-[family-name:var(--font-display)] text-xl font-semibold outline-none focus:border-[var(--color-accent)]"
+          />
+          <Button onClick={game.goPitch} disabled={!state.productName.trim()}>
+            Subir al escenario
           </Button>
         </div>
       )}
 
-      {state.screen === 'pitch' && game.currentSeller && (
-        <div className="flex flex-col gap-6">
-          <header className="text-center">
+      {state.screen === 'pitch' && deal && (
+        <div className="flex flex-col gap-6 text-center">
+          <header>
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Vende a {state.customerRole}
+              Cliente · {customerHeadline(deal.customer)}
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              {productLabel(state.selected[0] ?? '', state.selected[1] ?? '')}
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-bold">
+              {state.productName}
             </h1>
-            <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              {game.currentSeller.name} · convence sin vergüenza
-            </p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {deal.words.map((w) => (
+                <span
+                  key={w}
+                  className="rounded-full border border-[var(--color-border)] px-3 py-1 text-sm uppercase tracking-wide text-[var(--color-text-muted)]"
+                >
+                  {w}
+                </span>
+              ))}
+            </div>
           </header>
 
-          <Card className="flex flex-col items-center gap-4 py-8 text-center">
-            <p className="font-[family-name:var(--font-display)] text-6xl font-semibold tabular-nums">
+          <Card className="flex flex-col items-center gap-3 py-10">
+            <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums">
               {state.secondsLeft}
             </p>
-            <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-              {state.recording
-                ? state.transcript.trim()
-                  ? 'Transcribiendo en vivo…'
-                  : 'Grabando…'
-                : 'Pulsa para empezar el pitch'}
+            <p className="flex items-center gap-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+              <MicPulse active={state.recording} />
+              {state.recording ? 'HABLANDO…' : 'Listo cuando tú lo estés'}
             </p>
-            {state.recording && state.transcript.trim() ? (
-              <p className="max-h-32 overflow-y-auto px-3 text-left text-[length:var(--text-body-sm)] text-[var(--color-text)]">
-                {state.transcript}
+            {state.recording && state.pitchTranscript ? (
+              <p className="max-h-28 overflow-y-auto px-2 text-left text-[length:var(--text-body-sm)] text-[var(--color-text)]">
+                {state.pitchTranscript}
               </p>
-            ) : null}
-            {state.aiError ? (
-              <p className="text-[length:var(--text-body-sm)] text-[var(--color-danger)]">{state.aiError}</p>
             ) : null}
           </Card>
 
+          {state.error ? (
+            <p className="text-[length:var(--text-body-sm)] text-[var(--color-danger)]">{state.error}</p>
+          ) : null}
+
           {!state.recording ? (
-            <Button onClick={() => void game.startRecording()}>Empezar pitch</Button>
+            <Button onClick={() => void game.startRecording()}>🎙️ Empezar pitch</Button>
           ) : (
-            <Button variant="danger" onClick={() => void game.finishRecording()}>
+            <Button variant="danger" onClick={game.stopRecording}>
               Terminar ya
             </Button>
           )}
         </div>
       )}
 
-      {state.screen === 'review' && game.currentSeller && (
-        <div className="flex flex-col gap-5">
-          <header>
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              {productLabel(state.selected[0] ?? '', state.selected[1] ?? '')}
-            </p>
-            <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              Pitch de {game.currentSeller.name}
-            </h1>
-          </header>
-
-          <Card>
-            {state.audioUrl ? (
-              <audio controls src={state.audioUrl} className="w-full" />
-            ) : (
-              <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                Sin audio disponible.
-              </p>
-            )}
-
-            {game.wantsAi ? (
-              <div className="mt-4">
-                <p className="text-[length:var(--text-body-sm)] font-semibold text-[var(--color-text)]">
-                  Transcripción (Whisper local)
-                </p>
-                <textarea
-                  value={state.transcript}
-                  onChange={(e) => game.setTranscript(e.target.value)}
-                  rows={4}
-                  disabled={state.aiLoading && !state.transcript.trim()}
-                  placeholder="Aquí debería aparecer el pitch…"
-                  className="mt-3 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[length:var(--text-body)] outline-none focus:border-[var(--color-accent)] disabled:opacity-60"
-                />
-                {state.aiError && !state.aiLoading ? (
-                  <p className="mt-2 text-[length:var(--text-body-sm)] text-[var(--color-danger)]">
-                    {state.aiError}
-                  </p>
-                ) : null}
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <Button onClick={() => void game.requestAiScore()} disabled={state.aiLoading}>
-                    {state.aiLoading ? state.aiStatus || 'Procesando…' : 'Re-puntuar'}
-                  </Button>
-                  {state.config.judgeMode === 'both' ? (
-                    <Button variant="ghost" onClick={game.skipAi} disabled={state.aiLoading}>
-                      Saltar IA
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-          </Card>
-
-          {game.wantsAi ? (
-            <Card>
-              <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Nota IA</p>
-              {state.aiLoading ? (
-                <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                  {state.aiStatus || 'Procesando…'}
-                </p>
-              ) : state.aiScore != null ? (
-                <>
-                  <p className="mt-2 font-[family-name:var(--font-display)] text-4xl font-semibold text-[var(--color-accent)]">
-                    {state.aiScore}
-                    <span className="text-lg text-[var(--color-text-muted)]"> / 10</span>
-                  </p>
-                  {state.aiFeedback ? (
-                    <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                      {state.aiFeedback}
-                    </p>
-                  ) : null}
-                </>
-              ) : (
-                <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-                  {state.aiError || 'Sin nota todavía.'}
-                </p>
-              )}
-            </Card>
-          ) : null}
-
-          <Button onClick={game.confirmPitchReview} disabled={!game.canConfirmReview}>
-            {state.sellerStep + 1 < state.sellerOrder.length
-              ? 'Siguiente vendedor'
-              : 'Ver pitches / elegir'}
-          </Button>
+      {state.screen === 'evaluating' && (
+        <div className="flex flex-col items-center gap-6 py-16 text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
+            className="h-12 w-12 rounded-full border-4 border-[var(--color-accent)] border-t-transparent"
+          />
+          <p className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+            {state.statusMessage || 'Analizando…'}
+          </p>
         </div>
       )}
 
-      {state.screen === 'pickWinner' && game.customer && (
-        <div className="flex flex-col gap-5">
-          <header>
-            <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Decide {game.customer.name}
-            </p>
-            <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              ¿Quién vende mejor a {state.customerRole}?
-            </h1>
-          </header>
-
-          <ul className="flex flex-col gap-3">
-            {state.pitches.map((pitch) => {
-              const seller = state.players.find((p) => p.id === pitch.playerId);
-              return (
-                <li key={pitch.playerId}>
-                  <Card>
-                    <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
-                      {seller?.name ?? 'Vendedor'}
-                    </p>
-                    <p className="mt-1 text-lg text-[var(--color-accent)]">{pitch.product}</p>
-                    {pitch.aiScore != null ? (
-                      <p className="mt-2 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                        IA: {pitch.aiScore}/10
-                        {pitch.aiFeedback ? ` · ${pitch.aiFeedback}` : ''}
-                      </p>
-                    ) : null}
-                    {pitch.audioUrl ? (
-                      <audio controls src={pitch.audioUrl} className="mt-3 w-full" />
-                    ) : null}
-                    <div className="mt-4">
-                      <Button onClick={() => game.pickWinner(pitch.playerId)}>Elegir este</Button>
-                    </div>
-                  </Card>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      {state.screen === 'roundResult' && (
+      {state.screen === 'objection' && (
         <div className="flex flex-col gap-8 text-center">
           <header>
             <p className="text-[length:var(--text-body-sm)] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-              Vendido
+              Objeción del cliente
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">
-              {state.players.find((p) => p.id === state.winnerId)?.name ?? 'Nadie'}
+            <h1 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-semibold leading-snug sm:text-3xl">
+              “{state.objection}”
             </h1>
-            <p className="mt-3 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              se lleva a {state.customerRole}
-            </p>
-            {(() => {
-              const pitch = state.pitches.find((p) => p.playerId === state.winnerId);
-              return pitch ? (
-                <p className="mt-6 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)]">
-                  {pitch.product}
-                </p>
-              ) : null;
-            })()}
           </header>
-          <Button onClick={game.nextRound}>
-            {state.customersDone + 1 >= state.players.length ? 'Ver ranking' : 'Siguiente cliente'}
-          </Button>
+          {state.error ? (
+            <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+              (Objeción de reserva · {state.error})
+            </p>
+          ) : null}
+          <Button onClick={game.beginReply}>Responder ({state.config.objectionSeconds}s)</Button>
         </div>
       )}
 
-      {state.screen === 'matchEnd' && (
-        <div className="flex flex-col gap-8">
-          <header className="text-center">
-            <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)]">
-              Fin de la partida
-            </h1>
-            <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-              Gana quien más clientes haya convencido.
+      {state.screen === 'reply' && (
+        <div className="flex flex-col gap-6 text-center">
+          <p className="text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+            “{state.objection}”
+          </p>
+          <Card className="flex flex-col items-center gap-3 py-10">
+            <p className="font-[family-name:var(--font-display)] text-7xl font-bold tabular-nums">
+              {state.secondsLeft}
             </p>
-          </header>
-          <Card padded={false}>
-            <ol className="divide-y divide-[var(--color-border)]">
-              {game.ranked.map((player, index) => (
-                <li key={player.id} className="flex items-center justify-between gap-3 px-5 py-4">
-                  <span className="font-[family-name:var(--font-display)] text-xl font-semibold">
-                    {index + 1}. {player.name}
-                  </span>
-                  <span className="text-[length:var(--text-body)] font-semibold text-[var(--color-accent)]">
-                    {player.score}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <p className="flex items-center gap-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+              <MicPulse active={state.recording} />
+              {state.recording ? 'DEFENDIENDO…' : 'Contraataque'}
+            </p>
+            {state.recording && state.replyTranscript ? (
+              <p className="max-h-24 overflow-y-auto px-2 text-left text-[length:var(--text-body-sm)]">
+                {state.replyTranscript}
+              </p>
+            ) : null}
           </Card>
+          {!state.recording ? (
+            <Button onClick={() => void game.startRecording()}>🎙️ Responder</Button>
+          ) : (
+            <Button variant="danger" onClick={game.stopRecording}>
+              Listo
+            </Button>
+          )}
+        </div>
+      )}
+
+      {state.screen === 'result' && (
+        <div className="flex flex-col gap-8 pb-6">
+          {state.evaluation ? (
+            <>
+              <ScoreHero evaluation={state.evaluation} />
+
+              <Card>
+                <p className="mb-4 font-[family-name:var(--font-display)] text-xl font-semibold">
+                  Desglose
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {DIM_LABELS.map(({ key, label }) => {
+                    const value = state.evaluation!.dimensions[key];
+                    return (
+                      <li key={key} className="flex items-center gap-3">
+                        <span className="w-40 shrink-0 text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
+                          {label}
+                        </span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--color-bg)]">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${value}%` }}
+                            transition={{ duration: 0.5 }}
+                            className="h-full rounded-full bg-[var(--color-accent)]"
+                          />
+                        </div>
+                        <span className="w-10 text-right font-semibold tabular-nums">{value}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Card>
+
+              <Card>
+                <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
+                  Lo que ha funcionado
+                </p>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+                  {state.evaluation.strengths.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ul>
+                {state.evaluation.bestMoment ? (
+                  <p className="mt-4 text-[length:var(--text-body)] text-[var(--color-accent)]">
+                    Mejor momento: {state.evaluation.bestMoment}
+                  </p>
+                ) : null}
+                <p className="mt-6 font-[family-name:var(--font-display)] text-xl font-semibold">
+                  Para el próximo pitch
+                </p>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
+                  {state.evaluation.weaknesses.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ul>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
+                Sin nota esta vez
+              </p>
+              <p className="mt-2 text-[var(--color-danger)]">{state.error || 'Error desconocido'}</p>
+            </Card>
+          )}
+
+          {state.stats.rounds > 0 ? (
+            <Card>
+              <p className="font-[family-name:var(--font-display)] text-lg font-semibold">
+                Estadísticas de la sesión
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestScore}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Mejor venta</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestCreativity}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Creatividad</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestImprovisation}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Impro</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{state.stats.bestObjection}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">Objeciones</p>
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           <div className="flex flex-col gap-3">
-            <Button onClick={game.beginMatch}>Otra partida</Button>
+            <Button onClick={game.startRound}>Otra ronda</Button>
             <Button variant="ghost" onClick={game.goConfig}>
-              Cambiar configuración
+              Configuración
             </Button>
             <Button variant="ghost" onClick={game.goHome}>
               Inicio
@@ -452,48 +448,5 @@ export default function SnakeOilApp() {
         </div>
       )}
     </ScreenShell>
-  );
-}
-
-function ModePicker({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: { id: string; title: string; desc: string }[];
-  onChange: (id: string) => void;
-}) {
-  return (
-    <div>
-      <p className="text-[length:var(--text-body)] font-semibold text-[var(--color-text)]">{label}</p>
-      <div className="mt-3 flex flex-col gap-2">
-        {options.map((opt) => {
-          const active = opt.id === value;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => onChange(opt.id)}
-              className={[
-                'rounded-2xl border px-4 py-3 text-left transition-colors',
-                active
-                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-                  : 'border-[var(--color-border)] bg-[var(--color-bg)]',
-              ].join(' ')}
-            >
-              <span className="block font-[family-name:var(--font-display)] text-lg font-semibold">
-                {opt.title}
-              </span>
-              <span className="mt-1 block text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
-                {opt.desc}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }

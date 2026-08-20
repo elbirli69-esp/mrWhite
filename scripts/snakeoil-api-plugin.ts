@@ -1,6 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { evaluateSnakeOilPitch } from '../api/_lib/snakeoilScore.js'
+import {
+  evaluateSnakeOilRound,
+  generateSnakeOilObjection,
+} from '../api/_lib/snakeoilScore.js'
 
 async function readBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []
@@ -20,7 +23,21 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.end(JSON.stringify(body))
 }
 
-/** Sirve /api/snakeoil en vite (solo puntuación; Whisper es local). */
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((x): x is string => typeof x === 'string').map((s) => s.trim()).filter(Boolean)
+}
+
+function asNumber(value: unknown, fallback: number): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
+
+/** Sirve /api/snakeoil en vite. */
 export function snakeoilApiPlugin(): Plugin {
   return {
     name: 'snakeoil-api',
@@ -40,21 +57,37 @@ export function snakeoilApiPlugin(): Plugin {
           }
 
           const body = (await readBody(req)) as Record<string, unknown>
-          const transcript = typeof body.transcript === 'string' ? body.transcript.trim() : ''
-          const customer = typeof body.customer === 'string' ? body.customer : ''
-          const product = typeof body.product === 'string' ? body.product : ''
-          const durationSec =
-            typeof body.durationSec === 'number'
-              ? body.durationSec
-              : Number(body.durationSec) || 30
+          const action = asString(body.action) || 'evaluate'
+          const customerTitle = asString(body.customerTitle) || asString(body.customer)
+          const customerNeed = asString(body.customerNeed) || customerTitle
+          const productName = asString(body.productName) || asString(body.product)
+          const words = asStringArray(body.words)
+          const pitchTranscript = asString(body.pitchTranscript) || asString(body.transcript)
 
-          const result = await evaluateSnakeOilPitch({
-            transcript,
-            customer,
-            product,
-            durationSec,
+          if (action === 'objection') {
+            const objection = await generateSnakeOilObjection({
+              customerTitle,
+              customerNeed,
+              words,
+              productName,
+              pitchTranscript,
+            })
+            sendJson(res, 200, { ok: true, objection })
+            return
+          }
+
+          const evaluation = await evaluateSnakeOilRound({
+            customerTitle,
+            customerNeed,
+            words,
+            productName,
+            pitchTranscript,
+            objection: asString(body.objection),
+            replyTranscript: asString(body.replyTranscript),
+            pitchSeconds: asNumber(body.pitchSeconds ?? body.durationSec, 45),
+            replySeconds: asNumber(body.replySeconds, 20),
           })
-          sendJson(res, 200, { ok: true, transcript, ...result })
+          sendJson(res, 200, { ok: true, evaluation })
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Error del servidor'
           console.error('[snakeoil vite api]', error)
@@ -63,8 +96,8 @@ export function snakeoilApiPlugin(): Plugin {
             message.includes('vacía') ||
             message.includes('vacío') ||
             message.includes('corta') ||
-            message.includes('cliente') ||
-            message.includes('producto')
+            message.includes('producto') ||
+            message.includes('Pitch')
               ? 400
               : 500
           sendJson(res, status, { ok: false, error: message })
