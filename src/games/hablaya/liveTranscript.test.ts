@@ -12,6 +12,12 @@ describe('stitchTranscript', () => {
     );
   });
 
+  it('une solapes con plurales ASR', () => {
+    expect(stitchTranscript('detecta dinosaurios con un calcetín', 'calcetines térmicos')).toBe(
+      'detecta dinosaurios con un calcetín térmicos',
+    );
+  });
+
   it('si el nuevo texto incluye el anterior, se queda con el más largo', () => {
     expect(stitchTranscript('Un avión', 'Un avión sirve para volar')).toBe('Un avión sirve para volar');
   });

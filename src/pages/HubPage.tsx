@@ -17,6 +17,7 @@ type GameTone =
   | 'papelitos'
   | 'hablaya'
   | 'adivina'
+  | 'snakeoil'
   | 'calm'
   | 'bulardo'
 
@@ -120,6 +121,14 @@ const partyGames: HubGame[] = [
     tone: 'adivina',
     group: 'solo',
   },
+  {
+    href: '/snakeoil',
+    name: 'Snake Oil',
+    line: 'Pitch + objeción: vende absurdo y la IA te puntúa de 0 a 100.',
+    cta: 'Jugar',
+    tone: 'snakeoil',
+    group: 'hablar',
+  },
 ]
 
 const otherApps = [
@@ -158,7 +167,7 @@ const groups: Array<{ id: GameGroupId; label: string; blurb: string }> = [
   {
     id: 'hablar',
     label: 'Hablar',
-    blurb: 'Micrófono, votos y nota de la mesa.',
+    blurb: 'Micrófono, pitches y nota de la IA.',
   },
   {
     id: 'solo',

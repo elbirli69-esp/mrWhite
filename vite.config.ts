@@ -7,6 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { stayCalmApiPlugin } from './scripts/staycalm-api-plugin.js';
 import { bulardoApiPlugin } from './scripts/bulardo-api-plugin.js';
 import { hablayaApiPlugin } from './scripts/hablaya-api-plugin.js';
+import { snakeoilApiPlugin } from './scripts/snakeoil-api-plugin.js';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,13 +23,14 @@ export default defineConfig({
     stayCalmApiPlugin(),
     bulardoApiPlugin(),
     hablayaApiPlugin(),
+    snakeoilApiPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Juegos de palabras · stayCalm · bulardoCreator',
         short_name: 'Apps',
-        description: 'Mr White, Camaleón, Código Secreto, Papelitos, Adivina, Spyfall, Heads Up, Just One y más.',
+        description: 'Mr White, Camaleón, Código Secreto, Papelitos, Adivina, Snake Oil, Spyfall, Heads Up, Just One y más.',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'fullscreen',

@@ -15,6 +15,7 @@ Landing en `/` para elegir app:
 - **Papelitos** → `/papelitos` — bote de papeles (mesa o pack), tres rondas
 - **Habla ya** → `/hablaya` — categorías, micrófono, votos 0–10 e IA (serio o inventado)
 - **Adivina** → `/adivina` — palabra de 5 letras en solitario (estilo Wordle)
+- **Snake Oil** → `/snakeoil` — vende un invento absurdo a un cliente-IA con personalidad (pitch, objeciones, eventos, combo, probabilidad de compra; Whisper + DeepSeek)
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
@@ -26,7 +27,7 @@ Cada juego guarda su propia configuración en `localStorage` y permite ajustar p
 Variables en Vercel:
 
 - `REDIS_URL` (Railway, URL pública)
-- `DEEPSEEK_API_KEY` (bulardoCreator y puntuación de Habla ya)
+- `DEEPSEEK_API_KEY` (bulardoCreator, puntuación de Habla ya y Snake Oil)
 - `VITE_WS_URL` (salas online Mr White, p. ej. `wss://…railway.app`)
 - Habla ya transcribe con **Whisper local** en el navegador (WebGPU/WASM); no hace falta `OPENAI_API_KEY`
 
