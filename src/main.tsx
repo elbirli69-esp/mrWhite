@@ -138,6 +138,11 @@ async function boot() {
       title: 'Habla ya',
       loader: () => import('./games/hablaya/App'),
     },
+    '/adivina': {
+      app: 'adivina',
+      title: 'Adivina',
+      loader: () => import('./games/adivina/App'),
+    },
   };
 
   const party = partyRoutes[path];

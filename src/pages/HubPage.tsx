@@ -16,10 +16,11 @@ type GameTone =
   | 'unanimo'
   | 'papelitos'
   | 'hablaya'
+  | 'adivina'
   | 'calm'
   | 'bulardo'
 
-type GameGroupId = 'impostores' | 'tablero' | 'pistas' | 'hablar'
+type GameGroupId = 'impostores' | 'tablero' | 'pistas' | 'hablar' | 'solo'
 
 interface HubGame {
   href: string
@@ -111,6 +112,14 @@ const partyGames: HubGame[] = [
     tone: 'hablaya',
     group: 'hablar',
   },
+  {
+    href: '/adivina',
+    name: 'Adivina',
+    line: 'Cinco letras, seis intentos. Palabra del día… cuando te apetezca.',
+    cta: 'Jugar',
+    tone: 'adivina',
+    group: 'solo',
+  },
 ]
 
 const otherApps = [
@@ -151,6 +160,11 @@ const groups: Array<{ id: GameGroupId; label: string; blurb: string }> = [
     label: 'Hablar',
     blurb: 'Micrófono, votos y nota de la mesa.',
   },
+  {
+    id: 'solo',
+    label: 'En solitario',
+    blurb: 'Sin mesa. Tú contra la palabra.',
+  },
 ]
 
 type FilterId = 'all' | GameGroupId
@@ -161,6 +175,7 @@ const filters: Array<{ id: FilterId; label: string }> = [
   { id: 'tablero', label: 'Tablero' },
   { id: 'pistas', label: 'Pistas' },
   { id: 'hablar', label: 'Hablar' },
+  { id: 'solo', label: 'Solo' },
 ]
 
 function loadRecent(): string[] {
