@@ -158,7 +158,7 @@ export function OnlineLobbyPage({
             />
             <NumberStepper
               label="Farsantes"
-              description="Ven una palabra parecida (sin saberlo)."
+              description="Ven otra palabra de la misma familia, claramente distinta (sin saberlo)."
               value={state.config.farsanteCount}
               min={0}
               max={Math.max(0, playerCount - 1 - state.config.mrWhiteCount)}
@@ -166,7 +166,7 @@ export function OnlineLobbyPage({
             />
             <Toggle
               label="Pistas para Mr White"
-              description="Recibe una pista temática cercana."
+              description="Recibe una pista de ambiente relacionada de lejos."
               checked={state.config.mrWhiteHasHints}
               onChange={(mrWhiteHasHints) => patchConfig({ mrWhiteHasHints })}
             />
