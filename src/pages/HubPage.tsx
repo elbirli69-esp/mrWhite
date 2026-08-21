@@ -12,6 +12,7 @@ type GameTone =
   | 'spyfall'
   | 'headsup'
   | 'justone'
+  | 'cafeote'
   | 'fakeartist'
   | 'unanimo'
   | 'papelitos'
@@ -87,6 +88,14 @@ const partyGames: HubGame[] = [
     line: 'Una palabra, pistas únicas y el adivinador al margen.',
     cta: 'Jugar',
     tone: 'justone',
+    group: 'pistas',
+  },
+  {
+    href: '/cafeote',
+    name: 'Café o té',
+    line: 'Pares binarios, vibes y una palabra secreta en la mesa.',
+    cta: 'Jugar',
+    tone: 'cafeote',
     group: 'pistas',
   },
   {

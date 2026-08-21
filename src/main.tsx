@@ -118,6 +118,11 @@ async function boot() {
       title: 'Just One',
       loader: () => import('./games/justone/App'),
     },
+    '/cafeote': {
+      app: 'cafeote',
+      title: 'Café o té',
+      loader: () => import('./games/cafeote/App'),
+    },
     '/fakeartist': {
       app: 'fakeartist',
       title: 'Fake Artist',
