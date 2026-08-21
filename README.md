@@ -10,6 +10,7 @@ Landing en `/` para elegir app:
 - **Spyfall** → `/spyfall` — lugar secreto y espías
 - **Heads Up** → `/headsup` — palabra en la frente con temporizador
 - **Just One** → `/justone` — pistas únicas para adivinar
+- **Café o té** → `/cafeote` — pares binarios (café/té, playa/montaña…) y una palabra secreta
 - **Fake Artist** → `/fakeartist` — dibujo colectivo e impostor
 - **Unánimo** → `/unanimo` — coincidir palabras con el grupo
 - **Papelitos** → `/papelitos` — bote de papeles (mesa o pack), tres rondas
