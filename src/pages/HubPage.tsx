@@ -120,8 +120,15 @@ function GameCard({
       <div className="hub-card-glow" aria-hidden />
       <div className="hub-card-pattern" aria-hidden />
 
-      <div className="hub-card-art" aria-hidden>
-        <span className="hub-card-emoji">{visual.emoji}</span>
+      <div className="hub-card-art">
+        <img
+          src={visual.image}
+          alt={visual.imageAlt}
+          className="hub-card-cover"
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="hub-card-art-overlay" aria-hidden />
       </div>
 
       <div className="hub-card-body">
