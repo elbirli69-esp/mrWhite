@@ -219,13 +219,11 @@ export function HubPage() {
                 Recientes
               </p>
             </div>
-            <div className="hub-scroll" role="list" aria-label="Juegos recientes">
+            <nav className="hub-grid hub-grid--recent" aria-label="Juegos recientes">
               {recentGames.map((game, index) => (
-                <div key={`recent-${game.href}`} className="hub-scroll-item" role="listitem">
-                  <GameCard game={game} index={index} variant="featured" />
-                </div>
+                <GameCard key={`recent-${game.href}`} game={game} index={index} variant="featured" />
               ))}
-            </div>
+            </nav>
           </section>
         ) : null}
 
