@@ -9,84 +9,84 @@ export interface HubVisual {
 export const hubVisuals: Record<string, HubVisual> = {
   white: {
     image: '/hub/white.jpg',
-    imageAlt: 'Máscaras y misterio en una fiesta',
+    imageAlt: 'Amigos riéndose juntos en una partida',
     tag: 'Impostores',
   },
   camaleon: {
     image: '/hub/camaleon.jpg',
-    imageAlt: 'Camaleón entre hojas verdes',
+    imageAlt: 'Camaleón escondido entre las hojas',
     tag: 'Impostores',
   },
   spyfall: {
     image: '/hub/spyfall.jpg',
-    imageAlt: 'Mapa del mundo iluminado',
+    imageAlt: 'Vista desde la ventana de un avión',
     tag: 'Impostores',
   },
   fakeartist: {
     image: '/hub/fakeartist.jpg',
-    imageAlt: 'Paleta de pintura y pinceles',
+    imageAlt: 'Manos pintando y dibujando en grupo',
     tag: 'Impostores',
   },
   codigosecreto: {
     image: '/hub/codigosecreto.jpg',
-    imageAlt: 'Tablero de juego de mesa',
+    imageAlt: 'Partida de tablero con fichas y cartas',
     tag: 'Tablero',
   },
   headsup: {
     image: '/hub/headsup.jpg',
-    imageAlt: 'Persona usando el móvil',
+    imageAlt: 'Equipo celebrando y riendo en la oficina',
     tag: 'Pistas',
   },
   justone: {
     image: '/hub/justone.jpg',
-    imageAlt: 'Cuaderno abierto con bolígrafo',
+    imageAlt: 'Post-its de colores con pistas escritas',
     tag: 'Pistas',
   },
   cafeote: {
     image: '/hub/cafeote.jpg',
-    imageAlt: 'Tazas de café sobre la mesa',
+    imageAlt: 'Cartel luminoso de cafetería con ambiente de bar',
     tag: 'Pistas',
   },
   unanimo: {
     image: '/hub/unanimo.jpg',
-    imageAlt: 'Grupo de amigos al aire libre',
+    imageAlt: 'Choque de puños entre compañeros de equipo',
     tag: 'Pistas',
   },
   papelitos: {
     image: '/hub/papelitos.jpg',
-    imageAlt: 'Escritorio con cuaderno y bolígrafo',
+    imageAlt: 'Notas adhesivas listas para el bote',
     tag: 'Pistas',
   },
   hablaya: {
     image: '/hub/hablaya.jpg',
-    imageAlt: 'Micrófono de estudio',
+    imageAlt: 'Manos al aire en un concierto con micrófono',
     tag: 'Hablar',
   },
   adivina: {
     image: '/hub/adivina.jpg',
-    imageAlt: 'Bloques de letras de madera',
+    imageAlt: 'Letras de madera formando palabras',
     tag: 'Solo',
   },
   snakeoil: {
     image: '/hub/snakeoil.jpg',
-    imageAlt: 'Equipo en una reunión de trabajo',
+    imageAlt: 'Vendedor haciendo un pitch con gestos teatrales',
     tag: 'Hablar',
   },
   calm: {
     image: '/hub/calm.jpg',
-    imageAlt: 'Persona meditando al amanecer',
+    imageAlt: 'Persona haciendo yoga al aire libre',
     tag: 'Utilidad',
   },
   bulardo: {
     image: '/hub/bulardo.jpg',
-    imageAlt: 'Periódico sobre la mesa',
+    imageAlt: 'Montón de periódicos y titulares',
     tag: 'Utilidad',
   },
 };
 
 const defaultVisual: HubVisual = {
   image: '/hub/default.jpg',
-  imageAlt: 'Mando de videojuegos',
+  imageAlt: 'Mando de videojuegos iluminado',
   tag: 'Juego',
 };
 
