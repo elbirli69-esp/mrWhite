@@ -260,7 +260,7 @@ export default function AdivinaApp() {
               ← Salir
             </button>
             <h1 className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight">
-              Adivina
+              Cinco letras
             </h1>
             <span className="min-w-14 text-right text-[length:var(--text-body-sm)] text-[var(--color-text-muted)]">
               {state.rows.length}/{state.config.maxAttempts}
@@ -325,7 +325,7 @@ export default function AdivinaApp() {
     <ScreenShell screenKey={state.screen}>
       {state.screen === 'home' && (
         <GameHome
-          title="Adivina"
+          title="Cinco letras"
           emoji="🔤"
           tagline="Una palabra de 5 letras. Seis intentos. Juegas tú solo."
           steps={[

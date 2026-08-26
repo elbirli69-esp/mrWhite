@@ -66,7 +66,7 @@ export function ConfigPage({
           />
 
           <NumberStepper
-            label="Mr White"
+            label="Impostores"
             description={
               config.mrWhiteHasHints
                 ? 'Sin palabra, pero con una pista para improvisar.'
@@ -84,8 +84,8 @@ export function ConfigPage({
           />
 
           <Toggle
-            label="Pistas para Mr White"
-            description="Si está activo, Mr White ve una pista de ambiente relacionada de lejos (no un sinónimo obvio)."
+            label="Pistas para el impostor"
+            description="Si está activo, el impostor ve una pista de ambiente relacionada de lejos (no un sinónimo obvio)."
             checked={config.mrWhiteHasHints}
             disabled={config.mrWhiteCount === 0}
             onChange={(mrWhiteHasHints) => onChange({ mrWhiteHasHints })}

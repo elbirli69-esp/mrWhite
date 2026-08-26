@@ -24,7 +24,7 @@ export function ReloadPrompt() {
         <p className="text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text)]">
           {needRefresh
             ? 'Actualizando a la versión nueva…'
-            : 'Mr White listo para jugar sin conexión.'}
+            : 'El Impostor listo para jugar sin conexión.'}
         </p>
         <div className="flex gap-2">
           {needRefresh ? (

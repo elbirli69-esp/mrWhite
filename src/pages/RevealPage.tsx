@@ -73,11 +73,11 @@ export function RevealPage({
             >
               {player.role === 'mrWhite' ? (
                 <>
-                  <span className="text-6xl" role="img" aria-label="Mr White">
+                  <span className="text-6xl" role="img" aria-label="El impostor">
                     🤵
                   </span>
                   <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)] sm:text-4xl">
-                    Eres Mr. White
+                    Eres el impostor
                   </h2>
                   {player.hint ? (
                     <>

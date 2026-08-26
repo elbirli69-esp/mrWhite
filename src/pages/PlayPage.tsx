@@ -39,16 +39,16 @@ export function PlayPage({
   const farsanteAlive = farsantesAliveCount > 0;
   const allMrWhiteOut = hasMrWhite && !mrWhiteAlive;
   const allFarsantesOut = hasFarsante && !farsanteAlive;
-  /** Hay que descubrir a Mr White y a todos los Farsantes (los que haya en la partida). */
+  /** Hay que descubrir al impostor y a todos los Farsantes (los que haya en la partida). */
   const specialsAlive = mrWhiteAlive || farsanteAlive;
   const gameWon = !specialsAlive && (hasMrWhite || hasFarsante);
   const canEliminate = alive.length > 1 && specialsAlive;
 
   const winSubtitle =
     hasMrWhite && hasFarsante
-      ? 'Mr White y los Farsantes han sido eliminados.'
+      ? 'El impostor y los Farsantes han sido eliminados.'
       : hasMrWhite
-        ? 'Todos los Mr. White han sido eliminados.'
+        ? 'Todos los impostores han sido eliminados.'
         : 'Todos los Farsantes han sido eliminados.';
 
   return (
@@ -61,7 +61,7 @@ export function PlayPage({
           Eliminaciones
         </h1>
         <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
-          Votad y eliminad sospechosos hasta descubrir a Mr White y a los Farsantes.
+          Votad y eliminad sospechosos hasta descubrir al impostor y a los Farsantes.
         </p>
         {starterName ? (
           <p className="mt-3 text-[length:var(--text-body)] text-[var(--color-text)]">
@@ -124,7 +124,7 @@ export function PlayPage({
       ) : allMrWhiteOut && hasFarsante ? (
         <Card>
           <p className="text-center font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-accent)]">
-            ¡Mr. White eliminado!
+            ¡Impostor eliminado!
           </p>
           <p className="mt-2 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
             Seguíd buscando a {farsantesAliveCount === 1 ? 'el Farsante' : 'los Farsantes'}.
@@ -137,7 +137,7 @@ export function PlayPage({
             ¡Farsantes eliminados!
           </p>
           <p className="mt-2 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
-            Seguíd buscando a Mr White. La palabra se revelará al final.
+            Seguíd buscando al impostor. La palabra se revelará al final.
           </p>
         </Card>
       ) : null}

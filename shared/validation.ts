@@ -24,7 +24,7 @@ export function validateConfig(config: GameConfig): ValidationResult {
   if (!Number.isInteger(mrWhiteCount) || mrWhiteCount < 0) {
     return {
       valid: false,
-      error: 'El número de Mr White no puede ser negativo.',
+      error: 'El número de impostores no puede ser negativo.',
     };
   }
 
@@ -38,7 +38,7 @@ export function validateConfig(config: GameConfig): ValidationResult {
   if (mrWhiteCount === 0 && farsanteCount === 0) {
     return {
       valid: false,
-      error: 'Debe haber al menos un Mr White o un Farsante.',
+      error: 'Debe haber al menos un impostor o un Farsante.',
     };
   }
 
@@ -47,14 +47,14 @@ export function validateConfig(config: GameConfig): ValidationResult {
   if (special >= playerCount) {
     return {
       valid: false,
-      error: `Mr White (${mrWhiteCount}) + Farsantes (${farsanteCount}) = ${special}, pero solo hay ${playerCount} jugadores. Debe quedar al menos un jugador normal.`,
+      error: `Impostores (${mrWhiteCount}) + Farsantes (${farsanteCount}) = ${special}, pero solo hay ${playerCount} jugadores. Debe quedar al menos un jugador normal.`,
     };
   }
 
   if (mrWhiteCount > playerCount) {
     return {
       valid: false,
-      error: 'No puede haber más Mr White que jugadores.',
+      error: 'No puede haber más impostores que jugadores.',
     };
   }
 

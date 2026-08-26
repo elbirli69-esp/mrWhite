@@ -255,7 +255,7 @@ export function emptyDimensions(): DimensionScores {
 }
 
 export function scoreLabel(score: number): string {
-  if (score >= 90) return 'Leyenda del snake oil';
+  if (score >= 90) return 'Leyenda del humo';
   if (score >= 80) return 'Excelente vendedor';
   if (score >= 70) return 'Cierre casi cerrado';
   if (score >= 55) return 'Vendedor con potencial';

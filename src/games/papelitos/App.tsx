@@ -103,7 +103,7 @@ export default function PapelitosApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Papelitos"
+          title="Bote de ideas"
           emoji="📝"
           tagline="Bote de papeles, tres rondas y el reloj en marcha."
           steps={[

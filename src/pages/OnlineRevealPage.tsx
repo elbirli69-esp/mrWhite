@@ -80,11 +80,11 @@ export function OnlineRevealPage({
             >
               {privateRole.role === 'mrWhite' ? (
                 <>
-                  <span className="text-6xl" role="img" aria-label="Mr White">
+                  <span className="text-6xl" role="img" aria-label="El impostor">
                     🤵
                   </span>
                   <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)]">
-                    Eres Mr. White
+                    Eres el impostor
                   </h2>
                   <p className="text-[var(--color-text-muted)]">No tienes palabra.</p>
                   {privateRole.hint ? (

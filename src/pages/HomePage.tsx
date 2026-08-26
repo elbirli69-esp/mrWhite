@@ -39,7 +39,7 @@ export function HomePage({
             href="/"
             className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
           >
-            ← Apps
+            ← Mesa Móvil
           </a>
         </motion.p>
 
@@ -49,7 +49,7 @@ export function HomePage({
           transition={{ delay: 0.08, duration: 0.45 }}
           className="font-[family-name:var(--font-display)] text-5xl font-semibold tracking-tight text-[var(--color-text)] sm:text-6xl"
         >
-          Mr White
+          El Impostor
         </motion.h1>
 
         <motion.p
@@ -74,7 +74,7 @@ export function HomePage({
           </li>
           <li className="flex gap-3">
             <span className="mt-0.5 font-semibold text-[var(--color-accent)]">03</span>
-            <span>Votad y eliminad hasta descubrir a Mr White y a los Farsantes.</span>
+            <span>Votad y eliminad hasta descubrir al impostor y a los Farsantes.</span>
           </li>
         </ul>
 

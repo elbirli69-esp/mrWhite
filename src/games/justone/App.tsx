@@ -39,7 +39,7 @@ export default function JustOneApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Just One"
+          title="Sin repetir"
           emoji="🧠"
           tagline="Una palabra, muchas pistas… y las repetidas se anulan."
           steps={[

@@ -31,5 +31,5 @@ API: `GET/POST /api/staycalm`
 
 ## Notas
 
-- En el deploy de Mr White, la ruta `/staycalm` monta esta app.
+- En el deploy de Mesa Móvil, la ruta `/staycalm` monta esta app.
 - El código en `stayCalm/` + `api/` está pensado para extraerse limpio a otro repo cuando toque.

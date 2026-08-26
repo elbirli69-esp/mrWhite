@@ -1,5 +1,5 @@
 {
-  "name": "mr-white",
+  "name": "mesa-movil",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -39,5 +39,5 @@
     "vitest": "^3.2.7",
     "wavefile": "^11.0.0"
   },
-  "description": "Mr White — juego de mesa en el navegador"
+  "description": "Mesa Móvil — juegos de fiesta en el navegador"
 }

@@ -95,7 +95,7 @@ export function OnlinePlayPage({
         <Card>
           <p className="text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-accent)]">
             {state.allMrWhiteOut
-              ? '¡Habéis eliminado a todos los Mr. White!'
+              ? '¡Habéis eliminado a todos los impostores!'
               : 'Partida terminada'}
           </p>
           {state.revealedWord ? (

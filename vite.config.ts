@@ -28,9 +28,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Juegos de palabras · stayCalm · bulardoCreator',
-        short_name: 'Apps',
-        description: 'Mr White, Camaleón, Código Secreto, Papelitos, Café o té, Adivina, Snake Oil, Spyfall, Heads Up, Just One y más.',
+        name: 'Mesa Móvil',
+        short_name: 'Mesa Móvil',
+        description:
+          'El Impostor, El Intruso, Pista y número, Bote de ideas, Café o té, Cinco letras, Vende humo, ¿Dónde estamos?, En la frente, Sin repetir y más.',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'fullscreen',

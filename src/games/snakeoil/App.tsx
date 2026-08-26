@@ -272,7 +272,7 @@ export default function SnakeOilApp() {
       {state.screen === 'home' && (
         <div className="flex flex-col gap-6">
           <GameHome
-            title="Snake Oil"
+            title="Vende humo"
             emoji="🐍"
             tagline="Vende un invento absurdo a un cliente imposible. Improvisa. Cierra. Otra partida."
             steps={[

@@ -1,6 +1,11 @@
-import { StrictMode, type ComponentType } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
+import {
+  APP_BRAND,
+  canonicalPartyPath,
+  resolvePartyRoute,
+} from './brand';
 import {
   clearChunkReloadGuard,
   shouldReloadForChunkError,
@@ -58,6 +63,13 @@ function normalizePath(): string {
 async function boot() {
   const path = normalizePath();
 
+  const redirectTo = canonicalPartyPath(path);
+  if (redirectTo) {
+    window.history.replaceState(null, '', redirectTo);
+    window.location.replace(redirectTo);
+    return;
+  }
+
   if (path === '/staycalm') {
     document.documentElement.dataset.app = 'staycalm';
     document.title = 'stayCalm';
@@ -84,78 +96,7 @@ async function boot() {
     return;
   }
 
-  const partyRoutes: Record<
-    string,
-    { app: string; title: string; loader: () => Promise<{ default: ComponentType }> }
-  > = {
-    '/mrwhite': {
-      app: 'mrwhite',
-      title: 'Mr White',
-      loader: () => import('./App'),
-    },
-    '/camaleon': {
-      app: 'camaleon',
-      title: 'Camaleón',
-      loader: () => import('./games/camaleon/App'),
-    },
-    '/codigosecreto': {
-      app: 'codigosecreto',
-      title: 'Código Secreto',
-      loader: () => import('./games/codigosecreto/App'),
-    },
-    '/spyfall': {
-      app: 'spyfall',
-      title: 'Spyfall',
-      loader: () => import('./games/spyfall/App'),
-    },
-    '/headsup': {
-      app: 'headsup',
-      title: 'Heads Up',
-      loader: () => import('./games/headsup/App'),
-    },
-    '/justone': {
-      app: 'justone',
-      title: 'Just One',
-      loader: () => import('./games/justone/App'),
-    },
-    '/cafeote': {
-      app: 'cafeote',
-      title: 'Café o té',
-      loader: () => import('./games/cafeote/App'),
-    },
-    '/fakeartist': {
-      app: 'fakeartist',
-      title: 'Fake Artist',
-      loader: () => import('./games/fakeartist/App'),
-    },
-    '/unanimo': {
-      app: 'unanimo',
-      title: 'Unánimo',
-      loader: () => import('./games/unanimo/App'),
-    },
-    '/papelitos': {
-      app: 'papelitos',
-      title: 'Papelitos',
-      loader: () => import('./games/papelitos/App'),
-    },
-    '/hablaya': {
-      app: 'hablaya',
-      title: 'Habla ya',
-      loader: () => import('./games/hablaya/App'),
-    },
-    '/adivina': {
-      app: 'adivina',
-      title: 'Adivina',
-      loader: () => import('./games/adivina/App'),
-    },
-    '/snakeoil': {
-      app: 'snakeoil',
-      title: 'Snake Oil',
-      loader: () => import('./games/snakeoil/App'),
-    },
-  };
-
-  const party = partyRoutes[path];
+  const party = resolvePartyRoute(path);
   if (party) {
     document.documentElement.dataset.app = party.app;
     document.title = party.title;
@@ -171,7 +112,7 @@ async function boot() {
   }
 
   document.documentElement.dataset.app = 'hub';
-  document.title = 'Elige app';
+  document.title = APP_BRAND;
   await import('./hub.css');
   const { HubPage } = await import('./pages/HubPage');
   root.render(

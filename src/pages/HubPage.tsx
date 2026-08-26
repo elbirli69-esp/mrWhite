@@ -1,144 +1,12 @@
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
+import { APP_BRAND, partyGames } from '../brand'
 
 const ease = [0.22, 1, 0.36, 1] as const
 const RECENT_KEY = 'hub-recent-games'
 const MAX_RECENT = 3
 
-type GameTone =
-  | 'white'
-  | 'camaleon'
-  | 'codigosecreto'
-  | 'spyfall'
-  | 'headsup'
-  | 'justone'
-  | 'cafeote'
-  | 'fakeartist'
-  | 'unanimo'
-  | 'papelitos'
-  | 'hablaya'
-  | 'adivina'
-  | 'snakeoil'
-  | 'calm'
-  | 'bulardo'
-
 type GameGroupId = 'impostores' | 'tablero' | 'pistas' | 'hablar' | 'solo'
-
-interface HubGame {
-  href: string
-  name: string
-  line: string
-  cta: string
-  tone: GameTone
-  group: GameGroupId
-}
-
-const partyGames: HubGame[] = [
-  {
-    href: '/mrwhite',
-    name: 'Mr White',
-    line: 'Impostores, palabras secretas y el móvil que pasa.',
-    cta: 'Jugar',
-    tone: 'white',
-    group: 'impostores',
-  },
-  {
-    href: '/camaleon',
-    name: 'Camaleón',
-    line: 'Tablero, pistas de una palabra y alguien que no la conoce.',
-    cta: 'Jugar',
-    tone: 'camaleon',
-    group: 'impostores',
-  },
-  {
-    href: '/spyfall',
-    name: 'Spyfall',
-    line: 'Un lugar secreto, preguntas y espías improvisando.',
-    cta: 'Jugar',
-    tone: 'spyfall',
-    group: 'impostores',
-  },
-  {
-    href: '/fakeartist',
-    name: 'Fake Artist',
-    line: 'Dibujo colectivo y un impostor que no conoce la palabra.',
-    cta: 'Jugar',
-    tone: 'fakeartist',
-    group: 'impostores',
-  },
-  {
-    href: '/codigosecreto',
-    name: 'Código Secreto',
-    line: 'Dos equipos, pista + número (1–5) y un tablero de 25.',
-    cta: 'Jugar',
-    tone: 'codigosecreto',
-    group: 'tablero',
-  },
-  {
-    href: '/headsup',
-    name: 'Heads Up',
-    line: 'Palabra en la frente, pistas del resto y reloj en marcha.',
-    cta: 'Jugar',
-    tone: 'headsup',
-    group: 'pistas',
-  },
-  {
-    href: '/justone',
-    name: 'Just One',
-    line: 'Una palabra, pistas únicas y el adivinador al margen.',
-    cta: 'Jugar',
-    tone: 'justone',
-    group: 'pistas',
-  },
-  {
-    href: '/cafeote',
-    name: 'Café o té',
-    line: 'Pares binarios, vibes y una palabra secreta en la mesa.',
-    cta: 'Jugar',
-    tone: 'cafeote',
-    group: 'pistas',
-  },
-  {
-    href: '/unanimo',
-    name: 'Unánimo',
-    line: 'Coincide con el grupo, no intentes ser el más original.',
-    cta: 'Jugar',
-    tone: 'unanimo',
-    group: 'pistas',
-  },
-  {
-    href: '/papelitos',
-    name: 'Papelitos',
-    line: 'Bote, tres rondas: describir, una palabra y mímica.',
-    cta: 'Jugar',
-    tone: 'papelitos',
-    group: 'pistas',
-  },
-  {
-    href: '/hablaya',
-    name: 'Habla ya',
-    line: 'Categoría, micrófono, votos de la mesa y nota de la IA.',
-    cta: 'Jugar',
-    tone: 'hablaya',
-    group: 'hablar',
-  },
-  {
-    href: '/adivina',
-    name: 'Adivina',
-    line: 'Cinco letras, seis intentos. Palabra del día… cuando te apetezca.',
-    cta: 'Jugar',
-    tone: 'adivina',
-    group: 'solo',
-  },
-  {
-    href: '/snakeoil',
-    name: 'Snake Oil',
-    line: 'Pitch + objeción: vende absurdo y la IA te puntúa de 0 a 100.',
-    cta: 'Jugar',
-    tone: 'snakeoil',
-    group: 'hablar',
-  },
-]
 
 const otherApps = [
   {
@@ -254,15 +122,28 @@ export function HubPage() {
   const [filter, setFilter] = useState<FilterId>('all')
   const [recentHrefs, setRecentHrefs] = useState<string[]>([])
 
+  const hubGames = useMemo(
+    () =>
+      partyGames.map((game) => ({
+        href: game.path,
+        name: game.hubName,
+        line: game.hubLine,
+        cta: game.hubCta,
+        tone: game.tone,
+        group: game.group,
+      })),
+    [],
+  )
+
   useEffect(() => {
     setRecentHrefs(loadRecent())
   }, [])
 
   const recentGames = useMemo(() => {
     return recentHrefs
-      .map((href) => partyGames.find((g) => g.href === href) ?? otherApps.find((g) => g.href === href))
+      .map((href) => hubGames.find((g) => g.href === href) ?? otherApps.find((g) => g.href === href))
       .filter((g): g is NonNullable<typeof g> => Boolean(g))
-  }, [recentHrefs])
+  }, [recentHrefs, hubGames])
 
   const visibleGroups = useMemo(() => {
     if (filter === 'all') return groups
@@ -282,8 +163,8 @@ export function HubPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease }}
         >
-          <p className="hub-kicker">Elige y entra</p>
-          <h1 className="hub-title">Juegos</h1>
+          <p className="hub-kicker">Juegos de fiesta en el móvil</p>
+          <h1 className="hub-title">{APP_BRAND}</h1>
         </motion.header>
 
         <nav className="hub-filters" aria-label="Filtrar por tipo">
@@ -319,7 +200,7 @@ export function HubPage() {
         ) : null}
 
         {visibleGroups.map((group, groupIndex) => {
-          const games = partyGames.filter((g) => g.group === group.id)
+          const games = hubGames.filter((g) => g.group === group.id)
           return (
             <section
               key={group.id}

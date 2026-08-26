@@ -269,7 +269,7 @@ export function useCamaleon() {
           lastElimination,
           currentRound: round + 1,
           screen: 'end',
-          endTitle: '¡Camaleón descubierto!',
+          endTitle: '¡Intruso descubierto!',
           endSubtitle: `La palabra era ${prev.deal?.secretWord ?? ''}.`,
         };
       }
@@ -284,7 +284,7 @@ export function useCamaleon() {
           lastElimination,
           currentRound: round + 1,
           screen: 'end',
-          endTitle: 'Gana el Camaleón',
+          endTitle: 'Gana el intruso',
           endSubtitle: `Nadie adivinó. La palabra era ${prev.deal?.secretWord ?? ''}.`,
         };
       }
@@ -305,7 +305,7 @@ export function useCamaleon() {
       return {
         ...prev,
         screen: 'end',
-        endTitle: ok ? '¡El Camaleón acierta!' : 'El Camaleón falla',
+        endTitle: ok ? '¡El intruso acierta!' : 'El intruso falla',
         endSubtitle: ok
           ? `Adivinó «${secret}» y se salva.`
           : `La palabra era «${secret}». Ganan los demás.`,
@@ -322,7 +322,7 @@ export function useCamaleon() {
         return {
           ...prev,
           screen: 'end',
-          endTitle: '¡Camaleón descubierto!',
+          endTitle: '¡Intruso descubierto!',
           endSubtitle: `La palabra era ${prev.deal?.secretWord ?? ''}.`,
         };
       }

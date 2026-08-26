@@ -31,7 +31,7 @@ export default function UnanimoApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Unánimo"
+          title="Todos igual"
           emoji="🤝"
           tagline="No gana quien es más original: gana quien piensa como el grupo."
           steps={[

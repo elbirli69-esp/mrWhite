@@ -47,7 +47,7 @@ export function GameHome({
             href="/"
             className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] underline-offset-4 transition-colors hover:text-[var(--color-accent)] hover:underline"
           >
-            ← Apps
+            ← Mesa Móvil
           </a>
         </motion.p>
 

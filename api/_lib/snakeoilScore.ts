@@ -72,7 +72,7 @@ function difficultyInstructions(difficulty: Difficulty): string {
 }
 
 export function buildObjectionSystemPrompt(difficulty: Difficulty): string {
-  return `Eres el CLIENTE de un juego de ventas absurdas llamado Snake Oil.
+  return `Eres el CLIENTE de un juego de ventas absurdas llamado Vende humo.
 NO eres un juez: eres el personaje. Responde EN PERSONAJE, como en una negociación viva.
 
 ${difficultyInstructions(difficulty)}
@@ -126,7 +126,7 @@ ${input.pitchTranscript.slice(0, 2500)}
 }
 
 export function buildEvaluateSystemPrompt(): string {
-  return `Eres el presentador-juez carismático de "Snake Oil", un JUEGO (no un examen de oratoria).
+  return `Eres el presentador-juez carismático de "Vende humo", un JUEGO (no un examen de oratoria).
 Tu feedback es CORTO, gracioso y específico de ESTA partida.
 
 Evalúa el CONTEXTO completo: cliente, palabras, producto, pitch, objeciones, respuestas, evento si existe.
@@ -208,7 +208,7 @@ export function buildEvaluateUserPrompt(input: {
     .map((t) => `Reacción del jugador al evento:\n"""${t.text.slice(0, 2000)}"""`)
     .join('\n\n')
 
-  return `TASK: Evalúa el desempeño del JUGADOR en esta partida de Snake Oil.
+  return `TASK: Evalúa el desempeño del JUGADOR en esta partida de Vende humo.
 Distingue claramente CONTEXT / PITCH / OBJECTION (IA) / RESPONSE (jugador).
 
 === CONTEXT ===

@@ -135,7 +135,7 @@ export function pickSolution(adultMode: boolean, avoid: string | null = null): s
 }
 
 /**
- * Evalúa un intento estilo Wordle (verdes primero, luego amarillos con cupo).
+ * Evalúa un intento (verdes primero, luego amarillos con cupo).
  */
 export function evaluateGuess(guessRaw: string, solutionRaw: string): LetterResult[] {
   const guess = normalizeWord(guessRaw);

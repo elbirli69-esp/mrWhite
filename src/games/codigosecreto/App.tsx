@@ -141,7 +141,7 @@ function WordBoard({
     <div
       className="-mx-1 grid grid-cols-5 gap-1 sm:-mx-0 sm:gap-1.5"
       role="group"
-      aria-label="Tablero de Código Secreto"
+      aria-label="Tablero de Pista y número"
     >
       {cards.map((card) => {
         const selected = selectedSet.has(card.id);
@@ -342,7 +342,7 @@ export default function CodigoSecretoApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Código Secreto"
+          title="Pista y número"
           emoji="🔐"
           tagline="Pistas de una palabra, un número del 1 al 5 y un tablero de 25."
           steps={[

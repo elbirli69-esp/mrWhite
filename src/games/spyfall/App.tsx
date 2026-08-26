@@ -42,7 +42,7 @@ export default function SpyfallApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Spyfall"
+          title="¿Dónde estamos?"
           emoji="🕵️"
           tagline="Un lugar secreto, preguntas incómodas y alguien que no está ahí."
           steps={[
@@ -179,7 +179,7 @@ export default function SpyfallApp() {
                 </p>
               ) : null}
             </div>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">Spyfall</h1>
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">¿Dónde estamos?</h1>
             <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
               Preguntad y eliminad sospechosos, o el espía puede declarar que adivinó el lugar.
             </p>

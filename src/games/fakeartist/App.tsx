@@ -71,7 +71,7 @@ export default function FakeArtistApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Fake Artist"
+          title="Trazo falso"
           emoji="🎨"
           tagline="Un dibujo colectivo… y alguien que no sabe qué se está pintando."
           steps={[

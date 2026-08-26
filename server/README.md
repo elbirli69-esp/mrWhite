@@ -1,4 +1,4 @@
-# Mr White rooms server
+# Salas online — El Impostor
 #
 # Local:
 #   cd server && npm install && npm run dev

@@ -39,7 +39,7 @@ export default function HeadsUpApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Heads Up"
+          title="En la frente"
           emoji="📱"
           tagline="La palabra en la frente, el resto da pistas, el reloj corre."
           steps={[

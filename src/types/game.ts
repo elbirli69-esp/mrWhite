@@ -91,7 +91,7 @@ export const DEFAULT_CONFIG: GameConfig = {
 export function roleLabel(role: PlayerRole): string {
   switch (role) {
     case 'mrWhite':
-      return 'Mr. White';
+      return 'el impostor';
     case 'farsante':
       return 'Farsante';
     case 'normal':
@@ -105,7 +105,7 @@ export function roleLabel(role: PlayerRole): string {
 export function eliminationMessage(name: string, role: PlayerRole): string {
   switch (role) {
     case 'mrWhite':
-      return `Has eliminado a ${name}: era Mr. White.`;
+      return `Has eliminado a ${name}: era el impostor.`;
     case 'farsante':
       return `Has eliminado a ${name}: era un Farsante.`;
     case 'normal':

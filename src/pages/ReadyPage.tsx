@@ -76,7 +76,7 @@ export function ReadyPage({
 
         <p className="mb-8 text-center text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           Hablad por turnos sobre la palabra sin decirla. Luego votad y eliminad hasta
-          descubrir a Mr White y a los Farsantes; la palabra se revela al final.
+          descubrir al impostor y a los Farsantes; la palabra se revela al final.
         </p>
 
         <div className="flex flex-col gap-3">

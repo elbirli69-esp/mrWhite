@@ -1,22 +1,26 @@
-# Mr White + juegos de palabras + stayCalm
+# Mesa Móvil
 
-Landing en `/` para elegir app:
+Hub de juegos de fiesta en el navegador (PWA instalable). Marca paraguas: **Mesa Móvil**.
+
+Landing en `/` para elegir juego:
 
 ## Juegos de palabras
 
-- **Mr White** → `/mrwhite` — impostores y palabras secretas (local o salas online)
-- **Camaleón** → `/camaleon` — tablero, pistas y camaleón
-- **Código Secreto** → `/codigosecreto` — dos equipos, pista + número (1–5) y tablero 5×5
-- **Spyfall** → `/spyfall` — lugar secreto y espías
-- **Heads Up** → `/headsup` — palabra en la frente con temporizador
-- **Just One** → `/justone` — pistas únicas para adivinar
-- **Café o té** → `/cafeote` — pares binarios (café/té, playa/montaña…) y una palabra secreta
-- **Fake Artist** → `/fakeartist` — dibujo colectivo e impostor
-- **Unánimo** → `/unanimo` — coincidir palabras con el grupo
-- **Papelitos** → `/papelitos` — bote de papeles (mesa o pack), tres rondas
-- **Habla ya** → `/hablaya` — categorías, micrófono, votos 0–10 e IA (serio o inventado)
-- **Adivina** → `/adivina` — palabra de 5 letras en solitario (estilo Wordle)
-- **Snake Oil** → `/snakeoil` — vende un invento absurdo a un cliente-IA con personalidad (pitch, objeciones, eventos, combo, probabilidad de compra; Whisper + DeepSeek)
+- **El Impostor** → `/impostor` — impostores y palabras secretas (local o salas online)
+- **El Intruso** → `/intruso` — tablero, pistas y alguien sin la palabra
+- **Pista y número** → `/pista-numero` — dos equipos, pista + número (1–5) y tablero 5×5
+- **¿Dónde estamos?** → `/lugar-secreto` — lugar secreto y espías
+- **En la frente** → `/en-la-frente` — palabra en la frente con temporizador
+- **Sin repetir** → `/sin-repetir` — pistas únicas para adivinar
+- **Café o té** → `/cafe-o-te` — pares binarios y una palabra secreta
+- **Trazo falso** → `/trazo-falso` — dibujo colectivo e impostor
+- **Todos igual** → `/todos-igual` — coincidir palabras con el grupo
+- **Bote de ideas** → `/bote` — bote de papeles, tres rondas
+- **Habla ya** → `/habla-ya` — categorías, micrófono, votos 0–10 e IA
+- **Cinco letras** → `/cinco-letras` — palabra de 5 letras en solitario
+- **Vende humo** → `/vende-humo` — vende un invento absurdo a un cliente-IA (pitch, objeciones, eventos; Whisper + DeepSeek)
+
+Las rutas antiguas (`/mrwhite`, `/spyfall`, etc.) redirigen automáticamente a las nuevas.
 
 Cada juego guarda su propia configuración en `localStorage` y permite ajustar patrones al inicio (roles especiales, fases, timers, puntuación, **versión adultos +18**…).
 
@@ -28,8 +32,8 @@ Cada juego guarda su propia configuración en `localStorage` y permite ajustar p
 Variables en Vercel:
 
 - `REDIS_URL` (Railway, URL pública)
-- `DEEPSEEK_API_KEY` (bulardoCreator, puntuación de Habla ya y Snake Oil)
-- `VITE_WS_URL` (salas online Mr White, p. ej. `wss://…railway.app`)
+- `DEEPSEEK_API_KEY` (bulardoCreator, puntuación de Habla ya y Vende humo)
+- `VITE_WS_URL` (salas online El Impostor, p. ej. `wss://…railway.app`)
 - Habla ya transcribe con **Whisper local** en el navegador (WebGPU/WASM); no hace falta `OPENAI_API_KEY`
 
 ## Stack
@@ -39,9 +43,9 @@ Variables en Vercel:
 - Tailwind CSS
 - Framer Motion
 - PWA (instalable, offline)
-- Servidor de salas Mr White: Node + WebSocket (`server/`, Railway)
+- Servidor de salas El Impostor: Node + WebSocket (`server/`, Railway)
 
-Los juegos de palabras corren en el cliente (sin backend), salvo las **salas online** de Mr White.
+Los juegos de palabras corren en el cliente (sin backend), salvo las **salas online** de El Impostor.
 
 ## Desarrollo
 
@@ -49,7 +53,7 @@ Los juegos de palabras corren en el cliente (sin backend), salvo las **salas onl
 npm install
 npm --prefix server install
 
-# Terminal 1 — salas Mr White
+# Terminal 1 — salas online
 npm run dev:server
 
 # Terminal 2 — frontend
@@ -73,16 +77,16 @@ Importa el repositorio en Vercel. Detecta Vite automáticamente:
 
 No hace falta configuración extra.
 
-## Cómo se juega Mr White
+## Cómo se juega El Impostor
 
 ### En este móvil
-1. Elige número de jugadores (3–20), Mr White, Farsantes y si Mr White tiene pistas.
+1. Elige número de jugadores (3–20), impostores, Farsantes y si el impostor tiene pistas.
 2. Escribe el nombre de cada jugador.
 3. Cada uno, en secreto, pulsa **Ver mi palabra**.
-4. Los normales y los Farsantes ven una palabra (los Farsantes otra de la misma familia, claramente distinta); Mr White no tiene palabra (y, si lo activaste, recibe una pista de ambiente relacionada de lejos para improvisar).
+4. Los normales y los Farsantes ven una palabra (los Farsantes otra de la misma familia, claramente distinta); el impostor no tiene palabra (y, si lo activaste, recibe una pista de ambiente relacionada de lejos para improvisar).
 5. Al pasar de jugador aparece **Pasa el móvil** un segundo.
 6. Cuando todos han visto su rol, ¡empieza la partida!
-7. En las rondas, eliminad sospechosos hasta descubrir a Mr White y a todos los Farsantes. La palabra real solo se revela cuando estén todos descubiertos.
+7. En las rondas, eliminad sospechosos hasta descubrir al impostor y a todos los Farsantes. La palabra real solo se revela cuando estén todos descubiertos.
 
 ### Sala online
 1. **Crear / unir sala** → nombre + código.
@@ -93,9 +97,10 @@ No hace falta configuración extra.
 
 ```
 src/
+  brand.ts      # Nombres, rutas y redirecciones
   components/   # UI reutilizable
-  pages/        # Pantallas Mr White + hub
-  games/        # Camaleón, Spyfall, Heads Up, Just One…
+  pages/        # Pantallas El Impostor + hub
+  games/        # Todos los modos de juego
   hooks/        # Estado de partida (local + online)
   utils/        # Validación, reparto, storage
 shared/         # Tipos, palabras y protocolo WS

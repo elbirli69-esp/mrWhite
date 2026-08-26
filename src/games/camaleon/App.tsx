@@ -66,13 +66,13 @@ export default function CamaleonApp() {
     >
       {state.screen === 'home' && (
         <GameHome
-          title="Camaleón"
+          title="El Intruso"
           emoji="🦎"
-          tagline="Todos conocen la palabra… excepto el camaleón. Dad pistas y pilladlo."
+          tagline="Todos conocen la palabra… excepto el intruso. Dad pistas y pilladlo."
           steps={[
-            'Configura jugadores, camaleones y si hay fase de pistas.',
+            'Configura jugadores, intrusos y si hay fase de pistas.',
             'Cada persona ve el tablero o solo la categoría, en secreto.',
-            'Pistas, voto y, si quieres, el camaleón puede adivinar la palabra.',
+            'Pistas, voto y, si quieres, el intruso puede adivinar la palabra.',
           ]}
           readableMode={readableMode}
           onReadableModeChange={setReadableMode}
@@ -111,12 +111,12 @@ export default function CamaleonApp() {
           />
           <Toggle
             label="Fase de pistas"
-            description="Antes de votar, cada jugador escribe en secreto una palabra relacionada. Luego se muestran todas y se vota al camaleón."
+            description="Antes de votar, cada jugador escribe en secreto una palabra relacionada. Luego se muestran todas y se vota al intruso."
             checked={state.config.cluePhase}
             onChange={(cluePhase) => game.updateConfig({ cluePhase })}
           />
           <Toggle
-            label="El camaleón puede adivinar"
+            label="El intruso puede adivinar"
             description="Si lo pilláis, aún puede ganar acertando la palabra secreta."
             checked={state.config.chameleonCanGuess}
             onChange={(chameleonCanGuess) => game.updateConfig({ chameleonCanGuess })}
@@ -159,8 +159,8 @@ export default function CamaleonApp() {
           starterName={starterName}
           body={
             state.config.cluePhase
-              ? 'Dad pistas de una palabra por turnos. Luego votad al camaleón.'
-              : 'Hablad con cuidado y votad a quién creéis que es el camaleón.'
+              ? 'Dad pistas de una palabra por turnos. Luego votad al intruso.'
+              : 'Hablad con cuidado y votad a quién creéis que es el intruso.'
           }
           onBegin={game.beginPlay}
           onNewGame={game.startDeal}
@@ -288,7 +288,7 @@ function RevealCamaleon({
                     🦎
                   </span>
                   <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--color-accent)]">
-                    Eres el Camaleón
+                    Eres el intruso
                   </h2>
                   <p className="max-w-xs text-[length:var(--text-body)] text-[var(--color-text-muted)]">
                     Categoría: <span className="text-[var(--color-text)]">{categoryName}</span>.
@@ -413,7 +413,7 @@ function CluesPhase({
         </h1>
         <p className="mt-2 text-[length:var(--text-body)] leading-[var(--leading-body)] text-[var(--color-text-muted)]">
           Cada jugador da <span className="text-[var(--color-text)]">una sola palabra</span> ligada
-          a la secreta (sin decirla). El camaleón improvisa. Luego veréis todas las pistas y votaréis.
+          a la secreta (sin decirla). El intruso improvisa. Luego veréis todas las pistas y votaréis.
         </p>
       </header>
       <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_16px_48px_rgba(0,0,0,0.45)] sm:p-8">
@@ -482,7 +482,7 @@ function PlayCamaleon({
         </p>
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold">Votación</h1>
         <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-          Eliminad a quien creáis que es el camaleón.
+          Eliminad a quien creáis que es el intruso.
         </p>
         {starterName ? (
           <p className="mt-3 text-[length:var(--text-body)]">
@@ -495,7 +495,7 @@ function PlayCamaleon({
         <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4">
           <p className="font-[family-name:var(--font-display)] text-xl font-semibold">
             {lastElimination.playerName}:{' '}
-            {lastElimination.role === 'chameleon' ? 'era Camaleón' : 'era inocente'}
+            {lastElimination.role === 'chameleon' ? 'era el intruso' : 'era inocente'}
           </p>
           <button type="button" onClick={onDismiss} className="mt-3 min-h-11 underline-offset-2 hover:underline">
             Cerrar
@@ -572,7 +572,7 @@ function GuessPhase({
       <header className="text-center">
         <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold">Adivina la palabra</h1>
         <p className="mt-2 text-[length:var(--text-body)] text-[var(--color-text-muted)]">
-          El camaleón acusado puede intentar salvarse.
+          El intruso acusado puede intentar salvarse.
         </p>
       </header>
       <Card>

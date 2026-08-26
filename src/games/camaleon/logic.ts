@@ -70,7 +70,7 @@ export function validateCamaleonConfig(config: CamaleonConfig): { valid: boolean
     return { valid: false, error: `Jugadores entre ${MIN_PLAYERS} y ${MAX_PLAYERS}.` };
   }
   if (!Number.isInteger(chameleonCount) || chameleonCount < 1) {
-    return { valid: false, error: 'Debe haber al menos un Camaleón.' };
+    return { valid: false, error: 'Debe haber al menos un intruso.' };
   }
   if (chameleonCount >= playerCount) {
     return { valid: false, error: 'Debe quedar al menos un jugador que conozca la palabra.' };

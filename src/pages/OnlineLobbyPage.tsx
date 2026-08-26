@@ -145,7 +145,7 @@ export function OnlineLobbyPage({
           </h2>
           <div className="flex flex-col gap-8">
             <NumberStepper
-              label="Mr White"
+              label="Impostores"
               description="Sin palabra. Debe fingir."
               value={state.config.mrWhiteCount}
               min={0}
@@ -165,7 +165,7 @@ export function OnlineLobbyPage({
               onChange={(farsanteCount) => patchConfig({ farsanteCount })}
             />
             <Toggle
-              label="Pistas para Mr White"
+              label="Pistas para el impostor"
               description="Recibe una pista de ambiente relacionada de lejos."
               checked={state.config.mrWhiteHasHints}
               onChange={(mrWhiteHasHints) => patchConfig({ mrWhiteHasHints })}
@@ -188,7 +188,7 @@ export function OnlineLobbyPage({
       ) : (
         <Card>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Mr White: {state.config.mrWhiteCount} · Farsantes: {state.config.farsanteCount}
+            Impostores: {state.config.mrWhiteCount} · Farsantes: {state.config.farsanteCount}
             {state.config.mrWhiteHasHints ? ' · Con pistas' : ''}
             {state.config.adultMode ? ' · +18' : ''}
           </p>
