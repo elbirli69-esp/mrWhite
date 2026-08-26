@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import { APP_BRAND, partyGames } from '../brand'
+import { hubVisualFor } from '../hubVisuals'
 
 const ease = [0.22, 1, 0.36, 1] as const
 const RECENT_KEY = 'hub-recent-games'
-const MAX_RECENT = 3
+const MAX_RECENT = 4
 
 type GameGroupId = 'impostores' | 'tablero' | 'pistas' | 'hablar' | 'solo'
 
@@ -64,6 +65,15 @@ const filters: Array<{ id: FilterId; label: string }> = [
   { id: 'solo', label: 'Solo' },
 ]
 
+interface HubGameItem {
+  href: string
+  name: string
+  line: string
+  cta: string
+  tone: string
+  group?: GameGroupId
+}
+
 function loadRecent(): string[] {
   try {
     const raw = localStorage.getItem(RECENT_KEY)
@@ -88,32 +98,43 @@ function rememberRecent(href: string) {
 function GameCard({
   game,
   index,
-  compact = false,
+  variant = 'default',
 }: {
-  game: {
-    href: string
-    name: string
-    line: string
-    cta: string
-    tone: string
-  }
+  game: HubGameItem
   index: number
-  compact?: boolean
+  variant?: 'default' | 'featured'
 }) {
+  const visual = hubVisualFor(game.tone)
+
   return (
     <motion.a
       href={game.href}
-      className={`hub-choice hub-choice--${game.tone}${compact ? ' hub-choice--compact' : ''}`}
-      initial={{ opacity: 0, y: 20 }}
+      className={`hub-card hub-card--${game.tone} hub-card--${variant}`}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: 0.04 + index * 0.03, ease }}
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.985 }}
+      transition={{ duration: 0.5, delay: 0.03 + index * 0.04, ease }}
+      whileHover={{ y: -6, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => rememberRecent(game.href)}
     >
-      <span className="hub-choice-name">{game.name}</span>
-      <span className="hub-choice-line">{game.line}</span>
-      <span className="hub-choice-cta">{game.cta}</span>
+      <div className="hub-card-glow" aria-hidden />
+      <div className="hub-card-pattern" aria-hidden />
+
+      <div className="hub-card-art" aria-hidden>
+        <span className="hub-card-emoji">{visual.emoji}</span>
+      </div>
+
+      <div className="hub-card-body">
+        <span className="hub-card-tag">{visual.tag}</span>
+        <h2 className="hub-card-name">{game.name}</h2>
+        <p className="hub-card-line">{game.line}</p>
+        <span className="hub-card-cta">
+          {game.cta}
+          <span className="hub-card-arrow" aria-hidden>
+            →
+          </span>
+        </span>
+      </div>
     </motion.a>
   )
 }
@@ -191,11 +212,13 @@ export function HubPage() {
                 Recientes
               </p>
             </div>
-            <nav className="hub-nav hub-nav--compact" aria-label="Juegos recientes">
+            <div className="hub-scroll" role="list" aria-label="Juegos recientes">
               {recentGames.map((game, index) => (
-                <GameCard key={`recent-${game.href}`} game={game} index={index} compact />
+                <div key={`recent-${game.href}`} className="hub-scroll-item" role="listitem">
+                  <GameCard game={game} index={index} variant="featured" />
+                </div>
               ))}
-            </nav>
+            </div>
           </section>
         ) : null}
 
@@ -214,17 +237,9 @@ export function HubPage() {
                 </p>
                 <p className="hub-section-blurb">{group.blurb}</p>
               </div>
-              <nav
-                className="hub-nav hub-nav--party hub-nav--compact"
-                aria-label={group.label}
-              >
+              <nav className="hub-grid" aria-label={group.label}>
                 {games.map((game, index) => (
-                  <GameCard
-                    key={game.href}
-                    game={game}
-                    index={groupIndex * 4 + index}
-                    compact
-                  />
+                  <GameCard key={game.href} game={game} index={groupIndex * 4 + index} />
                 ))}
               </nav>
             </section>
@@ -238,9 +253,9 @@ export function HubPage() {
                 Otras apps
               </p>
             </div>
-            <nav className="hub-nav hub-nav--other hub-nav--compact" aria-label="Otras apps">
+            <nav className="hub-grid hub-grid--other" aria-label="Otras apps">
               {otherApps.map((app, index) => (
-                <GameCard key={app.href} game={app} index={index} compact />
+                <GameCard key={app.href} game={app} index={index} />
               ))}
             </nav>
           </section>
