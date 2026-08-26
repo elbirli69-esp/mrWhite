@@ -96,7 +96,7 @@ export default function CamaleonApp() {
             onChange={(playerCount) => game.updateConfig({ playerCount })}
           />
           <NumberStepper
-            label="Camaleones"
+            label="Intrusos"
             description="No conocen la palabra secreta."
             value={state.config.chameleonCount}
             min={1}
