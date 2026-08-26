@@ -59,7 +59,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}', 'hub/**/*.jpg'],
         // No precachear el bundle Whisper (~0.9 MB) ni el WASM ONNX: se piden al usar Habla ya.
         globIgnores: ['**/transformers.web-*.js', '**/ort-wasm-*.wasm'],
         navigateFallback: '/index.html',
