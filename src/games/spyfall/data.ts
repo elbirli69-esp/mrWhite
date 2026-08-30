@@ -33,7 +33,7 @@ export const SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'cine',
     name: 'Cine',
-    roles: ['Taquillero', 'Acomodador', 'Espectador', 'Proyeccionista', 'Palomitas', 'Crítico', 'Actor en cameo', 'Limpieza'],
+    roles: ['Taquillero', 'Acomodador', 'Espectador', 'Proyeccionista', 'Vendedor de palomitas', 'Crítico', 'Actor en cameo', 'Limpieza'],
   },
   {
     id: 'supermercado',
@@ -58,7 +58,7 @@ export const SPYFALL_LOCATIONS: readonly SpyfallLocation[] = [
   {
     id: 'gimnasio',
     name: 'Gimnasio',
-    roles: ['Entrenador', 'Socio', 'Recepcionista', 'Fisioterapeuta', 'Influencer', 'Limpieza', 'Nutricionista', 'Principiantes'],
+    roles: ['Entrenador', 'Socio', 'Recepcionista', 'Fisioterapeuta', 'Influencer', 'Limpieza', 'Nutricionista', 'Principiante'],
   },
   {
     id: 'barco',

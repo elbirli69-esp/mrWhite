@@ -1,5 +1,4 @@
-import { ADULT_WORD_PAIRS } from '../../data/adultWords';
-import { WORD_PAIRS } from '../../data/words';
+import { normalWordsForHeadsUp } from '../../data/wordFilters';
 import { randomInt, shuffle } from '../../utils/game';
 
 export const MIN_PLAYERS = 2;
@@ -65,8 +64,7 @@ export function isHeadsUpConfig(value: unknown): value is HeadsUpConfig {
 }
 
 export function buildWordDeck(count = 80, adultMode = false): string[] {
-  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
-  const words = pool.map(([normal]) => normal);
+  const words = normalWordsForHeadsUp(adultMode);
   return shuffle(words).slice(0, Math.min(count, words.length));
 }
 

@@ -1,5 +1,4 @@
-import { ADULT_WORD_PAIRS } from '../../data/adultWords';
-import { WORD_PAIRS } from '../../data/words';
+import { pairsForFakeArtist } from '../../data/wordFilters';
 import { randomInt, shuffle } from '../../utils/game';
 
 export const MIN_PLAYERS = 3;
@@ -82,7 +81,7 @@ export function isFakeArtistConfig(value: unknown): value is FakeArtistConfig {
 }
 
 export function pickWord(adultMode: boolean): string {
-  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
+  const pool = pairsForFakeArtist(adultMode);
   return pool[randomInt(pool.length)]![0];
 }
 

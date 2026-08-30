@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BINARY_PAIRS } from './data';
 import {
   answerLabel,
   guessesMatch,
@@ -62,5 +63,13 @@ describe('cafeote helpers', () => {
     expect(isCustomPairValid('Café', 'Té')).toBe(true);
     expect(isCustomPairValid('Café', 'café')).toBe(false);
     expect(isCustomPairValid('', 'Té')).toBe(false);
+  });
+
+  it('no repite opciones entre pares binarios', () => {
+    const options: string[] = [];
+    for (const pair of BINARY_PAIRS) {
+      options.push(pair.left, pair.right);
+    }
+    expect(new Set(options).size).toBe(options.length);
   });
 });

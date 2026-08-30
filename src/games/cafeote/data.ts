@@ -31,7 +31,7 @@ export const BINARY_PAIRS: readonly BinaryPair[] = [
   { left: 'Minimal', right: 'Barroco' },
   { left: 'Sol', right: 'Lluvia' },
   { left: 'Temprano', right: 'Tarde' },
-  { left: 'Dulce', right: 'Amargo' },
+  { left: 'Caramelo', right: 'Amargo' },
   { left: 'Rápido', right: 'Lento' },
   { left: 'Clásico', right: 'Moderno' },
   { left: 'Interior', right: 'Exterior' },

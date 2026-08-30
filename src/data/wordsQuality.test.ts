@@ -43,6 +43,34 @@ function tooClose(a: string, b: string): boolean {
 const SOUND_HINT =
   /^(ladrido|ronroneo|rugido|mugido|gruñido|ulular|cuac|arrullo|croar|sisear|zumbido|graznar)$/i;
 
+const GENERIC_HINTS = new Set([
+  'Se mueve',
+  'Salud',
+  'Sentimiento',
+  'Comida',
+  'Naturaleza',
+  'Ambiente picante',
+  'Fiesta',
+]);
+
+function hintRevealsFarsante(farsante: string, hint: string): boolean {
+  if (farsante.length <= 3) return false;
+  return hint.toLowerCase().includes(farsante.toLowerCase());
+}
+
+function validatePairs(pairs: readonly (readonly [string, string, string])[]) {
+  const normals = pairs.map(([n]) => n);
+  const duplicateNormals = normals.filter((n, i) => normals.indexOf(n) !== i);
+  const genericHints = pairs.filter(([, , h]) => GENERIC_HINTS.has(h));
+  const revealingHints = pairs.filter(([, f, h]) => hintRevealsFarsante(f, h));
+  const close = pairs.filter(([n, f]) => tooClose(n, f));
+  const reused = new Map<string, number>();
+  for (const [, , h] of pairs) reused.set(h, (reused.get(h) ?? 0) + 1);
+  const heavyReuse = [...reused.entries()].filter(([, c]) => c > 3);
+
+  return { duplicateNormals, genericHints, revealingHints, close, heavyReuse };
+}
+
 describe('Mr White word pairs quality', () => {
   it('tiene el catálogo esperado', () => {
     expect(WORD_PAIRS.length).toBeGreaterThan(1000);
@@ -68,5 +96,27 @@ describe('Mr White word pairs quality', () => {
   it('pack adulto sin farsantes idénticos', () => {
     const close = ADULT_WORD_PAIRS.filter(([normal, farsante]) => tooClose(normal, farsante));
     expect(close).toEqual([]);
+  });
+
+  it('normales únicos en el catálogo familiar', () => {
+    expect(validatePairs(WORD_PAIRS).duplicateNormals).toEqual([]);
+  });
+
+  it('sin pistas genéricas ni que delaten al farsante', () => {
+    const issues = validatePairs(WORD_PAIRS);
+    expect(issues.genericHints).toEqual([]);
+    expect(issues.revealingHints).toEqual([]);
+    expect(issues.heavyReuse).toEqual([]);
+  });
+
+  it('pack adulto sin pistas genéricas ni delatoras', () => {
+    const issues = validatePairs(ADULT_WORD_PAIRS);
+    expect(issues.genericHints).toEqual([]);
+    expect(issues.revealingHints).toEqual([]);
+    expect(issues.heavyReuse).toEqual([]);
+  });
+
+  it('normales únicos en pack adulto', () => {
+    expect(validatePairs(ADULT_WORD_PAIRS).duplicateNormals).toEqual([]);
   });
 });

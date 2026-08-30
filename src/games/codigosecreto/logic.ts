@@ -1,5 +1,4 @@
-import { ADULT_WORD_PAIRS } from '../../data/adultWords';
-import { WORD_PAIRS } from '../../data/words';
+import { wordsForCodigoSecreto } from '../../data/wordFilters';
 import { randomInt, shuffle } from '../../utils/game';
 
 export const MIN_PLAYERS = 4;
@@ -82,18 +81,7 @@ export function isCodigoSecretoConfig(value: unknown): value is CodigoSecretoCon
 }
 
 function wordPool(adultMode: boolean): string[] {
-  const pairs = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
-  const seen = new Set<string>();
-  const words: string[] = [];
-  for (const [a, b] of pairs) {
-    for (const word of [a, b]) {
-      const key = normalizeWord(word);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      words.push(word);
-    }
-  }
-  return words;
+  return wordsForCodigoSecreto(adultMode);
 }
 
 export function normalizeWord(value: string): string {

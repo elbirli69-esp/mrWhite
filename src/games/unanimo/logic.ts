@@ -1,5 +1,4 @@
-import { ADULT_WORD_PAIRS } from '../../data/adultWords';
-import { WORD_PAIRS } from '../../data/words';
+import { normalWordsForUnanimo } from '../../data/wordFilters';
 import { randomInt, shuffle } from '../../utils/game';
 
 export const MIN_PLAYERS = 3;
@@ -76,7 +75,7 @@ export function createPlayers(names: string[]): UnanimoPlayer[] {
 }
 
 export function pickTheme(adultMode: boolean, used: string[] = []): string {
-  const pool = (adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS).map(([w]) => w);
+  const pool = normalWordsForUnanimo(adultMode);
   const available = pool.filter((w) => !used.includes(w));
   const list = available.length > 0 ? available : pool;
   return list[randomInt(list.length)]!;

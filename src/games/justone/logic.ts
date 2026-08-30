@@ -1,5 +1,4 @@
-import { ADULT_WORD_PAIRS } from '../../data/adultWords';
-import { WORD_PAIRS } from '../../data/words';
+import { normalWordsForJustOne } from '../../data/wordFilters';
 import { randomInt, shuffle } from '../../utils/game';
 
 export const MIN_PLAYERS = 3;
@@ -73,8 +72,8 @@ export function createPlayers(names: string[]): JustOnePlayer[] {
 }
 
 export function buildWordDeck(count = 40, adultMode = false): string[] {
-  const pool = adultMode ? ADULT_WORD_PAIRS : WORD_PAIRS;
-  return shuffle(pool.map(([w]) => w)).slice(0, Math.min(count, pool.length));
+  const words = normalWordsForJustOne(adultMode);
+  return shuffle(words).slice(0, Math.min(count, words.length));
 }
 
 export function normalizeClue(value: string): string {

@@ -11,7 +11,7 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     name: 'Comida',
     words: [
       'Pizza', 'Sushi', 'Tacos', 'Paella', 'Hamburguesa', 'Pasta', 'Ensalada', 'Curry',
-      'Croissant', 'Gazpacho', 'Ramen', 'Empanada', 'Falafel', 'Tortilla', 'Ceviche', 'Bocadillo',
+      'Croissant', 'Gazpacho', 'Ramen', 'Empanada', 'Falafel', 'Tortilla de patatas', 'Ceviche', 'Bocadillo',
     ],
   },
   {
@@ -27,15 +27,15 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     name: 'Viajes',
     words: [
       'Playa', 'Montaña', 'Hotel', 'Aeropuerto', 'Mochila', 'Pasaporte', 'Mapa', 'Crucero',
-      'Camping', 'Museo', 'Taxi', 'Souvenir', 'Selfie', 'Guía', 'Maleta', 'Hostel',
+      'Campamento', 'Museo', 'Taxi', 'Souvenir', 'Selfie', 'Guía', 'Maleta', 'Hostel',
     ],
   },
   {
     id: 'cine',
     name: 'Cine',
     words: [
-      'Terror', 'Comedia', 'Palomitas', 'Trailer', 'Director', 'Oscar', 'Secuela', 'Extra',
-      'Guion', 'Estreno', 'Doblaje', 'Cameo', 'Blockbuster', 'Indie', 'Crítica', 'Remake',
+      'Terror', 'Comedia', 'Palomitas', 'Tráiler', 'Director', 'Oscar', 'Secuela', 'Extra',
+      'Guion', 'Estreno', 'Doblaje', 'Cameo', 'Éxito de taquilla', 'Cine independiente', 'Crítica', 'Remake',
     ],
   },
   {
@@ -58,16 +58,16 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     id: 'musica',
     name: 'Música',
     words: [
-      'Guitarra', 'Concierto', 'Batería', 'Micrófono', 'Playlist', 'Rap', 'Ópera', 'Festival',
-      'Auricular', 'DJ', 'Coro', 'Piano', 'Vinilo', 'Karaoke', 'Saxofón', 'Remix',
+      'Guitarra', 'Concierto', 'Batería', 'Micrófono', 'Lista de éxitos', 'Rap', 'Ópera', 'Festival',
+      'Auricular', 'Pinchadiscos', 'Coro', 'Piano', 'Vinilo', 'Karaoke', 'Saxofón', 'Remix',
     ],
   },
   {
     id: 'escuela',
     name: 'Escuela',
     words: [
-      'Examen', 'Recreo', 'Mochila', 'Pizarra', 'Profesor', 'Biblioteca', 'Deberes', 'Comedor',
-      'Notas', 'Uniforme', 'Laboratorio', 'Autobús', 'Directora', 'Tiza', 'Patio', 'Agenda',
+      'Examen', 'Recreo', 'Estuche', 'Pizarra', 'Profesor', 'Biblioteca', 'Deberes', 'Comedor',
+      'Notas', 'Uniforme', 'Laboratorio', 'Autocar escolar', 'Directora', 'Tiza', 'Patio', 'Agenda',
     ],
   },
   {
@@ -75,7 +75,7 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     name: 'Ciudad',
     words: [
       'Metro', 'Parque', 'Semáforo', 'Terraza', 'Farmacia', 'Mercado', 'Puente', 'Estadio',
-      'Ayuntamiento', 'Fuente', 'Rascacielos', 'Callejón', 'Museo', 'Plaza', 'Bici', 'Taxi',
+      'Ayuntamiento', 'Fuente', 'Rascacielos', 'Callejón', 'Galería', 'Plaza', 'Bici', 'Autobús',
     ],
   },
   {
@@ -83,14 +83,14 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     name: 'Naturaleza',
     words: [
       'Bosque', 'Río', 'Volcán', 'Desierto', 'Cascada', 'Arrecife', 'Glaciar', 'Selva',
-      'Cueva', 'Pradera', 'Isla', 'Lago', 'Cañón', 'Arce', 'Coral', 'Aurora',
+      'Cueva', 'Pradera', 'Isla', 'Lago', 'Cañón', 'Árbol de arce', 'Polípito', 'Aurora',
     ],
   },
   {
     id: 'trabajo',
     name: 'Trabajo',
     words: [
-      'Reunión', 'Email', 'Jefe', 'Deadline', 'Oficina', 'Café', 'Nómina', 'Portátil',
+      'Reunión', 'Email', 'Jefe', 'Deadline', 'Oficina', 'Café de oficina', 'Nómina', 'Portátil',
       'Vacaciones', 'Currículum', 'Zoom', 'Ascensor', 'Impresora', 'Becario', 'Fichaje', 'Equipo',
     ],
   },
@@ -98,8 +98,8 @@ export const CAMALEON_CATEGORIES: readonly CamaleonCategory[] = [
     id: 'fiesta',
     name: 'Fiesta',
     words: [
-      'Tarta', 'Globo', 'Disfraz', 'Karaoke', 'Piñata', 'Brindis', 'DJ', 'Confeti',
-      'Invitación', 'Fotomatón', 'Cóctel', 'After', 'Playlist', 'Regalo', 'Baile', 'Host',
+      'Tarta', 'Globo', 'Disfraz', 'Cotillón', 'Piñata', 'Brindis', 'Animador', 'Confeti',
+      'Invitación', 'Fotomatón', 'Cóctel', 'After', 'Lista bailable', 'Regalo', 'Baile', 'Anfitrión',
     ],
   },
 ];
