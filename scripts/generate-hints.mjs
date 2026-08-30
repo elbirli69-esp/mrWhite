@@ -67,6 +67,9 @@ for (const [i, { n, f, h }] of pairs.entries()) {
   if (f.toLowerCase() === n.toLowerCase()) errors.push(`${i}: farsante equals normal (${n})`);
   if (h.toLowerCase() === n.toLowerCase()) errors.push(`${i}: hint equals normal (${n})`);
   if (GENERIC.has(h)) errors.push(`${i}: generic hint "${h}" for ${n}`);
+  if (f.length > 3 && h.toLowerCase().includes(f.toLowerCase())) {
+    errors.push(`${i}: hint contains farsante word (${n} / ${f} / ${h})`);
+  }
   if (n.length > 3 && h.toLowerCase().includes(n.toLowerCase())) {
     errors.push(`${i}: hint contains normal word (${n} / ${h})`);
   }
